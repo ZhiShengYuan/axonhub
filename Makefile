@@ -61,8 +61,15 @@ test-backend-all:
 	@echo ""
 	@echo "=== Testing root module ==="
 	go test ./...
+	@echo ""
+	@echo "=== Testing axon module ==="
+	cd axon && go test ./...
+	@echo ""
 	@echo "=== Testing llm module ==="
 	cd llm && go test ./...
+	@echo ""
+	@echo "=== Testing axoncli module ==="
+	cd cmd/axoncli && go test ./...
 	@echo ""
 	@echo "All backend tests completed!"
 

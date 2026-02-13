@@ -1,0 +1,149 @@
+package tools
+
+import (
+	"context"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/google/jsonschema-go/jsonschema"
+	"github.com/looplj/axonhub/axon/agent"
+)
+
+//go:embed read.md
+var readDescription string
+
+type ReadTool struct {
+	workspace string
+	restrict  bool
+}
+
+func NewReadTool(workspace string, restrict bool) *ReadTool {
+	return &ReadTool{workspace: workspace, restrict: restrict}
+}
+
+type readInput struct {
+	Path      string `json:"path"`
+	ReadRange []int  `json:"read_range,omitempty"`
+}
+
+func (t *ReadTool) Definition() agent.ToolDefinition {
+	return agent.ToolDefinition{
+		Name:        "Read",
+		Description: readDescription,
+		Parameters: jsonschema.Schema{
+			Schema: "https://json-schema.org/draft/2020-12/schema",
+			Type:   "object",
+			Properties: map[string]*jsonschema.Schema{
+				"path": {
+					Type:        "string",
+					Description: "Path to the file or directory to read",
+				},
+				"read_range": {
+					Type:        "array",
+					Description: "Line range [start, end] (1-indexed)",
+					Items: &jsonschema.Schema{
+						Type: "integer",
+					},
+					MinItems: new(2),
+					MaxItems: new(2),
+				},
+			},
+			Required: []string{"path"},
+		},
+	}
+}
+
+func (t *ReadTool) Execute(_ context.Context, arguments json.RawMessage) agent.ToolResult {
+	var input readInput
+	if err := json.Unmarshal(arguments, &input); err != nil {
+		return ErrorResult(fmt.Errorf("invalid arguments: %w", err))
+	}
+
+	path, err := validatePath(input.Path, t.workspace, t.restrict)
+	if err != nil {
+		return ErrorResult(err)
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return ErrorResult(fmt.Errorf("cannot access %q: %w", path, err))
+	}
+
+	if info.IsDir() {
+		return t.listDirectory(path)
+	}
+
+	return t.readFile(path, input.ReadRange)
+}
+
+func (t *ReadTool) listDirectory(path string) agent.ToolResult {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return ErrorResult(fmt.Errorf("cannot read directory %q: %w", path, err))
+	}
+
+	var sb strings.Builder
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() {
+			name += "/"
+		}
+		sb.WriteString(name)
+		sb.WriteString("\n")
+	}
+
+	return TextResult(sb.String())
+}
+
+func (t *ReadTool) readFile(path string, readRange []int) agent.ToolResult {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ErrorResult(fmt.Errorf("cannot read file %q: %w", path, err))
+	}
+
+	lines := strings.Split(string(data), "\n")
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+
+	start := 1
+	end := len(lines)
+	defaultMax := 500
+
+	if len(readRange) == 2 {
+		start = readRange[0]
+		end = readRange[1]
+	} else if end > defaultMax {
+		end = defaultMax
+	}
+
+	if start < 1 {
+		start = 1
+	}
+	if end > len(lines) {
+		end = len(lines)
+	}
+	if start > end {
+		return TextResult("")
+	}
+
+	ext := filepath.Ext(path)
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("%s (%d lines%s)\n", path, len(lines), extInfo(ext)))
+	for i := start; i <= end; i++ {
+		sb.WriteString(fmt.Sprintf("%d: %s\n", i, lines[i-1]))
+	}
+
+	return TextResult(sb.String())
+}
+
+func extInfo(ext string) string {
+	if ext != "" {
+		return ", " + ext + " file"
+	}
+	return ""
+}

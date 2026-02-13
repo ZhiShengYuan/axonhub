@@ -1,0 +1,273 @@
+package main
+
+import (
+	"context"
+	_ "embed"
+	"fmt"
+	"log/slog"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"text/template"
+	"time"
+
+	tea "charm.land/bubbletea/v2"
+	"github.com/google/uuid"
+	"github.com/looplj/axonhub/axon/agent"
+	"github.com/looplj/axonhub/axon/bus"
+	axonconf "github.com/looplj/axonhub/axon/conf"
+	clawcontext "github.com/looplj/axonhub/axon/context"
+	"github.com/looplj/axonhub/axon/provider/reloadable"
+	"github.com/looplj/axonhub/axon/thread"
+	"github.com/looplj/axonhub/axon/tools"
+	"github.com/looplj/axonhub/cmd/axoncli/cmds"
+	"github.com/looplj/axonhub/cmd/axoncli/conf"
+	cliruntime "github.com/looplj/axonhub/cmd/axoncli/runtime"
+	clitools "github.com/looplj/axonhub/cmd/axoncli/tools"
+	"github.com/looplj/axonhub/cmd/axoncli/tui"
+	"github.com/looplj/skills/skillscmd"
+	"github.com/spf13/cobra"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
+)
+
+//go:embed system.md
+var systemPromptTemplate string
+
+const (
+	defaultMaxIter = 30
+	configDirName  = ".axoncli"
+	threadsDirName = "threads"
+	logsDirName    = "logs"
+)
+
+type systemPromptData struct {
+	Date        string
+	Timezone    string
+	OS          string
+	Workspace   string
+	ThreadID    string
+	ConfigDir   string
+	AxonCliPath string
+}
+
+func main() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: cannot get home directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	configDir := filepath.Join(homeDir, configDirName)
+	workspaceDir := mustGetwd()
+
+	rootCmd := &cobra.Command{
+		Use:          "axoncli",
+		Short:        "Axon CLI",
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			debug, _ := cmd.Flags().GetBool("debug")
+			cfg, err := conf.LoadEffectiveConfig(configDir)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(1)
+			}
+			if err := conf.ValidateConfig(cfg, configDir); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(1)
+			}
+			return runTUI(cfg, configDir, workspaceDir, debug)
+		},
+	}
+	rootCmd.Flags().Bool("debug", false, "enable debug mode")
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.SetHelpCommand(cmds.NewHelpCommand(rootCmd))
+
+	rootCmd.AddCommand(skillscmd.NewRootCommand(skillscmd.RootOptions{
+		Use:                  "skills",
+		Stdout:               os.Stdout,
+		Stderr:               os.Stderr,
+		WorkspaceDir:         filepath.Join(workspaceDir, "skills"),
+		GlobalDir:            filepath.Join(configDir, "skills"),
+		Commands:             []string{"search", "list", "add", "remove"},
+		EnableAgentDiscovery: false,
+		EnableAgentFlags:     false,
+	}))
+	rootCmd.AddCommand(cmds.NewConfCommand(cmds.ConfOptions{
+		Dir:    configDir,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}))
+	rootCmd.AddCommand(cmds.NewCommand(cmds.MemoryOptions{
+		Dir:    configDir,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}))
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func runTUI(cfg conf.Config, configDir string, workspaceDir string, debug bool) error {
+	threadID := uuid.New().String()
+
+	threadsDir := filepath.Join(configDir, threadsDirName)
+	if err := os.MkdirAll(threadsDir, 0o755); err != nil {
+		return fmt.Errorf("cannot create threads directory: %v", err)
+	}
+
+	logFilePath := filepath.Join(threadsDir, threadID+".log")
+	ljLogger := &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    10, // megabytes
+		MaxAge:     7,  // days
+		MaxBackups: 3,  // files
+		LocalTime:  true,
+	}
+	defer ljLogger.Close()
+
+	logger := slog.New(slog.NewTextHandler(ljLogger, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+	eventBus := bus.New(
+		bus.WithRecover(logger),
+		bus.WithTracing(),
+	)
+	defer eventBus.Close()
+
+	threadStore, err := thread.NewJSONLStore(threadsDir)
+	if err != nil {
+		return fmt.Errorf("failed to initialize thread store: %v", err)
+	}
+	threadMgr := thread.NewManager(threadStore)
+
+	systemPrompt := mustLoadSystemPrompt(configDir, workspaceDir, threadID, debug)
+
+	provider := reloadable.New(cliruntime.BuildProvider(cfg))
+
+	a := agent.New(agent.Config{
+		Model:         cfg.Model,
+		MaxIterations: defaultMaxIter,
+		SystemPrompt:  systemPrompt,
+	}, provider, agent.WithBus(eventBus), agent.WithLogger(logger))
+
+	a.RegisterTool(tools.NewReadTool(workspaceDir, false))
+	a.RegisterTool(tools.NewWriteTool(workspaceDir, false))
+	a.RegisterTool(tools.NewEditTool(workspaceDir, false))
+	a.RegisterTool(tools.NewBashTool(workspaceDir, false))
+	a.RegisterTool(tools.NewGrepTool(workspaceDir, false))
+	a.RegisterTool(tools.NewGlobTool(workspaceDir, false))
+	a.RegisterTool(tools.NewSkillTool(filepath.Join(workspaceDir, "skills"), filepath.Join(configDir, "skills")))
+	a.RegisterTool(clitools.NewAxonHelpTool())
+
+	store := axonconf.NewStore(cfg)
+	loader := axonconf.NewViperLoader[conf.Config](axonconf.ViperLoaderOptions{
+		ConfigName:     "config",
+		ConfigType:     "yml",
+		SearchPaths:    []string{configDir, "."},
+		AllowMissing:   true,
+		EnvPrefix:      "AXONCLI",
+		EnvKeyReplacer: strings.NewReplacer(".", "_"),
+		UnmarshalTag:   "conf",
+	})
+	applier := cliruntime.NewApplier(a, provider, systemPrompt, defaultMaxIter)
+	confMgr, err := axonconf.NewManager(axonconf.ManagerOptions[conf.Config]{
+		Store:  store,
+		Loader: loader,
+		Validate: func(_ context.Context, v conf.Config) error {
+			return conf.ValidateConfig(v, configDir)
+		},
+		Diff:    cliruntime.DiffConfig,
+		Applier: applier,
+		Bus:     eventBus,
+		Logger:  logger,
+	})
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	ctx = clawcontext.WithThreadID(ctx, threadID)
+	defer cancel()
+
+	m := tui.NewModel(tui.ModelOpts{
+		Agent:     a,
+		Bus:       eventBus,
+		ThreadID:  threadID,
+		ThreadMgr: threadMgr,
+		Ctx:       ctx,
+		Cancel:    cancel,
+		Model:     cfg.Model,
+		Workspace: workspaceDir,
+		ReloadConf: func(ctx context.Context) error {
+			return confMgr.Reload(ctx, axonconf.ReloadSourceManual)
+		},
+	})
+
+	p := tea.NewProgram(m)
+	if _, err := p.Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func mustLoadSystemPrompt(configDir, workspace, threadID string, debug bool) string {
+	now := time.Now()
+	_, offset := now.Zone()
+	timezone := fmt.Sprintf("UTC%+d", offset/3600)
+
+	var axonCliPath string
+	if debug {
+		execPath, err := os.Executable()
+		if err != nil {
+			axonCliPath = "axoncli"
+		} else {
+			axonCliPath = execPath
+		}
+	} else {
+		if _, err := exec.LookPath("axoncli"); err == nil {
+			axonCliPath = "axoncli"
+		} else {
+			execPath, err := os.Executable()
+			if err != nil {
+				axonCliPath = "axoncli"
+			} else {
+				axonCliPath = execPath
+			}
+		}
+	}
+
+	tmplData := systemPromptData{
+		Date:        now.Format("2006-01-02"),
+		Timezone:    timezone,
+		OS:          runtime.GOOS,
+		Workspace:   workspace,
+		ThreadID:    threadID,
+		ConfigDir:   configDir,
+		AxonCliPath: axonCliPath,
+	}
+
+	tmpl, err := template.New("system").Parse(systemPromptTemplate)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: cannot parse system prompt template: %v\n", err)
+		os.Exit(1)
+	}
+
+	var result strings.Builder
+	if err := tmpl.Execute(&result, tmplData); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: cannot execute system prompt template: %v\n", err)
+		os.Exit(1)
+	}
+
+	return result.String()
+}
+
+func mustGetwd() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: cannot get working directory: %v\n", err)
+		os.Exit(1)
+	}
+	return dir
+}

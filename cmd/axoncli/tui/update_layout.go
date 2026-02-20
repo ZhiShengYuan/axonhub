@@ -54,7 +54,14 @@ func (m Model) viewportTopY() int {
 }
 
 func (m Model) chromeHeight() int {
-	return headerHeight + statusBarHeight + m.textareaHeight + inputBoxPadding + chromePadding
+	return headerHeight + statusBarHeight + m.textareaHeight + inputBoxPadding + chromePadding + m.modelSelectorExtraHeight()
+}
+
+func (m Model) modelSelectorExtraHeight() int {
+	if m.modelSelector == nil || !m.modelSelector.active {
+		return 0
+	}
+	return m.modelSelector.extraHeight()
 }
 
 func (m *Model) updateTextareaHeight() {

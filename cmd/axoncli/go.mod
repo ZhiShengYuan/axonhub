@@ -29,7 +29,7 @@ require (
 )
 
 require (
-	github.com/anthropics/anthropic-sdk-go v1.22.1 // indirect
+	github.com/anthropics/anthropic-sdk-go v1.22.1
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20251116181749-377898bcce38 // indirect

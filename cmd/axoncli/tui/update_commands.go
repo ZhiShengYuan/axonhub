@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/looplj/axonhub/axon/agent"
 	axoncontext "github.com/looplj/axonhub/axon/context"
+	"github.com/looplj/axonhub/cmd/axoncli/conf"
 )
 
 func (m Model) handleSteer() (tea.Model, tea.Cmd) {
@@ -80,6 +81,7 @@ func (m *Model) handleCommand(input string) (tea.Cmd, bool) {
 		m.appendLine("  /conf reload Reload config")
 		m.appendLine("  /reload     Alias for /conf reload")
 		m.appendLine("  /messages   Show conversation history")
+		m.appendLine("  /models     Switch model")
 		m.appendLine("  /quit       Exit the agent")
 		m.appendLine("Shortcuts:")
 		m.appendLine("  Enter       Send message")
@@ -134,6 +136,16 @@ func (m *Model) handleCommand(input string) (tea.Cmd, bool) {
 		m.appendLine("↻ Reloading config...")
 		m.syncViewport()
 		return m.startConfReload(), true
+	case "/models":
+		// Load config to get baseURL and apiKey
+		if err := m.modelSelector.loadConfig(); err != nil {
+			m.appendLine(fmt.Sprintf("✗ Failed to load config: %v", err))
+			m.syncViewport()
+			return nil, true
+		}
+		m.appendLine("Loading models...")
+		m.syncViewport()
+		return m.modelSelector.open(), true
 	}
 	return nil, false
 }
@@ -147,6 +159,25 @@ func (m *Model) startConfReload() tea.Cmd {
 	return func() tea.Msg {
 		err := m.reloadConf(m.ctx)
 		return confReloadDoneMsg{err: err}
+	}
+}
+
+func (m Model) saveModelToConfig(modelID string) tea.Cmd {
+	return func() tea.Msg {
+		path, err := conf.FindConfigFile(m.configDir)
+		if err != nil {
+			return confReloadDoneMsg{err: fmt.Errorf("failed to find config file: %w", err)}
+		}
+		if err := conf.SetYAMLKey(path, "model", modelID); err != nil {
+			return confReloadDoneMsg{err: fmt.Errorf("failed to save model: %w", err)}
+		}
+		// Reload config to apply changes
+		if m.reloadConf != nil {
+			if err := m.reloadConf(m.ctx); err != nil {
+				return confReloadDoneMsg{err: fmt.Errorf("failed to reload config: %w", err)}
+			}
+		}
+		return confReloadDoneMsg{}
 	}
 }
 

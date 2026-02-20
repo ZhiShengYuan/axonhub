@@ -24,6 +24,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		key := msg.String()
+
+		// Handle model selector keys first if active
+		if m.modelSelector.active {
+			if handled, cmd := m.modelSelector.handleKey(key); handled {
+				m.applyLayout()
+				return m, cmd
+			}
+		}
+
 		if handled, cmd := m.handleSlashKey(key); handled {
 			return m, cmd
 		}
@@ -32,6 +41,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m.handleCtrlC()
 		case "esc":
+			if m.modelSelector.active {
+				m.modelSelector.close()
+				m.applyLayout()
+				return m, nil
+			}
 			if m.processing && m.processCancel != nil {
 				m.processCancel()
 				m.processing = false
@@ -57,6 +71,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.handleSubmit()
 		// Viewport scrolling keys (when not in textarea or when textarea has single line)
 		case "up":
+			// If model selector is active, let it handle the key
+			if m.modelSelector.active {
+				return m, nil
+			}
 			// If textarea has multiple lines and cursor is not at first line, move cursor up
 			if m.textarea.Line() > 0 {
 				m.textarea.CursorUp()
@@ -65,6 +83,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "down":
+			// If model selector is active, let it handle the key
+			if m.modelSelector.active {
+				return m, nil
+			}
 			// If textarea has multiple lines and cursor is not at last line, move cursor down
 			if m.textarea.Line() < m.textarea.LineCount()-1 {
 				m.textarea.CursorDown()
@@ -201,6 +223,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.syncViewport()
+		}
+		return m, nil
+
+	case modelListMsg:
+		if handled, cmd := m.modelSelector.handleMsg(msg); handled {
+			m.applyLayout()
+			return m, cmd
+		}
+		return m, nil
+
+	case modelSelectMsg:
+		if handled, cmd := m.modelSelector.handleMsg(msg); handled {
+			// Update the model in the UI and save to config
+			m.model = msg.modelID
+			m.appendLine(fmt.Sprintf("✓ Model switched to: %s", msg.modelID))
+			m.syncViewport()
+			m.applyLayout()
+			// Save the model to config file
+			return m, tea.Batch(cmd, m.saveModelToConfig(msg.modelID))
 		}
 		return m, nil
 

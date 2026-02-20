@@ -19,6 +19,7 @@ var slashCommands = []slashCommand{
 	{Command: "/clear", Description: "Clear the screen"},
 	{Command: "/reload", Description: "Reload config"},
 	{Command: "/messages", Description: "Show conversation history"},
+	{Command: "/models", Description: "Switch model"},
 	{Command: "/quit", Description: "Exit the agent"},
 	{Command: "/exit", Description: "Exit the agent"},
 }
@@ -36,9 +37,8 @@ func (m *Model) handleSlashKey(key string) (bool, tea.Cmd) {
 		m.moveSlashSelection(1)
 		return true, nil
 	case "enter":
-		m.applySlashCompletion()
-		m.applyLayout()
-		return true, nil
+		cmd := m.applyAndExecuteSlashCompletion()
+		return true, cmd
 	case "esc":
 		if m.processing {
 			return false, nil
@@ -141,4 +141,32 @@ func (m *Model) applySlashCompletion() {
 	m.textarea.SetValue(selected)
 	m.textarea.CursorEnd()
 	m.closeSlashSuggestions()
+}
+
+func (m *Model) applyAndExecuteSlashCompletion() tea.Cmd {
+	if !m.slashActive || len(m.slashMatches) == 0 || m.slashIndex < 0 || m.slashIndex >= len(m.slashMatches) {
+		return nil
+	}
+
+	selected := m.slashMatches[m.slashIndex].Command
+	value := m.textarea.Value()
+	if strings.Contains(value, "\n") || !strings.HasPrefix(value, "/") {
+		return nil
+	}
+
+	m.textarea.SetValue(selected)
+	m.textarea.CursorEnd()
+	m.closeSlashSuggestions()
+	m.applyLayout()
+
+	// Execute the command directly
+	input := strings.TrimSpace(m.textarea.Value())
+	m.textarea.Reset()
+	m.applyLayout()
+
+	if cmd, handled := m.handleCommand(input); handled {
+		return cmd
+	}
+
+	return nil
 }

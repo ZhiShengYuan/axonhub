@@ -37,6 +37,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.processing = false
 				m.streamEvents = nil
 				m.processCancel = nil
+				m.streamText.Reset()
+				m.streamingStartLineIndex = -1
+				m.streamingLineCount = 0
+				m.activeThinking = nil
 				m.appendLine("⚠ Cancelled")
 				m.syncViewport()
 			}
@@ -84,13 +88,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "end":
 			m.viewport.GotoBottom()
 			return m, nil
-		case "t":
-			// Toggle thinking expansion
-			if m.thinkingState != nil {
-				m.thinkingState.expanded = !m.thinkingState.expanded
-				m.syncViewport()
-			}
-			return m, nil
 		}
 
 		var cmd tea.Cmd
@@ -99,6 +96,37 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.refreshSlashSuggestions()
 		m.applyLayout()
 		return m, tea.Batch(cmds...)
+
+	case tea.MouseClickMsg:
+		mouse := tea.Mouse(msg)
+		if mouse.Button != tea.MouseLeft {
+			return m, nil
+		}
+		if idx, ok := m.thinkingBlockIndexAtMouse(mouse.X, mouse.Y); ok {
+			if idx >= 0 && idx < len(m.thinkingBlocks) && m.thinkingBlocks[idx] != nil {
+				block := m.thinkingBlocks[idx]
+				block.expanded = !block.expanded
+				m.updateThinkingBlock(block)
+				m.syncViewport()
+				return m, nil
+			}
+		}
+		return m, nil
+
+	case tea.MouseWheelMsg:
+		mouse := tea.Mouse(msg)
+		viewportTopY := m.viewportTopY()
+		viewportBottomY := viewportTopY + m.viewport.Height() - 1
+		if mouse.Y < viewportTopY || mouse.Y > viewportBottomY {
+			return m, nil
+		}
+		switch mouse.Button {
+		case tea.MouseWheelUp:
+			m.viewport.ScrollUp(3)
+		case tea.MouseWheelDown:
+			m.viewport.ScrollDown(3)
+		}
+		return m, nil
 
 	case tea.PasteMsg:
 		var cmd tea.Cmd
@@ -142,7 +170,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case streamDoneMsg:
 		m.processing = false
 		m.streamEvents = nil
-		m.streamingLineIndex = -1
+		m.streamingStartLineIndex = -1
+		m.streamingLineCount = 0
 		if msg.err != nil && !errors.Is(msg.err, context.Canceled) {
 			errStr := fmt.Sprintf("%v", msg.err)
 			lines := strings.Split(errStr, "\n")
@@ -202,6 +231,10 @@ func (m Model) handleCtrlC() (tea.Model, tea.Cmd) {
 		m.processing = false
 		m.streamEvents = nil
 		m.processCancel = nil
+		m.streamText.Reset()
+		m.streamingStartLineIndex = -1
+		m.streamingLineCount = 0
+		m.activeThinking = nil
 		m.appendLine("⚠ Cancelled (press Ctrl+C again to quit)")
 	} else {
 		m.appendLine("Press Ctrl+C again to quit")

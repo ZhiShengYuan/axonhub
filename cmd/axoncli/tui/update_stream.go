@@ -100,33 +100,31 @@ func (m *Model) handleStreamEvent(ev agent.AgentEvent) (tea.Model, tea.Cmd) {
 	switch ev.Type {
 	case agent.EventTextDelta:
 		m.streamText.WriteString(ev.Delta)
-		m.updateLastStreamingLine()
+		m.updateStreamingLines()
 	case agent.EventTextComplete:
 		m.streamText.Reset()
-		m.streamingLineIndex = -1
+		m.streamingStartLineIndex = -1
+		m.streamingLineCount = 0
 	case agent.EventThinkingDelta:
-		// Initialize thinking state if not exists
-		if m.thinkingState == nil {
-			m.thinkingState = &thinkingState{expanded: true}
+		if m.activeThinking == nil {
+			block := &thinkingBlock{
+				expanded:              true,
+				complete:              false,
+				headerLineIndex:       -1,
+				contentStartLineIndex: -1,
+				contentLineCount:      0,
+			}
+			m.thinkingBlocks = append(m.thinkingBlocks, block)
+			m.activeThinking = block
 		}
-		m.thinkingState.content.WriteString(ev.Delta)
-		m.thinkingState.complete = false
+		m.activeThinking.content.WriteString(ev.Thinking)
+		m.activeThinking.complete = false
+		m.updateThinkingBlock(m.activeThinking)
 	case agent.EventThinkingComplete:
-		if m.thinkingState != nil {
-			m.thinkingState.complete = true
-			// Signature is passed in the Thinking field of the event
-			if ev.Thinking != "" {
-				m.thinkingState.signature = ev.Thinking
-			}
-			// Add thinking header to display
-			m.appendLine(formatThinkingHeader(m.thinkingState.expanded, true, m.width))
-			// If expanded, also add the content
-			if m.thinkingState.expanded {
-				content := m.thinkingState.content.String()
-				if content != "" {
-					m.appendLine(formatThinkingContent(content, m.width))
-				}
-			}
+		if m.activeThinking != nil {
+			m.activeThinking.complete = true
+			m.updateThinkingBlock(m.activeThinking)
+			m.activeThinking = nil
 		}
 	case agent.EventToolStart:
 		m.appendLine(formatToolStart(ev))
@@ -163,9 +161,10 @@ func (m *Model) handleStreamEvent(ev agent.AgentEvent) (tea.Model, tea.Cmd) {
 		m.processing = false
 		m.streamEvents = nil
 		m.streamText.Reset()
-		m.streamingLineIndex = -1
-		// Reset thinking state for next message
-		m.thinkingState = nil
+		m.streamingStartLineIndex = -1
+		m.streamingLineCount = 0
+		// Reset active thinking for next message (keep existing blocks in history)
+		m.activeThinking = nil
 		m.syncViewport()
 		return m, nil
 	}
@@ -177,16 +176,68 @@ func (m *Model) handleStreamEvent(ev agent.AgentEvent) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *Model) updateLastStreamingLine() {
+func (m *Model) updateStreamingLines() {
 	text := m.streamText.String()
 	if text == "" {
 		return
 	}
 	formatted := formatStreamingText(text, m.width)
-	if m.streamingLineIndex >= 0 && m.streamingLineIndex < len(m.lines) {
-		m.lines[m.streamingLineIndex] = formatted
-	} else {
-		m.appendLine(formatted)
-		m.streamingLineIndex = len(m.lines) - 1
+	lines := strings.Split(formatted, "\n")
+
+	if m.streamingStartLineIndex >= 0 && m.streamingLineCount > 0 {
+		m.spliceLines(m.streamingStartLineIndex, m.streamingLineCount, lines)
+		m.streamingLineCount = len(lines)
+		return
 	}
+
+	start := len(m.lines)
+	m.spliceLines(start, 0, lines)
+	m.streamingStartLineIndex = start
+	m.streamingLineCount = len(lines)
+}
+
+func (m *Model) updateThinkingBlock(block *thinkingBlock) {
+	if block == nil {
+		return
+	}
+	content := block.content.String()
+	if content == "" {
+		return
+	}
+
+	// Ensure header exists.
+	if block.headerLineIndex < 0 || block.headerLineIndex >= len(m.lines) {
+		m.appendLine(formatThinkingHeader(block.expanded, block.complete, m.width))
+		block.headerLineIndex = len(m.lines) - 1
+	}
+
+	// Always keep header up-to-date (indicator + status).
+	if block.headerLineIndex >= 0 && block.headerLineIndex < len(m.lines) {
+		m.lines[block.headerLineIndex] = formatThinkingHeader(block.expanded, block.complete, m.width)
+	}
+
+	if !block.expanded {
+		// Remove content lines if collapsed.
+		if block.contentStartLineIndex >= 0 && block.contentLineCount > 0 {
+			m.spliceLines(block.contentStartLineIndex, block.contentLineCount, nil)
+		}
+		block.contentStartLineIndex = -1
+		block.contentLineCount = 0
+		return
+	}
+
+	formatted := formatThinkingContent(content, m.width)
+	contentLines := strings.Split(formatted, "\n")
+
+	// Insert/update content lines below header.
+	if block.contentStartLineIndex >= 0 && block.contentLineCount > 0 {
+		m.spliceLines(block.contentStartLineIndex, block.contentLineCount, contentLines)
+		block.contentLineCount = len(contentLines)
+		return
+	}
+
+	insertAt := block.headerLineIndex + 1
+	m.spliceLines(insertAt, 0, contentLines)
+	block.contentStartLineIndex = insertAt
+	block.contentLineCount = len(contentLines)
 }

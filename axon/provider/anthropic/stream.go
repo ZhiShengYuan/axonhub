@@ -140,23 +140,25 @@ func (p *streamProcessor) handleContentBlockDelta(e anthropic.MessageStreamEvent
 	case "text_delta":
 		p.accumulatedText.WriteString(delta.Text)
 		p.emit(agent.StreamEvent{
-			Type:  agent.StreamEventTextDelta,
-			Delta: delta.Text,
+			Type: agent.StreamEventTextDelta,
+			Text: delta.Text,
 		})
 
 	case "thinking_delta":
 		p.accumulatedThinking.WriteString(delta.Thinking)
 		p.emit(agent.StreamEvent{
-			Type:  agent.StreamEventThinkingDelta,
-			Delta: delta.Thinking,
+			Type: agent.StreamEventThinkingDelta,
+			Thinking: &agent.Thinking{
+				Content: delta.Thinking,
+			},
 		})
 
 	case "input_json_delta":
 		if builder, ok := p.toolCallBuilders[e.Index]; ok {
 			builder.jsonParts = append(builder.jsonParts, delta.PartialJSON)
 			p.emit(agent.StreamEvent{
-				Type:  agent.StreamEventToolCallDelta,
-				Delta: delta.PartialJSON,
+				Type: agent.StreamEventToolCallDelta,
+				Text: delta.PartialJSON,
 				ToolUse: &agent.ToolUse{
 					ID:   builder.id,
 					Name: builder.name,
@@ -174,8 +176,8 @@ func (p *streamProcessor) handleContentBlockStop(e anthropic.MessageStreamEventU
 	if p.accumulatedText.Len() > 0 {
 		text := p.accumulatedText.String()
 		p.emit(agent.StreamEvent{
-			Type:  agent.StreamEventTextComplete,
-			Delta: text,
+			Type: agent.StreamEventTextComplete,
+			Text: text,
 		})
 		p.accumulatedText.Reset()
 	}
@@ -183,10 +185,10 @@ func (p *streamProcessor) handleContentBlockStop(e anthropic.MessageStreamEventU
 	if p.accumulatedThinking.Len() > 0 {
 		thinking := p.accumulatedThinking.String()
 		p.emit(agent.StreamEvent{
-			Type:     agent.StreamEventThinkingComplete,
-			Thinking: thinking,
-			ToolUse: &agent.ToolUse{
-				ID: p.thinkingSignature,
+			Type: agent.StreamEventThinkingComplete,
+			Thinking: &agent.Thinking{
+				Content:   thinking,
+				Signature: p.thinkingSignature,
 			},
 		})
 		p.accumulatedThinking.Reset()

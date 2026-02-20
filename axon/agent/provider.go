@@ -6,12 +6,29 @@ import (
 
 // StreamEvent represents a streaming event from the LLM.
 type StreamEvent struct {
-	Type     StreamEventType
-	Delta    string   // Delta content (for text/thinking/tool_call delta)
-	ToolUse  *ToolUse // Tool call info (ID, Name for delta; full for complete)
-	Thinking string   // Thinking content (for thinking_complete)
-	Usage    *Usage   // Token usage
-	Error    error
+	Type StreamEventType
+	// For text/text_delta
+	// If the event is a text delta, Text contains the delta text.
+	// If the event is text complete, Text contains the full text.
+	Text string
+
+	// For tool_call/tool_call_delta
+	// ToolUse contains tool call info (ID, Name for delta; full for complete).
+	ToolUse *ToolUse
+	// For thinking/thinking_delta
+	// Thinking contains thinking content (for thinking_complete).
+	Thinking *Thinking // Thinking content (for thinking_complete)
+
+	// For usage/usage_delta
+	// Usage contains token usage information.
+	Usage *Usage // Token usage
+
+	Error error
+}
+
+type Thinking struct {
+	Content   string
+	Signature string
 }
 
 // StreamEventType identifies the kind of streaming event.

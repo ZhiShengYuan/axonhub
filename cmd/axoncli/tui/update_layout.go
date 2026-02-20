@@ -46,6 +46,13 @@ func (m *Model) applyLayout() {
 	m.textarea.SetWidth(m.width - inputBoxHorizontalPadding)
 }
 
+func (m Model) viewportTopY() int {
+	// renderHeader() currently renders 6 lines, then View() adds a newline before
+	// the viewport, making the viewport start at row 6 (zero-based). The
+	// headerHeight constant includes this separator newline.
+	return max(headerHeight-1, 0)
+}
+
 func (m Model) chromeHeight() int {
 	return headerHeight + statusBarHeight + m.textareaHeight + inputBoxPadding + chromePadding
 }
@@ -97,11 +104,135 @@ func (m Model) slashExtraHeight() int {
 }
 
 func (m *Model) appendLine(line string) {
+	line = strings.ReplaceAll(line, "\r\n", "\n")
+	if strings.Contains(line, "\n") {
+		parts := strings.Split(line, "\n")
+		m.lines = append(m.lines, parts...)
+		return
+	}
 	m.lines = append(m.lines, line)
 }
 
 func (m *Model) syncViewport() {
+	atBottom := m.viewport.AtBottom()
+	prevYOffset := m.viewport.YOffset()
+
 	content := strings.Join(m.lines, "\n")
 	m.viewport.SetContent(content)
-	m.viewport.GotoBottom()
+	m.rebuildThinkingHeaderViewportLine()
+
+	if atBottom {
+		m.viewport.GotoBottom()
+		return
+	}
+	m.viewport.SetYOffset(prevYOffset)
+}
+
+func (m *Model) rebuildThinkingHeaderViewportLine() {
+	if len(m.thinkingBlocks) == 0 {
+		m.thinkingHeaderViewportLine = nil
+		return
+	}
+	if m.thinkingHeaderViewportLine == nil {
+		m.thinkingHeaderViewportLine = make(map[int]int, len(m.thinkingBlocks))
+	} else {
+		clear(m.thinkingHeaderViewportLine)
+	}
+	for i, block := range m.thinkingBlocks {
+		if block == nil {
+			continue
+		}
+		if block.headerLineIndex >= 0 && block.headerLineIndex < len(m.lines) {
+			m.thinkingHeaderViewportLine[block.headerLineIndex] = i
+		}
+	}
+}
+
+func (m Model) thinkingBlockIndexAtMouse(x, y int) (int, bool) {
+	if len(m.thinkingBlocks) == 0 || m.thinkingHeaderViewportLine == nil {
+		return 0, false
+	}
+	viewportTopY := m.viewportTopY()
+	relY := y - viewportTopY
+	if relY < 0 || relY >= m.viewport.Height() {
+		return 0, false
+	}
+	absLine := m.viewport.YOffset() + relY
+	idx, ok := m.thinkingHeaderViewportLine[absLine]
+	if !ok {
+		return 0, false
+	}
+	// Only toggle when clicking the leading indicator area ("▶"/"▼").
+	if x > 1 {
+		return 0, false
+	}
+	return idx, true
+}
+
+func (m *Model) spliceLines(start, deleteCount int, insert []string) int {
+	if deleteCount < 0 {
+		deleteCount = 0
+	}
+	if start < 0 {
+		start = 0
+	}
+	if start > len(m.lines) {
+		start = len(m.lines)
+	}
+	end := start + deleteCount
+	if end > len(m.lines) {
+		end = len(m.lines)
+		deleteCount = end - start
+	}
+
+	if len(insert) == 0 && deleteCount == 0 {
+		return 0
+	}
+
+	before := m.lines[:start]
+	after := m.lines[end:]
+
+	// Normalize: never store embedded newlines in a single line entry.
+	var normalized []string
+	for _, line := range insert {
+		line = strings.ReplaceAll(line, "\r\n", "\n")
+		if strings.Contains(line, "\n") {
+			normalized = append(normalized, strings.Split(line, "\n")...)
+		} else {
+			normalized = append(normalized, line)
+		}
+	}
+	insert = normalized
+
+	newLines := make([]string, 0, len(before)+len(insert)+len(after))
+	newLines = append(newLines, before...)
+	newLines = append(newLines, insert...)
+	newLines = append(newLines, after...)
+	m.lines = newLines
+
+	delta := len(insert) - deleteCount
+	m.shiftLineIndices(end, delta)
+	return delta
+}
+
+func (m *Model) shiftLineIndices(from int, delta int) {
+	if delta == 0 {
+		return
+	}
+
+	if m.streamingStartLineIndex >= from && m.streamingStartLineIndex >= 0 {
+		m.streamingStartLineIndex += delta
+	}
+
+	for _, block := range m.thinkingBlocks {
+		if block == nil {
+			continue
+		}
+		if block.headerLineIndex >= from && block.headerLineIndex >= 0 {
+			block.headerLineIndex += delta
+		}
+		if block.contentStartLineIndex >= from && block.contentStartLineIndex >= 0 {
+			block.contentStartLineIndex += delta
+		}
+	}
 }

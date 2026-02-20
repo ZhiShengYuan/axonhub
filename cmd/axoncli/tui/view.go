@@ -33,6 +33,7 @@ var (
 func (m Model) View() tea.View {
 	var v tea.View
 	v.AltScreen = true
+	v.MouseMode = tea.MouseModeCellMotion
 	if !m.ready {
 		v.SetContent("Initializing...")
 		return v
@@ -78,8 +79,8 @@ func (m Model) renderStatusBar() string {
 		return processingStyle.Render(m.spinner.View() + " Processing...")
 	}
 	// Show thinking toggle hint when there's thinking content
-	if m.thinkingState != nil {
-		return statusBarStyle.Render("Enter: send · Shift+Enter/Ctrl+J: newline · ↑↓/PgUp/PgDn: scroll · t: toggle thinking · Esc: cancel · /help: commands")
+	if len(m.thinkingBlocks) > 0 {
+		return statusBarStyle.Render("Enter: send · Shift+Enter/Ctrl+J: newline · ↑↓/PgUp/PgDn: scroll · t: toggle thinking · click ▶/▼: toggle thinking · Esc: cancel · /help: commands")
 	}
 	return statusBarStyle.Render("Enter: send · Shift+Enter/Ctrl+J: newline · ↑↓/PgUp/PgDn: scroll · Esc: cancel · /help: commands")
 }

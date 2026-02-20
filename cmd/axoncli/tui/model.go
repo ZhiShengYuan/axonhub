@@ -26,12 +26,19 @@ const (
 	inputBoxHorizontalPadding = 2 // Left border (1) + right border (1)
 )
 
-// thinkingState tracks the state of a thinking block for display.
-type thinkingState struct {
-	content   strings.Builder
-	signature string
-	expanded  bool // Whether the thinking content is expanded
-	complete  bool // Whether thinking is complete
+// thinkingBlock tracks the state of a single thinking block for display.
+type thinkingBlock struct {
+	content strings.Builder
+
+	expanded bool // Whether the thinking content is expanded
+	complete bool // Whether thinking is complete
+
+	headerLineIndex int
+
+	// Content lines are stored as multiple entries in Model.lines.
+	// When collapsed, contentStartLineIndex == -1 and contentLineCount == 0.
+	contentStartLineIndex int
+	contentLineCount      int
 }
 
 // Model is the Bubbletea model for the AxonCode TUI.
@@ -71,12 +78,18 @@ type Model struct {
 	slashIndex   int
 	slashOffset  int
 
-	streamEvents       <-chan agent.AgentEvent
-	streamText         *strings.Builder
-	streamingLineIndex int
+	streamEvents            <-chan agent.AgentEvent
+	streamText              *strings.Builder
+	streamingStartLineIndex int
+	streamingLineCount      int
 
-	// Thinking state for collapsible thinking display
-	thinkingState *thinkingState
+	// Thinking blocks for collapsible thinking display
+	thinkingBlocks []*thinkingBlock
+	activeThinking *thinkingBlock
+
+	// Mapping from viewport line index -> thinking block index (header only).
+	// Rebuilt in syncViewport().
+	thinkingHeaderViewportLine map[int]int
 }
 
 // ModelOpts configures a new Model.

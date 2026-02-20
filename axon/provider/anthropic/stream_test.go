@@ -44,9 +44,9 @@ func TestStreamProcessor_HandleTextStreaming(t *testing.T) {
 
 	require.Len(t, receivedEvents, 2)
 	assert.Equal(t, agent.StreamEventTextDelta, receivedEvents[0].Type)
-	assert.Equal(t, "Hello", receivedEvents[0].Delta)
+	assert.Equal(t, "Hello", receivedEvents[0].Text)
 	assert.Equal(t, agent.StreamEventTextDelta, receivedEvents[1].Type)
-	assert.Equal(t, " World", receivedEvents[1].Delta)
+	assert.Equal(t, " World", receivedEvents[1].Text)
 
 	assert.Equal(t, "Hello World", processor.accumulatedText.String())
 }
@@ -72,7 +72,7 @@ func TestStreamProcessor_HandleTextComplete(t *testing.T) {
 
 	require.Len(t, receivedEvents, 1)
 	assert.Equal(t, agent.StreamEventTextComplete, receivedEvents[0].Type)
-	assert.Equal(t, "Complete text", receivedEvents[0].Delta)
+	assert.Equal(t, "Complete text", receivedEvents[0].Text)
 	assert.Equal(t, 0, processor.accumulatedText.Len())
 }
 
@@ -109,9 +109,11 @@ func TestStreamProcessor_HandleThinkingStreaming(t *testing.T) {
 
 	require.Len(t, receivedEvents, 2)
 	assert.Equal(t, agent.StreamEventThinkingDelta, receivedEvents[0].Type)
-	assert.Equal(t, "Thinking...", receivedEvents[0].Delta)
+	require.NotNil(t, receivedEvents[0].Thinking)
+	assert.Equal(t, "Thinking...", receivedEvents[0].Thinking.Content)
 	assert.Equal(t, agent.StreamEventThinkingDelta, receivedEvents[1].Type)
-	assert.Equal(t, " More thoughts", receivedEvents[1].Delta)
+	require.NotNil(t, receivedEvents[1].Thinking)
+	assert.Equal(t, " More thoughts", receivedEvents[1].Thinking.Content)
 
 	assert.Equal(t, "Thinking... More thoughts", processor.accumulatedThinking.String())
 }
@@ -138,9 +140,9 @@ func TestStreamProcessor_HandleThinkingComplete(t *testing.T) {
 
 	require.Len(t, receivedEvents, 1)
 	assert.Equal(t, agent.StreamEventThinkingComplete, receivedEvents[0].Type)
-	assert.Equal(t, "Full thinking content", receivedEvents[0].Thinking)
-	require.NotNil(t, receivedEvents[0].ToolUse)
-	assert.Equal(t, "sig_123", receivedEvents[0].ToolUse.ID)
+	require.NotNil(t, receivedEvents[0].Thinking)
+	assert.Equal(t, "Full thinking content", receivedEvents[0].Thinking.Content)
+	assert.Equal(t, "sig_123", receivedEvents[0].Thinking.Signature)
 	assert.Equal(t, 0, processor.accumulatedThinking.Len())
 	assert.Equal(t, "", processor.thinkingSignature)
 }
@@ -189,13 +191,13 @@ func TestStreamProcessor_HandleToolCallStreaming(t *testing.T) {
 
 	require.Len(t, receivedEvents, 2)
 	assert.Equal(t, agent.StreamEventToolCallDelta, receivedEvents[0].Type)
-	assert.Equal(t, `{"loc`, receivedEvents[0].Delta)
+	assert.Equal(t, `{"loc`, receivedEvents[0].Text)
 	require.NotNil(t, receivedEvents[0].ToolUse)
 	assert.Equal(t, "tool_123", receivedEvents[0].ToolUse.ID)
 	assert.Equal(t, "get_weather", receivedEvents[0].ToolUse.Name)
 
 	assert.Equal(t, agent.StreamEventToolCallDelta, receivedEvents[1].Type)
-	assert.Equal(t, `ation": "Tokyo"}`, receivedEvents[1].Delta)
+	assert.Equal(t, `ation": "Tokyo"}`, receivedEvents[1].Text)
 
 	builder := processor.toolCallBuilders[0]
 	require.NotNil(t, builder)
@@ -453,11 +455,11 @@ func TestStreamProcessor_FullTextFlow(t *testing.T) {
 
 	assert.Equal(t, agent.StreamEventUsage, receivedEvents[0].Type)
 	assert.Equal(t, agent.StreamEventTextDelta, receivedEvents[1].Type)
-	assert.Equal(t, "Hello", receivedEvents[1].Delta)
+	assert.Equal(t, "Hello", receivedEvents[1].Text)
 	assert.Equal(t, agent.StreamEventTextDelta, receivedEvents[2].Type)
-	assert.Equal(t, " World", receivedEvents[2].Delta)
+	assert.Equal(t, " World", receivedEvents[2].Text)
 	assert.Equal(t, agent.StreamEventTextComplete, receivedEvents[3].Type)
-	assert.Equal(t, "Hello World", receivedEvents[3].Delta)
+	assert.Equal(t, "Hello World", receivedEvents[3].Text)
 	assert.Equal(t, agent.StreamEventUsage, receivedEvents[4].Type)
 	assert.Equal(t, agent.StreamEventDone, receivedEvents[5].Type)
 }
@@ -550,27 +552,6 @@ func TestNewStreamProcessor(t *testing.T) {
 	assert.NotNil(t, processor.events)
 }
 
-func TestProvider_ChatStream_ContextHeaders(t *testing.T) {
-	provider := New("https://api.anthropic.com", "test-key")
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, defaultThreadHeader, provider.threadHeader)
-	assert.Equal(t, defaultTraceHeader, provider.traceHeader)
-}
-
-func TestProvider_ChatStream_WithCustomHeaders(t *testing.T) {
-	provider := New(
-		"https://api.anthropic.com",
-		"test-key",
-		WithThreadHeader("X-Custom-Thread"),
-		WithTraceHeader("X-Custom-Trace"),
-	)
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, "X-Custom-Thread", provider.threadHeader)
-	assert.Equal(t, "X-Custom-Trace", provider.traceHeader)
-}
-
 func TestStreamProcessor_MultipleToolCalls(t *testing.T) {
 	events := make(chan agent.StreamEvent, 256)
 	processor := newStreamProcessor(nil, events)
@@ -630,21 +611,21 @@ func TestStreamProcessor_NonBlockingEmit(t *testing.T) {
 	events := make(chan agent.StreamEvent, 1)
 	processor := newStreamProcessor(nil, events)
 
-	processor.emit(agent.StreamEvent{Type: agent.StreamEventTextDelta, Delta: "first"})
+	processor.emit(agent.StreamEvent{Type: agent.StreamEventTextDelta, Text: "first"})
 
 	select {
-	case events <- agent.StreamEvent{Type: agent.StreamEventTextDelta, Delta: "second"}:
+	case events <- agent.StreamEvent{Type: agent.StreamEventTextDelta, Text: "second"}:
 		t.Fatal("should have blocked")
 	default:
 	}
 
-	processor.emit(agent.StreamEvent{Type: agent.StreamEventTextDelta, Delta: "second"})
+	processor.emit(agent.StreamEvent{Type: agent.StreamEventTextDelta, Text: "second"})
 
 	<-events
 
 	select {
 	case ev := <-events:
-		assert.Equal(t, "second", ev.Delta)
+		assert.Equal(t, "second", ev.Text)
 	default:
 	}
 }

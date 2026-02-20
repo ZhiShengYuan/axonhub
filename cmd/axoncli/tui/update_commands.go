@@ -66,6 +66,11 @@ func (m *Model) handleCommand(input string) (tea.Cmd, bool) {
 		return tea.Quit, true
 	case "/clear":
 		m.lines = nil
+		m.streamingStartLineIndex = -1
+		m.streamingLineCount = 0
+		m.thinkingBlocks = nil
+		m.activeThinking = nil
+		m.thinkingHeaderViewportLine = nil
 		m.syncViewport()
 		return nil, true
 	case "/help":
@@ -150,7 +155,9 @@ func (m *Model) startProcess(content agent.Content) tea.Cmd {
 	m.processCancel = processCancel
 	m.processing = true
 	m.streamText.Reset()
-	m.streamingLineIndex = -1
+	m.streamingStartLineIndex = -1
+	m.streamingLineCount = 0
+	m.activeThinking = nil
 
 	traceID := uuid.New().String()
 	traceCtx := axoncontext.WithTraceID(processCtx, traceID)

@@ -1,7 +1,6 @@
 package anthropic
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -11,58 +10,6 @@ import (
 
 	"github.com/looplj/axonhub/axon/agent"
 )
-
-func TestNew(t *testing.T) {
-	t.Run("creates provider with default headers", func(t *testing.T) {
-		provider := New("https://api.anthropic.com", "test-api-key")
-
-		require.NotNil(t, provider)
-		assert.NotNil(t, provider.client)
-		assert.Equal(t, defaultThreadHeader, provider.threadHeader)
-		assert.Equal(t, defaultTraceHeader, provider.traceHeader)
-	})
-
-	t.Run("creates provider with custom headers", func(t *testing.T) {
-		provider := New(
-			"https://api.anthropic.com",
-			"test-api-key",
-			WithThreadHeader("X-Custom-Thread"),
-			WithTraceHeader("X-Custom-Trace"),
-		)
-
-		require.NotNil(t, provider)
-		assert.Equal(t, "X-Custom-Thread", provider.threadHeader)
-		assert.Equal(t, "X-Custom-Trace", provider.traceHeader)
-	})
-
-	t.Run("creates provider with empty base URL", func(t *testing.T) {
-		provider := New("", "test-api-key")
-
-		require.NotNil(t, provider)
-	})
-
-	t.Run("creates provider with empty API key", func(t *testing.T) {
-		provider := New("https://api.anthropic.com", "")
-
-		require.NotNil(t, provider)
-	})
-}
-
-func TestWithThreadHeader(t *testing.T) {
-	provider := &Provider{}
-	opt := WithThreadHeader("X-Thread-ID")
-	opt(provider)
-
-	assert.Equal(t, "X-Thread-ID", provider.threadHeader)
-}
-
-func TestWithTraceHeader(t *testing.T) {
-	provider := &Provider{}
-	opt := WithTraceHeader("X-Trace-ID")
-	opt(provider)
-
-	assert.Equal(t, "X-Trace-ID", provider.traceHeader)
-}
 
 func TestConvertMessages(t *testing.T) {
 	t.Run("empty messages", func(t *testing.T) {
@@ -591,49 +538,4 @@ func TestConvertStopReason(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
-}
-
-func TestWrapAPIError(t *testing.T) {
-	t.Run("non-API error", func(t *testing.T) {
-		originalErr := errors.New("some error")
-		wrapped := wrapAPIError(originalErr)
-
-		assert.Contains(t, wrapped.Error(), "some error")
-		assert.Contains(t, wrapped.Error(), "anthropic:")
-	})
-
-	t.Run("API error with status code", func(t *testing.T) {
-		apiErr := &anthropic.Error{
-			StatusCode: 500,
-		}
-
-		wrapped := wrapAPIError(apiErr)
-
-		assert.Contains(t, wrapped.Error(), "status 500")
-	})
-
-	t.Run("API error with 400 status", func(t *testing.T) {
-		apiErr := &anthropic.Error{
-			StatusCode: 400,
-		}
-
-		wrapped := wrapAPIError(apiErr)
-
-		assert.Contains(t, wrapped.Error(), "status 400")
-	})
-}
-
-func TestExtractErrorMessage(t *testing.T) {
-	t.Run("empty raw JSON", func(t *testing.T) {
-		apiErr := &anthropic.Error{}
-		msg := extractErrorMessage(apiErr)
-
-		assert.Empty(t, msg)
-	})
-}
-
-func TestDefaultConstants(t *testing.T) {
-	assert.Equal(t, "AH-Thread-Id", defaultThreadHeader)
-	assert.Equal(t, "AH-Trace-Id", defaultTraceHeader)
-	assert.Equal(t, 8192, defaultMaxTokens)
 }

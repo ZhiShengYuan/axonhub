@@ -659,20 +659,22 @@ func (a *Agent) runLoopStream(ctx context.Context, cfg Config, events chan Agent
 
 				switch ev.Type {
 				case StreamEventTextDelta:
-					textBuilder.WriteString(ev.Delta)
-					emit(AgentEvent{Type: EventTextDelta, Delta: ev.Delta})
+					textBuilder.WriteString(ev.Text)
+					emit(AgentEvent{Type: EventTextDelta, Delta: ev.Text})
 
 				case StreamEventTextComplete:
-					emit(AgentEvent{Type: EventTextComplete, Delta: ev.Delta})
+					emit(AgentEvent{Type: EventTextComplete, Delta: ev.Text})
 
 				case StreamEventThinkingDelta:
-					thinkingBuilder.WriteString(ev.Delta)
-					emit(AgentEvent{Type: EventThinkingDelta, Thinking: ev.Delta})
+					if ev.Thinking != nil {
+						thinkingBuilder.WriteString(ev.Thinking.Content)
+						emit(AgentEvent{Type: EventThinkingDelta, Thinking: ev.Thinking.Content})
+					}
 
 				case StreamEventThinkingComplete:
-					emit(AgentEvent{Type: EventThinkingComplete, Thinking: ev.Thinking})
-					if ev.ToolUse != nil {
-						thinkingSignature = ev.ToolUse.ID
+					if ev.Thinking != nil {
+						emit(AgentEvent{Type: EventThinkingComplete, Thinking: ev.Thinking.Content})
+						thinkingSignature = ev.Thinking.Signature
 					}
 
 				case StreamEventToolCallDelta:
@@ -690,11 +692,11 @@ func (a *Agent) runLoopStream(ctx context.Context, cfg Config, events chan Agent
 						}
 						toolCallBuilders[ev.ToolUse.ID] = builder
 					}
-					builder.jsonParts = append(builder.jsonParts, ev.Delta)
+					builder.jsonParts = append(builder.jsonParts, ev.Text)
 					emit(AgentEvent{
 						Type:      EventToolCallDelta,
 						ToolName:  ev.ToolUse.Name,
-						ToolInput: ev.Delta,
+						ToolInput: ev.Text,
 					})
 
 				case StreamEventToolCallComplete:

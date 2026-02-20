@@ -200,6 +200,7 @@ func runTUI(cfg conf.Config, configDir string, workspaceDir string, debug bool) 
 		Cancel:    cancel,
 		Model:     cfg.Model,
 		Workspace: workspaceDir,
+		ConfigDir: configDir,
 		ReloadConf: func(ctx context.Context) error {
 			return confMgr.Reload(ctx, axonconf.ReloadSourceManual)
 		},

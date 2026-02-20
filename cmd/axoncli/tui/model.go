@@ -64,6 +64,7 @@ type Model struct {
 
 	model     string
 	workspace string
+	configDir string
 
 	width  int
 	height int
@@ -90,6 +91,9 @@ type Model struct {
 	// Mapping from viewport line index -> thinking block index (header only).
 	// Rebuilt in syncViewport().
 	thinkingHeaderViewportLine map[int]int
+
+	// Model selector for switching models
+	modelSelector *modelSelector
 }
 
 // ModelOpts configures a new Model.
@@ -102,6 +106,7 @@ type ModelOpts struct {
 	Cancel     context.CancelFunc
 	Model      string
 	Workspace  string
+	ConfigDir  string
 	ReloadConf func(context.Context) error
 }
 
@@ -145,7 +150,7 @@ func NewModel(opts ModelOpts) Model {
 		return nil
 	}))
 
-	return Model{
+	m := Model{
 		textarea:       ta,
 		spinner:        sp,
 		agent:          opts.Agent,
@@ -159,9 +164,15 @@ func NewModel(opts ModelOpts) Model {
 		cancel:         opts.Cancel,
 		model:          opts.Model,
 		workspace:      opts.Workspace,
+		configDir:      opts.ConfigDir,
 		textareaHeight: minTextareaHeight,
 		streamText:     &strings.Builder{},
 	}
+
+	// Initialize model selector
+	m.modelSelector = newModelSelector(opts.ConfigDir, "", "", nil)
+
+	return m
 }
 
 // Init returns the initial commands for the TUI.

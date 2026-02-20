@@ -51,6 +51,10 @@ func (m Model) View() tea.View {
 		b.WriteString(m.renderSlashDropdown())
 		b.WriteString("\n")
 	}
+	if m.modelSelector.active {
+		b.WriteString(m.modelSelector.render(m.width))
+		b.WriteString("\n")
+	}
 	// Render textarea inside a bordered box
 	b.WriteString(inputBoxStyle.Render(m.textarea.View()))
 

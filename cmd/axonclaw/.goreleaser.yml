@@ -1,0 +1,65 @@
+version: 2
+
+project_name: axonclaw
+
+monorepo:
+  tag_prefix: axonclaw-
+
+dist: .builds
+
+before:
+  hooks:
+    - /bin/sh -c 'chmod +x install.sh start.sh stop.sh restart.sh'
+
+builds:
+  - id: axonclaw
+    main: .
+    binary: axonclaw
+    flags:
+      - -tags=nomsgpack
+    ldflags:
+      - -s -w -X github.com/looplj/axonhub/cmd/axonclaw/build.Version={{ .Tag }}
+      - -s -w -X github.com/looplj/axonhub/cmd/axonclaw/build.Commit={{ .Commit }}
+      - -s -w -X github.com/looplj/axonhub/cmd/axonclaw/build.BuildTime={{ .Date }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: axonclaw-archive
+    ids: [axonclaw]
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - install.sh
+      - start.sh
+      - stop.sh
+      - restart.sh
+      - install.bat
+      - start.bat
+      - stop.bat
+      - restart.bat
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: '{{ incpatch .Version }}-snapshot'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^examples:'
+      - '^ui:'

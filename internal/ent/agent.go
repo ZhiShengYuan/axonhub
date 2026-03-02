@@ -42,6 +42,8 @@ type Agent struct {
 	PromptID int `json:"prompt_id,omitempty"`
 	// Model override (empty means default/profile)
 	Model string `json:"model,omitempty"`
+	// Reasoning effort level for extended thinking
+	ReasoningEffort agent.ReasoningEffort `json:"reasoning_effort,omitempty"`
 	// Agent built-in tools configuration (JSON)
 	AgentBuiltinTools []objects.AgentBuiltinTool `json:"agent_builtin_tools,omitempty"`
 	// Skill add/install policy (JSON)
@@ -182,7 +184,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case agent.FieldID, agent.FieldDeletedAt, agent.FieldProjectID, agent.FieldCreatedByUserID, agent.FieldPromptID:
 			values[i] = new(sql.NullInt64)
-		case agent.FieldName, agent.FieldDescription, agent.FieldStatus, agent.FieldModel:
+		case agent.FieldName, agent.FieldDescription, agent.FieldStatus, agent.FieldModel, agent.FieldReasoningEffort:
 			values[i] = new(sql.NullString)
 		case agent.FieldCreatedAt, agent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -266,6 +268,12 @@ func (_m *Agent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field model", values[i])
 			} else if value.Valid {
 				_m.Model = value.String
+			}
+		case agent.FieldReasoningEffort:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reasoning_effort", values[i])
+			} else if value.Valid {
+				_m.ReasoningEffort = agent.ReasoningEffort(value.String)
 			}
 		case agent.FieldAgentBuiltinTools:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -393,6 +401,9 @@ func (_m *Agent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("model=")
 	builder.WriteString(_m.Model)
+	builder.WriteString(", ")
+	builder.WriteString("reasoning_effort=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ReasoningEffort))
 	builder.WriteString(", ")
 	builder.WriteString("agent_builtin_tools=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentBuiltinTools))

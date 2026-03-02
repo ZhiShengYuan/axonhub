@@ -19,6 +19,7 @@ const AGENT_DETAIL_QUERY = `
         description
         status
         model
+        reasoningEffort
         agentBuiltinTools {
           name
           enabled
@@ -90,6 +91,7 @@ type AgentDetail = {
   description: string;
   status: 'enabled' | 'disabled' | 'archived';
   model: string;
+  reasoningEffort: 'none' | 'low' | 'medium' | 'high';
   agentBuiltinTools: any;
   skillsPolicy: any;
   prompt?: { id?: string; content?: string } | null;

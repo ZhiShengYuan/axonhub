@@ -37,6 +37,7 @@ type AgentBootstrap {
   agentID: ID!
   agentName: String!
   model: String
+  reasoningEffort: String!
   systemPrompt: String!
   tools: [AgentToolDefinition!]!
   skills: [AgentSkillDefinition!]!

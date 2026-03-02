@@ -10,21 +10,8 @@ permissions:
   packages: write
 
 jobs:
-  build-binaries:
+  goreleaser:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - os: linux
-            arch: amd64
-          - os: linux
-            arch: arm64
-          - os: darwin
-            arch: amd64
-          - os: darwin
-            arch: arm64
-          - os: windows
-            arch: amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,39 +24,15 @@ jobs:
           go-version: stable
           cache: true
 
-      - name: Extract version
-        run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          VERSION=${TAG#axonclaw-v}
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Building axonclaw version: $VERSION"
-
-      - name: Build binary
-        working-directory: cmd/axonclaw
-        run: |
-          OUTPUT="axonclaw-${{ matrix.os }}-${{ matrix.arch }}"
-          if [[ "${{ matrix.os }}" == "windows" ]]; then
-            OUTPUT="${OUTPUT}.exe"
-          fi
-
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
-            go build \
-            -ldflags "-s -w -X github.com/looplj/axonhub/cmd/axonclaw/build.Version=${VERSION} -X github.com/looplj/axonhub/cmd/axonclaw/build.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ) -X github.com/looplj/axonhub/cmd/axonclaw/build.GitCommit=${GITHUB_SHA::7}" \
-            -o "${OUTPUT}" \
-            .
-
-          # Create archive
-          if [[ "${{ matrix.os }}" == "windows" ]]; then
-            zip -j "axonclaw-${{ matrix.os }}-${{ matrix.arch }}.zip" "${OUTPUT}" install.bat start.bat stop.bat restart.bat
-          else
-            tar -czf "axonclaw-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" "${OUTPUT}" install.sh start.sh stop.sh restart.sh
-          fi
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          name: axonclaw-${{ matrix.os }}-${{ matrix.arch }}
-          path: cmd/axonclaw/axonclaw-*.*
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean -f .goreleaser.yml
+          workdir: cmd/axonclaw
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker:
     runs-on: ubuntu-latest
@@ -107,19 +70,3 @@ jobs:
             VERSION=${{ env.VERSION }}
             BUILD_TIME=${{ github.event.head_commit.timestamp }}
             GIT_COMMIT=${{ github.sha }}
-
-  release:
-    needs: [build-binaries, build-docker]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*
-          generate_release_notes: true
-          name: AxonClaw ${{ github.ref_name }}

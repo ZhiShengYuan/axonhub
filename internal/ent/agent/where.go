@@ -495,6 +495,26 @@ func ModelContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldModel, v))
 }
 
+// ReasoningEffortEQ applies the EQ predicate on the "reasoning_effort" field.
+func ReasoningEffortEQ(v ReasoningEffort) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldReasoningEffort, v))
+}
+
+// ReasoningEffortNEQ applies the NEQ predicate on the "reasoning_effort" field.
+func ReasoningEffortNEQ(v ReasoningEffort) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldReasoningEffort, v))
+}
+
+// ReasoningEffortIn applies the In predicate on the "reasoning_effort" field.
+func ReasoningEffortIn(vs ...ReasoningEffort) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldReasoningEffort, vs...))
+}
+
+// ReasoningEffortNotIn applies the NotIn predicate on the "reasoning_effort" field.
+func ReasoningEffortNotIn(vs ...ReasoningEffort) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldReasoningEffort, vs...))
+}
+
 // HasProject applies the HasEdge predicate on the "project" edge.
 func HasProject() predicate.Agent {
 	return predicate.Agent(func(s *sql.Selector) {

@@ -112,10 +112,11 @@ jobs:
     needs: [build-binaries, build-docker]
     runs-on: ubuntu-latest
     steps:
-      - name: Download all artifacts
+      - name: Download binary artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: axonclaw-*
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

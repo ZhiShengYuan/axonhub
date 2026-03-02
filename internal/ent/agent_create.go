@@ -140,6 +140,20 @@ func (_c *AgentCreate) SetNillableModel(v *string) *AgentCreate {
 	return _c
 }
 
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (_c *AgentCreate) SetReasoningEffort(v agent.ReasoningEffort) *AgentCreate {
+	_c.mutation.SetReasoningEffort(v)
+	return _c
+}
+
+// SetNillableReasoningEffort sets the "reasoning_effort" field if the given value is not nil.
+func (_c *AgentCreate) SetNillableReasoningEffort(v *agent.ReasoningEffort) *AgentCreate {
+	if v != nil {
+		_c.SetReasoningEffort(*v)
+	}
+	return _c
+}
+
 // SetAgentBuiltinTools sets the "agent_builtin_tools" field.
 func (_c *AgentCreate) SetAgentBuiltinTools(v []objects.AgentBuiltinTool) *AgentCreate {
 	_c.mutation.SetAgentBuiltinTools(v)
@@ -332,6 +346,10 @@ func (_c *AgentCreate) defaults() error {
 		v := agent.DefaultModel
 		_c.mutation.SetModel(v)
 	}
+	if _, ok := _c.mutation.ReasoningEffort(); !ok {
+		v := agent.DefaultReasoningEffort
+		_c.mutation.SetReasoningEffort(v)
+	}
 	if _, ok := _c.mutation.AgentBuiltinTools(); !ok {
 		v := agent.DefaultAgentBuiltinTools
 		_c.mutation.SetAgentBuiltinTools(v)
@@ -379,6 +397,14 @@ func (_c *AgentCreate) check() error {
 	}
 	if _, ok := _c.mutation.Model(); !ok {
 		return &ValidationError{Name: "model", err: errors.New(`ent: missing required field "Agent.model"`)}
+	}
+	if _, ok := _c.mutation.ReasoningEffort(); !ok {
+		return &ValidationError{Name: "reasoning_effort", err: errors.New(`ent: missing required field "Agent.reasoning_effort"`)}
+	}
+	if v, ok := _c.mutation.ReasoningEffort(); ok {
+		if err := agent.ReasoningEffortValidator(v); err != nil {
+			return &ValidationError{Name: "reasoning_effort", err: fmt.Errorf(`ent: validator failed for field "Agent.reasoning_effort": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.AgentBuiltinTools(); !ok {
 		return &ValidationError{Name: "agent_builtin_tools", err: errors.New(`ent: missing required field "Agent.agent_builtin_tools"`)}
@@ -449,6 +475,10 @@ func (_c *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Model(); ok {
 		_spec.SetField(agent.FieldModel, field.TypeString, value)
 		_node.Model = value
+	}
+	if value, ok := _c.mutation.ReasoningEffort(); ok {
+		_spec.SetField(agent.FieldReasoningEffort, field.TypeEnum, value)
+		_node.ReasoningEffort = value
 	}
 	if value, ok := _c.mutation.AgentBuiltinTools(); ok {
 		_spec.SetField(agent.FieldAgentBuiltinTools, field.TypeJSON, value)
@@ -735,6 +765,18 @@ func (u *AgentUpsert) UpdateModel() *AgentUpsert {
 	return u
 }
 
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (u *AgentUpsert) SetReasoningEffort(v agent.ReasoningEffort) *AgentUpsert {
+	u.Set(agent.FieldReasoningEffort, v)
+	return u
+}
+
+// UpdateReasoningEffort sets the "reasoning_effort" field to the value that was provided on create.
+func (u *AgentUpsert) UpdateReasoningEffort() *AgentUpsert {
+	u.SetExcluded(agent.FieldReasoningEffort)
+	return u
+}
+
 // SetAgentBuiltinTools sets the "agent_builtin_tools" field.
 func (u *AgentUpsert) SetAgentBuiltinTools(v []objects.AgentBuiltinTool) *AgentUpsert {
 	u.Set(agent.FieldAgentBuiltinTools, v)
@@ -901,6 +943,20 @@ func (u *AgentUpsertOne) SetModel(v string) *AgentUpsertOne {
 func (u *AgentUpsertOne) UpdateModel() *AgentUpsertOne {
 	return u.Update(func(s *AgentUpsert) {
 		s.UpdateModel()
+	})
+}
+
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (u *AgentUpsertOne) SetReasoningEffort(v agent.ReasoningEffort) *AgentUpsertOne {
+	return u.Update(func(s *AgentUpsert) {
+		s.SetReasoningEffort(v)
+	})
+}
+
+// UpdateReasoningEffort sets the "reasoning_effort" field to the value that was provided on create.
+func (u *AgentUpsertOne) UpdateReasoningEffort() *AgentUpsertOne {
+	return u.Update(func(s *AgentUpsert) {
+		s.UpdateReasoningEffort()
 	})
 }
 
@@ -1240,6 +1296,20 @@ func (u *AgentUpsertBulk) SetModel(v string) *AgentUpsertBulk {
 func (u *AgentUpsertBulk) UpdateModel() *AgentUpsertBulk {
 	return u.Update(func(s *AgentUpsert) {
 		s.UpdateModel()
+	})
+}
+
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (u *AgentUpsertBulk) SetReasoningEffort(v agent.ReasoningEffort) *AgentUpsertBulk {
+	return u.Update(func(s *AgentUpsert) {
+		s.SetReasoningEffort(v)
+	})
+}
+
+// UpdateReasoningEffort sets the "reasoning_effort" field to the value that was provided on create.
+func (u *AgentUpsertBulk) UpdateReasoningEffort() *AgentUpsertBulk {
+	return u.Update(func(s *AgentUpsert) {
+		s.UpdateReasoningEffort()
 	})
 }
 

@@ -33,11 +33,12 @@ func NewAgentService(params AgentServiceParams) *AgentService {
 }
 
 type CreateAgentInput struct {
-	Name         string
-	Description  *string
-	Status       *agent.Status
-	Model        *string
-	SystemPrompt string
+	Name            string
+	Description     *string
+	Status          *agent.Status
+	Model           *string
+	ReasoningEffort *agent.ReasoningEffort
+	SystemPrompt    string
 
 	BuiltinTools []objects.AgentBuiltinTool
 	SkillsPolicy *objects.AgentSkillsPolicy
@@ -87,6 +88,7 @@ func (svc *AgentService) CreateAgent(ctx context.Context, input CreateAgentInput
 			SetNillableDescription(input.Description).
 			SetPromptID(systemPrompt.ID).
 			SetNillableModel(input.Model).
+			SetNillableReasoningEffort(input.ReasoningEffort).
 			SetNillableStatus(input.Status).
 			SetNillableSkillsPolicy(input.SkillsPolicy).
 			SetAgentBuiltinTools(input.BuiltinTools).Save(txCtx)
@@ -99,11 +101,12 @@ func (svc *AgentService) CreateAgent(ctx context.Context, input CreateAgentInput
 }
 
 type UpdateAgentInput struct {
-	Name         *string
-	Description  *string
-	Status       *agent.Status
-	Model        *string
-	SystemPrompt *string
+	Name            *string
+	Description     *string
+	Status          *agent.Status
+	Model           *string
+	ReasoningEffort *agent.ReasoningEffort
+	SystemPrompt    *string
 
 	BuiltinTools []objects.AgentBuiltinTool
 	SkillsPolicy *objects.AgentSkillsPolicy
@@ -146,7 +149,8 @@ func (svc *AgentService) UpdateAgent(ctx context.Context, id int, input UpdateAg
 			SetNillableName(input.Name).
 			SetNillableDescription(input.Description).
 			SetNillableStatus(input.Status).
-			SetNillableModel(input.Model)
+			SetNillableModel(input.Model).
+			SetNillableReasoningEffort(input.ReasoningEffort)
 
 		if input.BuiltinTools != nil {
 			update.SetAgentBuiltinTools(input.BuiltinTools)

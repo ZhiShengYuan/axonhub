@@ -18,7 +18,7 @@ func (svc *AgentDeployService) deployToDocker(ctx context.Context, runtime *ent.
 	isLocalhost := runtime.Host == "localhost" || runtime.Host == "127.0.0.1"
 	containerName := fmt.Sprintf("axonclaw-%s", name)
 
-	imageName := "axonclaw/axonclaw:latest"
+	imageName := "looplj/axonclaw:latest"
 	if debugDockerImage != "" {
 		imageName = debugDockerImage
 	}
@@ -243,7 +243,7 @@ func (svc *AgentDeployService) dockerRestart(ctx context.Context, runtime *ent.A
 }
 
 func (svc *AgentDeployService) dockerRedeploy(ctx context.Context, runtime *ent.AgentRuntime, apiKey *ent.APIKey, name, containerName, baseURL string) error {
-	imageName := "axonclaw/axonclaw:latest"
+	imageName := "looplj/axonclaw:latest"
 	if debugDockerImage != "" {
 		imageName = debugDockerImage
 	}

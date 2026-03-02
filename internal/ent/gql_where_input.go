@@ -608,6 +608,12 @@ type AgentWhereInput struct {
 	ModelEqualFold    *string  `json:"modelEqualFold,omitempty"`
 	ModelContainsFold *string  `json:"modelContainsFold,omitempty"`
 
+	// "reasoning_effort" field predicates.
+	ReasoningEffort      *agent.ReasoningEffort  `json:"reasoningEffort,omitempty"`
+	ReasoningEffortNEQ   *agent.ReasoningEffort  `json:"reasoningEffortNEQ,omitempty"`
+	ReasoningEffortIn    []agent.ReasoningEffort `json:"reasoningEffortIn,omitempty"`
+	ReasoningEffortNotIn []agent.ReasoningEffort `json:"reasoningEffortNotIn,omitempty"`
+
 	// "project" edge predicates.
 	HasProject     *bool                `json:"hasProject,omitempty"`
 	HasProjectWith []*ProjectWhereInput `json:"hasProjectWith,omitempty"`
@@ -952,6 +958,18 @@ func (i *AgentWhereInput) P() (predicate.Agent, error) {
 	}
 	if i.ModelContainsFold != nil {
 		predicates = append(predicates, agent.ModelContainsFold(*i.ModelContainsFold))
+	}
+	if i.ReasoningEffort != nil {
+		predicates = append(predicates, agent.ReasoningEffortEQ(*i.ReasoningEffort))
+	}
+	if i.ReasoningEffortNEQ != nil {
+		predicates = append(predicates, agent.ReasoningEffortNEQ(*i.ReasoningEffortNEQ))
+	}
+	if len(i.ReasoningEffortIn) > 0 {
+		predicates = append(predicates, agent.ReasoningEffortIn(i.ReasoningEffortIn...))
+	}
+	if len(i.ReasoningEffortNotIn) > 0 {
+		predicates = append(predicates, agent.ReasoningEffortNotIn(i.ReasoningEffortNotIn...))
 	}
 
 	if i.HasProject != nil {

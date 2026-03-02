@@ -17,15 +17,16 @@ type AckAgentMessagesInput struct {
 }
 
 type AgentBootstrap struct {
-	AgentID      objects.GUID            `json:"agentID"`
-	AgentName    string                  `json:"agentName"`
-	Model        *string                 `json:"model,omitempty"`
-	SystemPrompt string                  `json:"systemPrompt"`
-	Tools        []*AgentToolDefinition  `json:"tools"`
-	Skills       []*AgentSkillDefinition `json:"skills"`
-	BuiltinTools []*AgentBuiltinTool     `json:"builtinTools"`
-	SkillsPolicy *AgentSkillsPolicy      `json:"skillsPolicy"`
-	MemoryPolicy objects.JSONRawMessage  `json:"memoryPolicy,omitempty"`
+	AgentID         objects.GUID            `json:"agentID"`
+	AgentName       string                  `json:"agentName"`
+	Model           *string                 `json:"model,omitempty"`
+	ReasoningEffort string                  `json:"reasoningEffort"`
+	SystemPrompt    string                  `json:"systemPrompt"`
+	Tools           []*AgentToolDefinition  `json:"tools"`
+	Skills          []*AgentSkillDefinition `json:"skills"`
+	BuiltinTools    []*AgentBuiltinTool     `json:"builtinTools"`
+	SkillsPolicy    *AgentSkillsPolicy      `json:"skillsPolicy"`
+	MemoryPolicy    objects.JSONRawMessage  `json:"memoryPolicy,omitempty"`
 }
 
 type AgentBuiltinTool struct {

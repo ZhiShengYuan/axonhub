@@ -20,6 +20,7 @@ const AGENTS_QUERY = `
           description
           status
           model
+          reasoningEffort
           agentBuiltinTools {
             name
             enabled
@@ -59,6 +60,7 @@ const CREATE_AGENT_MUTATION = `
       description
       status
       model
+      reasoningEffort
       agentBuiltinTools {
         name
         enabled
@@ -88,6 +90,7 @@ const UPDATE_AGENT_MUTATION = `
       description
       status
       model
+      reasoningEffort
       agentBuiltinTools {
         name
         enabled

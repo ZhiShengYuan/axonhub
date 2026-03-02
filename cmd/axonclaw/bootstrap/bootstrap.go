@@ -17,20 +17,21 @@ import (
 )
 
 type Result struct {
-	AgentID      string
-	AgentName    string
-	Model        string
-	SystemPrompt string
-	ThreadID     string
-	Tools        []*api.AgentBootstrapAgentBootstrapToolsAgentToolDefinition
-	Skills       []*api.AgentBootstrapAgentBootstrapSkillsAgentSkillDefinition
-	BuiltinTools []*api.AgentBootstrapAgentBootstrapBuiltinToolsAgentBuiltinTool
-	AxonClawPath string
-	SkillsRoot   string
-	ConfigDir    string
-	Date         string
-	Timezone     string
-	OS           string
+	AgentID         string
+	AgentName       string
+	Model           string
+	ReasoningEffort string
+	SystemPrompt    string
+	ThreadID        string
+	Tools           []*api.AgentBootstrapAgentBootstrapToolsAgentToolDefinition
+	Skills          []*api.AgentBootstrapAgentBootstrapSkillsAgentSkillDefinition
+	BuiltinTools    []*api.AgentBootstrapAgentBootstrapBuiltinToolsAgentBuiltinTool
+	AxonClawPath    string
+	SkillsRoot      string
+	ConfigDir       string
+	Date            string
+	Timezone        string
+	OS              string
 }
 
 type SystemPromptData struct {
@@ -83,20 +84,21 @@ func Do(ctx context.Context, client graphql.Client, data SystemPromptData) (*Res
 	systemPrompt = appendSkillsToPrompt(systemPrompt, bootstrap.Skills)
 
 	return &Result{
-		AgentID:      bootstrap.AgentID,
-		AgentName:    bootstrap.AgentName,
-		Model:        model,
-		SystemPrompt: systemPrompt,
-		ThreadID:     threadID,
-		Tools:        bootstrap.Tools,
-		Skills:       bootstrap.Skills,
-		BuiltinTools: bootstrap.BuiltinTools,
-		AxonClawPath: data.AxonClawPath,
-		SkillsRoot:   data.SkillsRoot,
-		ConfigDir:    data.ConfigDir,
-		Date:         data.Date,
-		Timezone:     data.Timezone,
-		OS:           data.OS,
+		AgentID:         bootstrap.AgentID,
+		AgentName:       bootstrap.AgentName,
+		Model:           model,
+		ReasoningEffort: bootstrap.ReasoningEffort,
+		SystemPrompt:    systemPrompt,
+		ThreadID:        threadID,
+		Tools:           bootstrap.Tools,
+		Skills:          bootstrap.Skills,
+		BuiltinTools:    bootstrap.BuiltinTools,
+		AxonClawPath:    data.AxonClawPath,
+		SkillsRoot:      data.SkillsRoot,
+		ConfigDir:       data.ConfigDir,
+		Date:            data.Date,
+		Timezone:        data.Timezone,
+		OS:              data.OS,
 	}, nil
 }
 

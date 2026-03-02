@@ -2,6 +2,13 @@
 Agent management (admin GraphQL).
 """
 
+enum ReasoningEffort {
+  none
+  low
+  medium
+  high
+}
+
 input AgentSkillsPolicyInput {
   add: String!
 }
@@ -17,6 +24,7 @@ input CreateAgentInput {
   description: String
   status: AgentStatus
   model: String
+  reasoningEffort: ReasoningEffort
   systemPrompt: String!
   builtinTools: [AgentBuiltinToolInput!]
   skillsPolicy: AgentSkillsPolicyInput
@@ -27,6 +35,7 @@ input UpdateAgentInput {
   description: String
   status: AgentStatus
   model: String
+  reasoningEffort: ReasoningEffort
   systemPrompt: String
   builtinTools: [AgentBuiltinToolInput!]
   skillsPolicy: AgentSkillsPolicyInput

@@ -27,6 +27,7 @@ type Runner struct {
 	Config       conf.Config
 	ThreadID     string
 	ThreadMgr    *thread.Manager
+	Boot         *bootstrap.Result
 	lastSequence int
 }
 
@@ -75,6 +76,7 @@ func New(opts NewOptions) *Runner {
 		Config:    opts.Config,
 		ThreadID:  opts.Boot.ThreadID,
 		ThreadMgr: opts.ThreadMgr,
+		Boot:      opts.Boot,
 	}
 }
 
@@ -87,11 +89,23 @@ func (r *Runner) Run(ctx context.Context) error {
 	hbTicker := time.NewTicker(r.Config.HeartbeatInterval)
 	defer hbTicker.Stop()
 
+	var autoUpdateTicker *time.Ticker
+	var autoUpdateCh <-chan time.Time
+	if r.Config.AutoSyncConfig {
+		autoUpdateTicker = time.NewTicker(r.Config.AutoSyncConfigInterval)
+		autoUpdateCh = autoUpdateTicker.C
+		defer autoUpdateTicker.Stop()
+		r.Logger.Info("auto-sync-config enabled", "interval", r.Config.AutoSyncConfigInterval)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			r.Logger.Info("axonclaw stopping", "reason", ctx.Err())
 			return ctx.Err()
+
+		case <-autoUpdateCh:
+			r.autoUpdateConfig(ctx)
 
 		case <-hbTicker.C:
 			_, err := api.HeartbeatAgentInstance(ctx, r.Client, &api.HeartbeatAgentInstanceInput{})
@@ -156,4 +170,43 @@ func (r *Runner) processMessage(ctx context.Context, text string) error {
 	ctx = axoncontext.WithThreadID(ctx, r.ThreadID)
 	ctx = axoncontext.WithTraceID(ctx, traceID)
 	return r.Agent.Process(ctx, agent.Content{Text: &text})
+}
+
+func (r *Runner) autoUpdateConfig(ctx context.Context) {
+	newBoot, err := bootstrap.Do(ctx, r.Client, bootstrap.SystemPromptData{
+		Workspace:  r.Workspace,
+		SkillsRoot: r.Boot.SkillsRoot,
+		ConfigDir:  r.Boot.ConfigDir,
+	})
+	if err != nil {
+		r.Logger.Warn("auto-update config failed", "error", err)
+		return
+	}
+
+	r.Boot.AgentID = newBoot.AgentID
+	r.Boot.AgentName = newBoot.AgentName
+	r.Boot.Model = newBoot.Model
+	r.Boot.SystemPrompt = newBoot.SystemPrompt
+	r.Boot.Tools = newBoot.Tools
+	r.Boot.Skills = newBoot.Skills
+	r.Boot.BuiltinTools = newBoot.BuiltinTools
+
+	localPrompt := buildLocalSystemPrompt(PromptEnv{
+		Date:         newBoot.Date,
+		Timezone:     newBoot.Timezone,
+		OS:           newBoot.OS,
+		Workspace:    r.Workspace,
+		ThreadID:     r.ThreadID,
+		AxonClawPath: newBoot.AxonClawPath,
+		SkillsRoot:   r.Boot.SkillsRoot,
+		ConfigDir:    r.Boot.ConfigDir,
+	})
+
+	r.Agent.UpdateConfig(func(cfg agent.Config) agent.Config {
+		cfg.Model = newBoot.Model
+		cfg.SystemPrompts = []string{newBoot.SystemPrompt, localPrompt}
+		return cfg
+	})
+
+	r.Logger.Info("auto-update config completed", "agent_name", newBoot.AgentName, "model", newBoot.Model)
 }

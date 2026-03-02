@@ -15,18 +15,21 @@ import (
 const FileName = "config.yml"
 
 type Config struct {
-	BaseURL           string        `yaml:"base_url"`
-	APIKey            string        `yaml:"api_key"`
-	Name              string        `yaml:"name"`
-	PollInterval      time.Duration `yaml:"poll_interval"`
-	HeartbeatInterval time.Duration `yaml:"heartbeat_interval"`
-	Debug             bool          `yaml:"debug"`
+	BaseURL            string        `yaml:"base_url"`
+	APIKey             string        `yaml:"api_key"`
+	Name               string        `yaml:"name"`
+	PollInterval       time.Duration `yaml:"poll_interval"`
+	HeartbeatInterval  time.Duration `yaml:"heartbeat_interval"`
+	AutoSyncConfig         bool          `yaml:"auto_sync_config"`
+	AutoSyncConfigInterval time.Duration `yaml:"auto_sync_config_interval"`
+	Debug              bool          `yaml:"debug"`
 }
 
 func DefaultConfig() Config {
 	return Config{
-		PollInterval:      5 * time.Second,
-		HeartbeatInterval: 1 * time.Minute,
+		PollInterval:       5 * time.Second,
+		HeartbeatInterval:  1 * time.Minute,
+		AutoSyncConfigInterval: 5 * time.Minute,
 	}
 }
 
@@ -59,6 +62,12 @@ func LoadOrSaveConfig(baseURL, apiKey, name string) (Config, error) {
 	}
 	if res.Value.HeartbeatInterval > 0 {
 		cfg.HeartbeatInterval = res.Value.HeartbeatInterval
+	}
+	if res.Value.AutoSyncConfig {
+		cfg.AutoSyncConfig = res.Value.AutoSyncConfig
+	}
+	if res.Value.AutoSyncConfigInterval > 0 {
+		cfg.AutoSyncConfigInterval = res.Value.AutoSyncConfigInterval
 	}
 	if res.Value.Debug {
 		cfg.Debug = res.Value.Debug

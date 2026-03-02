@@ -26,6 +26,7 @@ const (
 	ResourceCommand ResourceType = "command"
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
+	ResourceSkill   ResourceType = "skill"
 )
 
 type Resource struct {
@@ -41,6 +42,8 @@ type Resource struct {
 	URL    string
 	Domain string
 	Scheme string
+
+	Skill string
 }
 
 type Decision struct {
@@ -237,6 +240,24 @@ func matchResources(cr compiledRule, resources []Resource) bool {
 			}
 			for _, re := range cr.commandRegex {
 				if re.MatchString(r.Command) {
+					ok = true
+					break
+				}
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	if len(w.SkillIn) > 0 {
+		ok := false
+		for _, r := range resources {
+			if r.Type != ResourceSkill {
+				continue
+			}
+			for _, s := range w.SkillIn {
+				if strings.EqualFold(r.Skill, s) {
 					ok = true
 					break
 				}

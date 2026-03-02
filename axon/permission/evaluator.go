@@ -215,6 +215,7 @@ func fromExtractorResources(in []extractor.Resource) []Resource {
 			URL:              r.URL,
 			Domain:           r.Domain,
 			Scheme:           r.Scheme,
+			Skill:            r.Skill,
 		}
 		switch r.Type {
 		case extractor.ResourcePath:
@@ -225,6 +226,8 @@ func fromExtractorResources(in []extractor.Resource) []Resource {
 			pr.Type = ResourceURL
 		case extractor.ResourceDomain:
 			pr.Type = ResourceDomain
+		case extractor.ResourceSkill:
+			pr.Type = ResourceSkill
 		}
 		out = append(out, pr)
 	}
@@ -243,6 +246,7 @@ func toPolicyResources(in []Resource) []policy.Resource {
 			URL:              r.URL,
 			Domain:           r.Domain,
 			Scheme:           r.Scheme,
+			Skill:            r.Skill,
 		}
 		switch r.Type {
 		case ResourcePath:
@@ -253,6 +257,8 @@ func toPolicyResources(in []Resource) []policy.Resource {
 			pr.Type = policy.ResourceURL
 		case ResourceDomain:
 			pr.Type = policy.ResourceDomain
+		case ResourceSkill:
+			pr.Type = policy.ResourceSkill
 		}
 		out = append(out, pr)
 	}
@@ -277,6 +283,7 @@ func toGrantResources(in []Resource) []grant.Resource {
 			OutsideWorkspace: r.OutsideWorkspace,
 			Domain:           r.Domain,
 			Command:          r.Command,
+			Skill:            r.Skill,
 		}
 		switch r.Type {
 		case ResourcePath:
@@ -285,6 +292,8 @@ func toGrantResources(in []Resource) []grant.Resource {
 			gr.Type = grant.ResourceDomain
 		case ResourceCommand:
 			gr.Type = grant.ResourceCommand
+		case ResourceSkill:
+			gr.Type = grant.ResourceSkill
 		default:
 			continue
 		}

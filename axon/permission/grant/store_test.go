@@ -913,6 +913,7 @@ func TestResourceType_Constants(t *testing.T) {
 	assert.Equal(t, ResourceType("path"), ResourcePath)
 	assert.Equal(t, ResourceType("domain"), ResourceDomain)
 	assert.Equal(t, ResourceType("command"), ResourceCommand)
+	assert.Equal(t, ResourceType("skill"), ResourceSkill)
 }
 
 func TestMemoryStore_Interface(t *testing.T) {
@@ -968,6 +969,60 @@ func TestResource_Fields(t *testing.T) {
 	assert.True(t, res.OutsideWorkspace)
 	assert.Equal(t, "example.com", res.Domain)
 	assert.Equal(t, "npm install", res.Command)
+}
+
+func TestBuildKey_Skill(t *testing.T) {
+	req := Request{ToolName: "Skill"}
+	resources := []Resource{
+		{Type: ResourceSkill, Skill: "code-review"},
+	}
+
+	key := BuildKey(req, resources)
+	assert.NotEmpty(t, key)
+
+	// Same skill should produce same key
+	key2 := BuildKey(req, resources)
+	assert.Equal(t, key, key2)
+
+	// Different skill should produce different key
+	resources2 := []Resource{
+		{Type: ResourceSkill, Skill: "walkthrough"},
+	}
+	key3 := BuildKey(req, resources2)
+	assert.NotEqual(t, key, key3)
+}
+
+func TestBuildKey_Skill_CaseSensitive(t *testing.T) {
+	req := Request{ToolName: "Skill"}
+	r1 := []Resource{{Type: ResourceSkill, Skill: "Code-Review"}}
+	r2 := []Resource{{Type: ResourceSkill, Skill: "code-review"}}
+
+	// BuildKey lowercases skill, so they should be equal
+	assert.Equal(t, BuildKey(req, r1), BuildKey(req, r2))
+}
+
+func TestMemoryStore_SkillGrant_ThreadScope(t *testing.T) {
+	store := NewMemoryStore(NewFileStoreWithFS("/tmp", afero.NewMemMapFs()))
+	req := Request{
+		ToolCallID: "call-1",
+		ThreadID:   "thread-1",
+		ToolName:   "Skill",
+	}
+	resources := []Resource{
+		{Type: ResourceSkill, Skill: "code-review"},
+	}
+
+	store.Add(req, ScopeThread, resources)
+
+	assert.True(t, store.Match(req, resources))
+
+	// Different thread should not match
+	otherReq := Request{
+		ToolCallID: "call-2",
+		ThreadID:   "thread-2",
+		ToolName:   "Skill",
+	}
+	assert.False(t, store.Match(otherReq, resources))
 }
 
 func TestBuildKey_PathNormalization(t *testing.T) {

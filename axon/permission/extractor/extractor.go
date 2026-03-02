@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+// validSkillName matches the Agent Skills specification:
+// lowercase alphanumeric + hyphens, no leading/trailing/consecutive hyphens, max 64 chars.
+var validSkillName = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`)
 
 type ResourceType string
 
@@ -15,6 +20,7 @@ const (
 	ResourceCommand ResourceType = "command"
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
+	ResourceSkill   ResourceType = "skill"
 )
 
 type Resource struct {
@@ -33,6 +39,9 @@ type Resource struct {
 	URL    string
 	Domain string
 	Scheme string
+
+	// Skill
+	Skill string
 }
 
 type Extractor interface {
@@ -141,6 +150,29 @@ func (e DefaultExtractor) Extract(workspace, toolName string, input json.RawMess
 			}
 		}
 		return out, nil
+	case "Skill":
+		var v struct {
+			Skill string `json:"skill"`
+		}
+		if err := json.Unmarshal(input, &v); err != nil {
+			return nil, fmt.Errorf("extract %s: invalid json: %w", toolName, err)
+		}
+		name := strings.TrimSpace(v.Skill)
+		if name == "" {
+			return nil, fmt.Errorf("extract %s: empty skill name", toolName)
+		}
+		// Strip namespace prefix (e.g. "namespace:skill-name" → "skill-name").
+		if parts := strings.SplitN(name, ":", 2); len(parts) == 2 {
+			name = strings.TrimSpace(parts[1])
+		}
+		if name == "" {
+			return nil, fmt.Errorf("extract %s: empty skill name after namespace strip", toolName)
+		}
+		name = strings.ToLower(name)
+		if len(name) > 64 || !validSkillName.MatchString(name) || strings.Contains(name, "--") {
+			return nil, fmt.Errorf("extract %s: invalid skill name %q: must be 1-64 lowercase alphanumeric chars and hyphens, no leading/trailing/consecutive hyphens", toolName, name)
+		}
+		return []Resource{{Type: ResourceSkill, Skill: name}}, nil
 	default:
 		return nil, nil
 	}

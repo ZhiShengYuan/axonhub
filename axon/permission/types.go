@@ -39,6 +39,7 @@ const (
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
 	ResourceSkill   ResourceType = "skill"
+	ResourceDir     ResourceType = "dir"
 )
 
 type Resource struct {

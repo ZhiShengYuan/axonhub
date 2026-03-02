@@ -17,6 +17,7 @@ type compiledRule struct {
 	rule         Rule
 	commandRegex []*regexp.Regexp
 	pathRegex    []*regexp.Regexp
+	dirRegex     []*regexp.Regexp
 }
 
 type ResourceType string
@@ -27,6 +28,7 @@ const (
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
 	ResourceSkill   ResourceType = "skill"
+	ResourceDir     ResourceType = "dir"
 )
 
 type Resource struct {
@@ -70,6 +72,13 @@ func New(doc Document) (*Engine, error) {
 				return nil, fmt.Errorf("policy: rule %s invalid path_matches glob %q: %w", r.ID, pat, err)
 			}
 			cr.pathRegex = append(cr.pathRegex, re)
+		}
+		for _, pat := range r.When.Resource.DirMatches {
+			re, err := compilePathGlob(pat)
+			if err != nil {
+				return nil, fmt.Errorf("policy: rule %s invalid dir_matches glob %q: %w", r.ID, pat, err)
+			}
+			cr.dirRegex = append(cr.dirRegex, re)
 		}
 		e.compiledRules = append(e.compiledRules, cr)
 	}
@@ -168,7 +177,7 @@ func matchResources(cr compiledRule, resources []Resource) bool {
 	w := cr.rule.When.Resource
 
 	for _, r := range resources {
-		if w.OutsideWorkspace != nil && r.Type == ResourcePath {
+		if w.OutsideWorkspace != nil && (r.Type == ResourcePath || r.Type == ResourceDir) {
 			if r.OutsideWorkspace != *w.OutsideWorkspace {
 				return false
 			}
@@ -212,7 +221,7 @@ func matchResources(cr compiledRule, resources []Resource) bool {
 	if len(w.PathMatches) > 0 {
 		ok := false
 		for _, r := range resources {
-			if r.Type != ResourcePath {
+			if r.Type != ResourcePath && r.Type != ResourceDir {
 				continue
 			}
 			target := r.WorkspaceRel
@@ -221,6 +230,29 @@ func matchResources(cr compiledRule, resources []Resource) bool {
 			}
 			target = filepath.ToSlash(target)
 			for _, re := range cr.pathRegex {
+				if re.MatchString(target) {
+					ok = true
+					break
+				}
+			}
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	if len(cr.dirRegex) > 0 {
+		ok := false
+		for _, r := range resources {
+			if r.Type != ResourceDir {
+				continue
+			}
+			target := r.WorkspaceRel
+			if target == "" {
+				target = r.Path
+			}
+			target = filepath.ToSlash(target)
+			for _, re := range cr.dirRegex {
 				if re.MatchString(target) {
 					ok = true
 					break

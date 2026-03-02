@@ -140,12 +140,15 @@ func (a *remoteApprover) Request(ctx context.Context, req Request) (Response, er
 			}
 
 			var result struct {
-				RequestID string `json:"request_id"`
-				Granted   bool   `json:"granted"`
-				Scope     string `json:"scope"`
-				Reason    string `json:"reason"`
+				RequestID string            `json:"request_id"`
+				Granted   bool              `json:"granted"`
+				Scope     string            `json:"scope"`
+				Reason    string            `json:"reason"`
+				Resources []json.RawMessage `json:"resources"`
 			}
-			_ = json.Unmarshal(found.Content, &result)
+			if err := json.Unmarshal(found.Content, &result); err != nil {
+				return Response{}, fmt.Errorf("invalid approval_result: %w", err)
+			}
 
 			respScope := grant.ScopeOnce
 			switch result.Scope {
@@ -166,9 +169,10 @@ func (a *remoteApprover) Request(ctx context.Context, req Request) (Response, er
 			}
 
 			return Response{
-				Granted: result.Granted,
-				Scope:   respScope,
-				Reason:  result.Reason,
+				Granted:   result.Granted,
+				Scope:     respScope,
+				Reason:    result.Reason,
+				Resources: result.Resources,
 			}, nil
 		}
 	}

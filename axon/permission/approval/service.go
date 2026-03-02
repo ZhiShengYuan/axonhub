@@ -23,9 +23,10 @@ type Request struct {
 }
 
 type Response struct {
-	Granted bool
-	Scope   grant.Scope
-	Reason  string
+	Granted   bool
+	Scope     grant.Scope
+	Reason    string
+	Resources []json.RawMessage
 }
 
 // Service manages approval requests that require a UI subscriber to grant or deny.

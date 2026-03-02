@@ -3449,13 +3449,13 @@ input CreateAgentRuntimeInput {
   """
   user: String
   """
-  Runtime password for authentication
-  """
-  password: String
-  """
   Authentication method: password or ssh_key
   """
   authMethod: AgentRuntimeAuthMethod
+  """
+  Runtime password for authentication
+  """
+  password: String
   """
   SSH private key for authentication
   """
@@ -9018,13 +9018,13 @@ input UpdateAgentRuntimeInput {
   """
   user: String
   """
-  Runtime password for authentication
-  """
-  password: String
-  """
   Authentication method: password or ssh_key
   """
   authMethod: AgentRuntimeAuthMethod
+  """
+  Runtime password for authentication
+  """
+  password: String
   """
   SSH private key for authentication
   """

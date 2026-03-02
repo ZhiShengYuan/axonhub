@@ -122,12 +122,11 @@
   "common.buttons.remove": "Remove",
   "common.buttons.openMenu": "Open menu",
   "common.buttons.close": "Close",
-<<<<<<< HEAD
   "common.buttons.retry": "Retry",
-=======
   "common.buttons.deploy": "Deploy",
   "common.buttons.deploying": "Deploying...",
->>>>>>> 0d5d0086 (feat: introduce agnet runtime and deploy)
+  "common.buttons.redeploy": "Redeploy",
+  "common.buttons.redeploying": "Redeploying...",
   "common.actions.openMenu": "Open menu",
   "common.actions.edit": "Edit",
   "common.actions.duplicate": "Duplicate",

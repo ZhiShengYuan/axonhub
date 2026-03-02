@@ -32,6 +32,7 @@ const (
 	ResourceDomain  ResourceType = "domain"
 	ResourceCommand ResourceType = "command"
 	ResourceSkill   ResourceType = "skill"
+	ResourceDir     ResourceType = "dir"
 )
 
 type Resource struct {
@@ -98,8 +99,6 @@ func NewMemoryStore(fileStore FileStore) *MemoryStore {
 }
 
 func (s *MemoryStore) Match(req Request, resources []Resource) bool {
-	key := BuildKey(req, resources)
-
 	s.mu.Lock()
 	if _, ok := s.once[req.ToolCallID]; ok {
 		delete(s.once, req.ToolCallID)
@@ -108,25 +107,29 @@ func (s *MemoryStore) Match(req Request, resources []Resource) bool {
 	}
 	s.mu.Unlock()
 
+	keys := buildHierarchicalKeys(req, resources)
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if req.ThreadID != "" {
-		if m := s.thread[req.ThreadID]; m != nil {
-			if _, ok := m[key]; ok {
-				return true
+	for _, key := range keys {
+		if req.ThreadID != "" {
+			if m := s.thread[req.ThreadID]; m != nil {
+				if _, ok := m[key]; ok {
+					return true
+				}
 			}
 		}
-	}
-	if req.Workspace != "" {
-		if m := s.workspace[req.Workspace]; m != nil {
-			if _, ok := m[key]; ok {
-				return true
+		if req.Workspace != "" {
+			if m := s.workspace[req.Workspace]; m != nil {
+				if _, ok := m[key]; ok {
+					return true
+				}
 			}
 		}
-	}
-	if _, ok := s.global[key]; ok {
-		return true
+		if _, ok := s.global[key]; ok {
+			return true
+		}
 	}
 	return false
 }
@@ -211,6 +214,11 @@ func (s *MemoryStore) SaveGlobal() error {
 }
 
 func BuildKey(req Request, resources []Resource) string {
+	return hashParts(buildParts(req, resources))
+}
+
+// buildParts returns the string components used to derive a grant key.
+func buildParts(req Request, resources []Resource) []string {
 	var parts []string
 	parts = append(parts, strings.ToLower(req.ToolName))
 
@@ -221,6 +229,12 @@ func BuildKey(req Request, resources []Resource) string {
 				parts = append(parts, "path_dir:"+filepath.Dir(filepath.Clean(r.WorkspaceRel)))
 			} else {
 				parts = append(parts, "path_dir_abs:"+filepath.Dir(filepath.Clean(r.Path)))
+			}
+		case ResourceDir:
+			if r.WorkspaceRel != "" {
+				parts = append(parts, "dir:"+filepath.Clean(r.WorkspaceRel))
+			} else {
+				parts = append(parts, "dir_abs:"+filepath.Clean(r.Path))
 			}
 		case ResourceDomain:
 			if r.Domain != "" {
@@ -237,8 +251,65 @@ func BuildKey(req Request, resources []Resource) string {
 		}
 	}
 
+	return parts
+}
+
+func hashParts(parts []string) string {
 	sum := sha256.Sum256([]byte(strings.Join(parts, "|")))
 	return hex.EncodeToString(sum[:])
+}
+
+// buildHierarchicalKeys returns grant keys from the most specific (child) to
+// the least specific (ancestor). This allows a grant on a parent directory to
+// cover all its descendants.
+func buildHierarchicalKeys(req Request, resources []Resource) []string {
+	baseParts := buildParts(req, resources)
+	keys := []string{hashParts(baseParts)}
+
+	// Find the first dir part for hierarchical expansion.
+	dirIdx := -1
+	for i, p := range baseParts {
+		if i == 0 {
+			continue // skip tool name
+		}
+		if strings.HasPrefix(p, "dir:") || strings.HasPrefix(p, "dir_abs:") {
+			dirIdx = i
+			break
+		}
+	}
+	if dirIdx < 0 {
+		return keys
+	}
+
+	part := baseParts[dirIdx]
+	var prefix, dirPath string
+	if strings.HasPrefix(part, "dir_abs:") {
+		prefix = "dir_abs:"
+		dirPath = strings.TrimPrefix(part, "dir_abs:")
+	} else {
+		prefix = "dir:"
+		dirPath = strings.TrimPrefix(part, "dir:")
+	}
+
+	cur := dirPath
+	for {
+		parent := filepath.Dir(cur)
+		if parent == cur {
+			break
+		}
+		cur = parent
+
+		modified := make([]string, len(baseParts))
+		copy(modified, baseParts)
+		modified[dirIdx] = prefix + cur
+		keys = append(keys, hashParts(modified))
+
+		if cur == "." || cur == "/" {
+			break
+		}
+	}
+
+	return keys
 }
 
 func commandSummary(cmd string) string {

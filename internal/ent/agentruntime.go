@@ -33,10 +33,10 @@ type AgentRuntime struct {
 	Host string `json:"host,omitempty"`
 	// Runtime user for authentication
 	User string `json:"user,omitempty"`
-	// Runtime password for authentication
-	Password string `json:"-"`
 	// Authentication method: password or ssh_key
 	AuthMethod agentruntime.AuthMethod `json:"auth_method,omitempty"`
+	// Runtime password for authentication
+	Password string `json:"-"`
 	// SSH private key for authentication
 	SSHPrivateKey string `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -74,7 +74,7 @@ func (*AgentRuntime) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentruntime.FieldID, agentruntime.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
-		case agentruntime.FieldName, agentruntime.FieldType, agentruntime.FieldStatus, agentruntime.FieldHost, agentruntime.FieldUser, agentruntime.FieldPassword, agentruntime.FieldAuthMethod, agentruntime.FieldSSHPrivateKey:
+		case agentruntime.FieldName, agentruntime.FieldType, agentruntime.FieldStatus, agentruntime.FieldHost, agentruntime.FieldUser, agentruntime.FieldAuthMethod, agentruntime.FieldPassword, agentruntime.FieldSSHPrivateKey:
 			values[i] = new(sql.NullString)
 		case agentruntime.FieldCreatedAt, agentruntime.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -147,17 +147,17 @@ func (_m *AgentRuntime) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.User = value.String
 			}
-		case agentruntime.FieldPassword:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field password", values[i])
-			} else if value.Valid {
-				_m.Password = value.String
-			}
 		case agentruntime.FieldAuthMethod:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field auth_method", values[i])
 			} else if value.Valid {
 				_m.AuthMethod = agentruntime.AuthMethod(value.String)
+			}
+		case agentruntime.FieldPassword:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field password", values[i])
+			} else if value.Valid {
+				_m.Password = value.String
 			}
 		case agentruntime.FieldSSHPrivateKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -230,10 +230,10 @@ func (_m *AgentRuntime) String() string {
 	builder.WriteString("user=")
 	builder.WriteString(_m.User)
 	builder.WriteString(", ")
-	builder.WriteString("password=<sensitive>")
-	builder.WriteString(", ")
 	builder.WriteString("auth_method=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AuthMethod))
+	builder.WriteString(", ")
+	builder.WriteString("password=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("ssh_private_key=<sensitive>")
 	builder.WriteByte(')')

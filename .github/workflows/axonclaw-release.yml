@@ -96,12 +96,13 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./cmd/axonclaw
+          context: .
+          file: cmd/axonclaw/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            axonclaw/axonclaw:${{ env.VERSION }}
-            axonclaw/axonclaw:latest
+            looplj/axonclaw:${{ env.VERSION }}
+            looplj/axonclaw:latest
           build-args: |
             VERSION=${{ env.VERSION }}
             BUILD_TIME=${{ github.event.head_commit.timestamp }}

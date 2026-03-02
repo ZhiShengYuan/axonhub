@@ -82,7 +82,7 @@ type When struct {
 // Multiple matchers are AND-ed together. For list matchers (e.g. domain_in),
 // the rule matches if any resource satisfies the matcher.
 type ResourceWhen struct {
-	// OutsideWorkspace matches file/path resources based on whether they are
+	// OutsideWorkspace matches file/path/dir resources based on whether they are
 	// outside the current workspace root.
 	OutsideWorkspace *bool `yaml:"outside_workspace,omitempty"`
 
@@ -92,6 +92,9 @@ type ResourceWhen struct {
 	// - `?` matches any single char except `/`
 	// - `**` matches any chars including `/`
 	PathMatches    []string `yaml:"path_matches,omitempty"`
+	// DirMatches is a glob pattern list matched against directory resources
+	// (workspace-relative when available, otherwise absolute path).
+	DirMatches     []string `yaml:"dir_matches,omitempty"`
 	// DomainIn matches URL/domain resources by exact domain string.
 	DomainIn       []string `yaml:"domain_in,omitempty"`
 	// SchemeIn matches URL resources by scheme (e.g. "https").

@@ -148,6 +148,7 @@ type ResolveApprovalCommandInput struct {
 	Granted         bool
 	Scope           string // once|thread|workspace|global
 	Reason          *string
+	ResourceIndices []int
 }
 
 type AgentApprovalRequestView struct {
@@ -650,7 +651,6 @@ func (s *AgentBootstrapService) ResolveApprovalAsUser(ctx context.Context, userI
 			Where(
 				agent.IDEQ(input.AgentID),
 				agent.ProjectIDEQ(projectID),
-				agent.DeletedAtEQ(0),
 			).
 			Only(bypassCtx)
 		if err != nil {
@@ -663,9 +663,7 @@ func (s *AgentBootstrapService) ResolveApprovalAsUser(ctx context.Context, userI
 				agentmessage.AgentIDEQ(a.ID),
 				agentmessage.DirectionEQ(agentmessage.DirectionToUser),
 				agentmessage.TypeEQ(agentmessage.TypeApprovalRequest),
-				agentmessage.StatusEQ(agentmessage.StatusPending),
 				agentmessage.CorrelationIDEQ(input.RequestID),
-				agentmessage.DeletedAtEQ(0),
 			).
 			Only(bypassCtx)
 		if err != nil {
@@ -684,6 +682,25 @@ func (s *AgentBootstrapService) ResolveApprovalAsUser(ctx context.Context, userI
 		}
 		if input.Reason != nil && *input.Reason != "" {
 			payload["reason"] = *input.Reason
+		}
+
+		if len(input.ResourceIndices) > 0 && input.Granted {
+			var reqContent struct {
+				Resources []json.RawMessage `json:"resources"`
+			}
+			if err := json.Unmarshal(approvalReq.Content, &reqContent); err == nil && len(reqContent.Resources) > 0 {
+				var selectedResources []json.RawMessage
+
+				for _, idx := range input.ResourceIndices {
+					if idx >= 0 && idx < len(reqContent.Resources) {
+						selectedResources = append(selectedResources, reqContent.Resources[idx])
+					}
+				}
+
+				if len(selectedResources) > 0 {
+					payload["resources"] = selectedResources
+				}
+			}
 		}
 
 		raw, err := json.Marshal(payload)

@@ -144,10 +144,17 @@ func (e *Evaluator) handleDecision(ctx context.Context, req ToolRequest, decisio
 		}
 
 		if resp.Granted {
-			e.grants.Add(toGrantRequest(req), resp.Scope, toGrantResources(decision.Resources))
-			if resp.Scope == grant.ScopeWorkspace {
-				_ = e.grants.SaveWorkspace(req.Workspace)
+			resourcesToGrant := decision.Resources
+			if len(resp.Resources) > 0 {
+				resourcesToGrant = parseSelectedResources(resp.Resources)
 			}
+			e.grants.Add(toGrantRequest(req), resp.Scope, toGrantResources(resourcesToGrant))
+		switch resp.Scope {
+		case grant.ScopeWorkspace:
+			_ = e.grants.SaveWorkspace(req.Workspace)
+		case grant.ScopeGlobal:
+			_ = e.grants.SaveGlobal()
+		}
 			decision.RuleID = "approval.granted"
 			decision.Reason = "approved by user"
 			decision.Effect = EffectAllow
@@ -228,6 +235,8 @@ func fromExtractorResources(in []extractor.Resource) []Resource {
 			pr.Type = ResourceDomain
 		case extractor.ResourceSkill:
 			pr.Type = ResourceSkill
+		case extractor.ResourceDir:
+			pr.Type = ResourceDir
 		}
 		out = append(out, pr)
 	}
@@ -259,6 +268,8 @@ func toPolicyResources(in []Resource) []policy.Resource {
 			pr.Type = policy.ResourceDomain
 		case ResourceSkill:
 			pr.Type = policy.ResourceSkill
+		case ResourceDir:
+			pr.Type = policy.ResourceDir
 		}
 		out = append(out, pr)
 	}
@@ -288,6 +299,8 @@ func toGrantResources(in []Resource) []grant.Resource {
 		switch r.Type {
 		case ResourcePath:
 			gr.Type = grant.ResourcePath
+		case ResourceDir:
+			gr.Type = grant.ResourceDir
 		case ResourceDomain:
 			gr.Type = grant.ResourceDomain
 		case ResourceCommand:
@@ -298,6 +311,17 @@ func toGrantResources(in []Resource) []grant.Resource {
 			continue
 		}
 		out = append(out, gr)
+	}
+	return out
+}
+
+func parseSelectedResources(raw []json.RawMessage) []Resource {
+	out := make([]Resource, 0, len(raw))
+	for _, r := range raw {
+		var res Resource
+		if err := json.Unmarshal(r, &res); err == nil {
+			out = append(out, res)
+		}
 	}
 	return out
 }

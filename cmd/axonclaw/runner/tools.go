@@ -43,22 +43,22 @@ func registerTools(
 	}
 
 	if enabledBuiltin["Read"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewReadTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewReadTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Write"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewWriteTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewWriteTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Edit"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewEditTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewEditTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Bash"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewBashTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewBashTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Grep"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewGrepTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewGrepTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Glob"] {
-		a.RegisterTool(tools.NewAgentTool(tools.NewGlobTool(threadWorkspace, true)))
+		a.RegisterTool(tools.NewAgentTool(tools.NewGlobTool(threadWorkspace, false)))
 	}
 	if enabledBuiltin["Skill"] {
 		a.RegisterTool(tools.NewAgentTool(tools.NewSkillTool(filepath.Join(threadWorkspace, "skills"), filepath.Join(threadWorkspace, "skills"))))

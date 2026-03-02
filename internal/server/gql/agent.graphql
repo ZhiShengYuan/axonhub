@@ -104,6 +104,7 @@ input ResolveApprovalInput {
   granted: Boolean!
   scope: ApprovalScope = once
   reason: String
+  resourceIndices: [Int!]
 }
 
 input AckAgentMessagesInput {
@@ -128,3 +129,6 @@ extend type Query {
   """
   agentChatMessages(agentID: ID!, agentInstanceID: ID, afterSequence: Int, limit: Int = 200): [AgentChatMessage!]!
 }
+
+
+

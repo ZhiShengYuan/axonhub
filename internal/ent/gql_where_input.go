@@ -2796,6 +2796,12 @@ type AgentRuntimeWhereInput struct {
 	UserEqualFold    *string  `json:"userEqualFold,omitempty"`
 	UserContainsFold *string  `json:"userContainsFold,omitempty"`
 
+	// "auth_method" field predicates.
+	AuthMethod      *agentruntime.AuthMethod  `json:"authMethod,omitempty"`
+	AuthMethodNEQ   *agentruntime.AuthMethod  `json:"authMethodNEQ,omitempty"`
+	AuthMethodIn    []agentruntime.AuthMethod `json:"authMethodIn,omitempty"`
+	AuthMethodNotIn []agentruntime.AuthMethod `json:"authMethodNotIn,omitempty"`
+
 	// "password" field predicates.
 	Password             *string  `json:"password,omitempty"`
 	PasswordNEQ          *string  `json:"passwordNEQ,omitempty"`
@@ -2810,12 +2816,6 @@ type AgentRuntimeWhereInput struct {
 	PasswordHasSuffix    *string  `json:"passwordHasSuffix,omitempty"`
 	PasswordEqualFold    *string  `json:"passwordEqualFold,omitempty"`
 	PasswordContainsFold *string  `json:"passwordContainsFold,omitempty"`
-
-	// "auth_method" field predicates.
-	AuthMethod      *agentruntime.AuthMethod  `json:"authMethod,omitempty"`
-	AuthMethodNEQ   *agentruntime.AuthMethod  `json:"authMethodNEQ,omitempty"`
-	AuthMethodIn    []agentruntime.AuthMethod `json:"authMethodIn,omitempty"`
-	AuthMethodNotIn []agentruntime.AuthMethod `json:"authMethodNotIn,omitempty"`
 
 	// "ssh_private_key" field predicates.
 	SSHPrivateKey             *string  `json:"sshPrivateKey,omitempty"`
@@ -3121,6 +3121,18 @@ func (i *AgentRuntimeWhereInput) P() (predicate.AgentRuntime, error) {
 	if i.UserContainsFold != nil {
 		predicates = append(predicates, agentruntime.UserContainsFold(*i.UserContainsFold))
 	}
+	if i.AuthMethod != nil {
+		predicates = append(predicates, agentruntime.AuthMethodEQ(*i.AuthMethod))
+	}
+	if i.AuthMethodNEQ != nil {
+		predicates = append(predicates, agentruntime.AuthMethodNEQ(*i.AuthMethodNEQ))
+	}
+	if len(i.AuthMethodIn) > 0 {
+		predicates = append(predicates, agentruntime.AuthMethodIn(i.AuthMethodIn...))
+	}
+	if len(i.AuthMethodNotIn) > 0 {
+		predicates = append(predicates, agentruntime.AuthMethodNotIn(i.AuthMethodNotIn...))
+	}
 	if i.Password != nil {
 		predicates = append(predicates, agentruntime.PasswordEQ(*i.Password))
 	}
@@ -3159,18 +3171,6 @@ func (i *AgentRuntimeWhereInput) P() (predicate.AgentRuntime, error) {
 	}
 	if i.PasswordContainsFold != nil {
 		predicates = append(predicates, agentruntime.PasswordContainsFold(*i.PasswordContainsFold))
-	}
-	if i.AuthMethod != nil {
-		predicates = append(predicates, agentruntime.AuthMethodEQ(*i.AuthMethod))
-	}
-	if i.AuthMethodNEQ != nil {
-		predicates = append(predicates, agentruntime.AuthMethodNEQ(*i.AuthMethodNEQ))
-	}
-	if len(i.AuthMethodIn) > 0 {
-		predicates = append(predicates, agentruntime.AuthMethodIn(i.AuthMethodIn...))
-	}
-	if len(i.AuthMethodNotIn) > 0 {
-		predicates = append(predicates, agentruntime.AuthMethodNotIn(i.AuthMethodNotIn...))
 	}
 	if i.SSHPrivateKey != nil {
 		predicates = append(predicates, agentruntime.SSHPrivateKeyEQ(*i.SSHPrivateKey))

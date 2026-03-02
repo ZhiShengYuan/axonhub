@@ -147,7 +147,7 @@ export function useResolveApproval() {
   const selectedProjectId = useSelectedProjectId();
 
   return useMutation({
-    mutationFn: async (input: { agentID: string; agentInstanceID?: string; requestID: string; granted: boolean; scope?: ApprovalScope; reason?: string }) => {
+    mutationFn: async (input: { agentID: string; agentInstanceID?: string; requestID: string; granted: boolean; scope?: ApprovalScope; reason?: string; resourceIndices?: number[] }) => {
       const headers = selectedProjectId ? { 'X-Project-ID': selectedProjectId } : undefined;
       const data = await graphqlRequest<{ resolveApproval: boolean }>(RESOLVE_APPROVAL_MUTATION, { input }, headers);
       return data.resolveApproval;

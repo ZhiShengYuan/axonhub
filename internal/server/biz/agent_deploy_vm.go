@@ -43,7 +43,7 @@ func (svc *AgentDeployService) deployToVM(ctx context.Context, runtime *ent.Agen
 		}
 
 		//nolint:gosec
-		deployCmd := fmt.Sprintf("cd %s && curl -sSL https://raw.githubusercontent.com/looplj/axonhub/main/cmd/axonclaw/install.sh | AXONCLAW_NAME=%s AXONCLAW_BASE_URL=%s AXONCLAW_API_KEY=%s sh", directory, name, baseURL, apiKey.Key)
+		deployCmd := fmt.Sprintf("cd %s && curl -sSL https://raw.githubusercontent.com/looplj/axonhub/feature/agent/cmd/axonclaw/install.sh | AXONCLAW_NAME=%s AXONCLAW_BASE_URL=%s AXONCLAW_API_KEY=%s sh", directory, name, baseURL, apiKey.Key)
 		if err := exec.CommandContext(ctx, "sh", "-c", deployCmd).Run(); err != nil {
 			return fmt.Errorf("failed to deploy axonclaw: %w", err)
 		}

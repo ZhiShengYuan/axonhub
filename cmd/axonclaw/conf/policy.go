@@ -75,6 +75,14 @@ var DefaultPolicy = policy.Document{
 				ToolIn: []string{"WebSearch"},
 			},
 		},
+		{
+			ID:     "allow_send_message",
+			Effect: policy.EffectAllow,
+			Reason: "allow send message",
+			When: policy.When{
+				ToolIn: []string{"SendMessage"},
+			},
+		},
 	},
 }
 

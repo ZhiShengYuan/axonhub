@@ -62,11 +62,11 @@ type newRootCommandOptions struct {
 
 func newRootCommand(opts newRootCommandOptions) *cobra.Command {
 	var (
-		baseURL    string
-		apiKey     string
-		name       string
+		baseURL        string
+		apiKey         string
+		name           string
 		autoSyncConfig bool
-		debug      bool
+		debug          bool
 	)
 
 	rootCmd := &cobra.Command{
@@ -161,7 +161,9 @@ func runAgent(cfg conf.Config, wd string, debug bool) error {
 		"workspace", wd,
 	)
 
-	provider := anthropic.New(strings.TrimRight(cfg.BaseURL, "/")+"/anthropic", cfg.APIKey)
+	provider := anthropic.New(strings.TrimRight(cfg.BaseURL, "/")+"/anthropic", cfg.APIKey,
+		anthropic.WithReasoningEffort(boot.ReasoningEffort),
+	)
 
 	instanceName := "axonclaw"
 	if cfg.Name != "" {

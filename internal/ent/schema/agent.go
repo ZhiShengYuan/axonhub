@@ -69,6 +69,10 @@ func (Agent) Fields() []ent.Field {
 		field.String("model").
 			Default("").
 			Comment("Model override (empty means default/profile)"),
+		field.Enum("reasoning_effort").
+			Values("none", "low", "medium", "high").
+			Default("none").
+			Comment("Reasoning effort level for extended thinking"),
 		field.JSON("agent_builtin_tools", []objects.AgentBuiltinTool{}).
 			Default([]objects.AgentBuiltinTool{}).
 			Comment("Agent built-in tools configuration (JSON)").

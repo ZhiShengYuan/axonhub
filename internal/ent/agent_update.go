@@ -120,6 +120,20 @@ func (_u *AgentUpdate) SetNillableModel(v *string) *AgentUpdate {
 	return _u
 }
 
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (_u *AgentUpdate) SetReasoningEffort(v agent.ReasoningEffort) *AgentUpdate {
+	_u.mutation.SetReasoningEffort(v)
+	return _u
+}
+
+// SetNillableReasoningEffort sets the "reasoning_effort" field if the given value is not nil.
+func (_u *AgentUpdate) SetNillableReasoningEffort(v *agent.ReasoningEffort) *AgentUpdate {
+	if v != nil {
+		_u.SetReasoningEffort(*v)
+	}
+	return _u
+}
+
 // SetAgentBuiltinTools sets the "agent_builtin_tools" field.
 func (_u *AgentUpdate) SetAgentBuiltinTools(v []objects.AgentBuiltinTool) *AgentUpdate {
 	_u.mutation.SetAgentBuiltinTools(v)
@@ -416,6 +430,11 @@ func (_u *AgentUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Agent.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ReasoningEffort(); ok {
+		if err := agent.ReasoningEffortValidator(v); err != nil {
+			return &ValidationError{Name: "reasoning_effort", err: fmt.Errorf(`ent: validator failed for field "Agent.reasoning_effort": %w`, err)}
+		}
+	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Agent.project"`)
 	}
@@ -466,6 +485,9 @@ func (_u *AgentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(agent.FieldModel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ReasoningEffort(); ok {
+		_spec.SetField(agent.FieldReasoningEffort, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.AgentBuiltinTools(); ok {
 		_spec.SetField(agent.FieldAgentBuiltinTools, field.TypeJSON, value)
@@ -853,6 +875,20 @@ func (_u *AgentUpdateOne) SetNillableModel(v *string) *AgentUpdateOne {
 	return _u
 }
 
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (_u *AgentUpdateOne) SetReasoningEffort(v agent.ReasoningEffort) *AgentUpdateOne {
+	_u.mutation.SetReasoningEffort(v)
+	return _u
+}
+
+// SetNillableReasoningEffort sets the "reasoning_effort" field if the given value is not nil.
+func (_u *AgentUpdateOne) SetNillableReasoningEffort(v *agent.ReasoningEffort) *AgentUpdateOne {
+	if v != nil {
+		_u.SetReasoningEffort(*v)
+	}
+	return _u
+}
+
 // SetAgentBuiltinTools sets the "agent_builtin_tools" field.
 func (_u *AgentUpdateOne) SetAgentBuiltinTools(v []objects.AgentBuiltinTool) *AgentUpdateOne {
 	_u.mutation.SetAgentBuiltinTools(v)
@@ -1162,6 +1198,11 @@ func (_u *AgentUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Agent.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ReasoningEffort(); ok {
+		if err := agent.ReasoningEffortValidator(v); err != nil {
+			return &ValidationError{Name: "reasoning_effort", err: fmt.Errorf(`ent: validator failed for field "Agent.reasoning_effort": %w`, err)}
+		}
+	}
 	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Agent.project"`)
 	}
@@ -1229,6 +1270,9 @@ func (_u *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error)
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(agent.FieldModel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ReasoningEffort(); ok {
+		_spec.SetField(agent.FieldReasoningEffort, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.AgentBuiltinTools(); ok {
 		_spec.SetField(agent.FieldAgentBuiltinTools, field.TypeJSON, value)

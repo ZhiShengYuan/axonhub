@@ -244,23 +244,23 @@ const (
 )
 
 func (svc *AgentDeployService) StartAxonclawInstance(ctx context.Context, instanceID int) (*ControlAxonclawInstanceResult, error) {
-	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlStart)
+	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlStart, nil)
 }
 
 func (svc *AgentDeployService) StopAxonclawInstance(ctx context.Context, instanceID int) (*ControlAxonclawInstanceResult, error) {
-	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlStop)
+	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlStop, nil)
 }
 
 func (svc *AgentDeployService) RestartAxonclawInstance(ctx context.Context, instanceID int) (*ControlAxonclawInstanceResult, error) {
-	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlRestart)
+	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlRestart, nil)
 }
 
-func (svc *AgentDeployService) RedeployAxonclawInstance(ctx context.Context, instanceID int) (*ControlAxonclawInstanceResult, error) {
-	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlRedeploy)
+func (svc *AgentDeployService) RedeployAxonclawInstance(ctx context.Context, instanceID int, axonhubBaseUrl *string) (*ControlAxonclawInstanceResult, error) {
+	return svc.controlAxonclawInstance(ctx, instanceID, axonclawControlRedeploy, axonhubBaseUrl)
 }
 
 //nolint:nilerr // ignore nil error, it's handled in the function body.
-func (svc *AgentDeployService) controlAxonclawInstance(ctx context.Context, instanceID int, action axonclawControlAction) (*ControlAxonclawInstanceResult, error) {
+func (svc *AgentDeployService) controlAxonclawInstance(ctx context.Context, instanceID int, action axonclawControlAction, axonhubBaseUrl *string) (*ControlAxonclawInstanceResult, error) {
 	client := svc.entFromContext(ctx)
 
 	instance, err := client.AgentInstance.Query().
@@ -324,9 +324,21 @@ func (svc *AgentDeployService) controlAxonclawInstance(ctx context.Context, inst
 	case axonclawControlRedeploy:
 		_, _ = client.AgentInstance.UpdateOneID(instance.ID).SetStatus(agentinstance.StatusPending).Save(ctx)
 
-		actionErr = svc.redeployAxonclaw(ctx, runtime, apiKey, instance.Name, deployment)
+		redeployDeployment := deployment
+		if axonhubBaseUrl != nil && *axonhubBaseUrl != "" {
+			redeployDeployment.AxonhubBaseURL = *axonhubBaseUrl
+		}
+
+		actionErr = svc.redeployAxonclaw(ctx, runtime, apiKey, instance.Name, redeployDeployment)
 		if actionErr == nil {
-			_, _ = client.AgentInstance.UpdateOneID(instance.ID).SetStatus(agentinstance.StatusRunning).Save(ctx)
+			if axonhubBaseUrl != nil && *axonhubBaseUrl != "" {
+				_, _ = client.AgentInstance.UpdateOneID(instance.ID).
+					SetDeployment(redeployDeployment).
+					SetStatus(agentinstance.StatusRunning).
+					Save(ctx)
+			} else {
+				_, _ = client.AgentInstance.UpdateOneID(instance.ID).SetStatus(agentinstance.StatusRunning).Save(ctx)
+			}
 		}
 	default:
 		actionErr = fmt.Errorf("unknown action: %s", action)

@@ -34,10 +34,10 @@ const (
 	FieldHost = "host"
 	// FieldUser holds the string denoting the user field in the database.
 	FieldUser = "user"
-	// FieldPassword holds the string denoting the password field in the database.
-	FieldPassword = "password"
 	// FieldAuthMethod holds the string denoting the auth_method field in the database.
 	FieldAuthMethod = "auth_method"
+	// FieldPassword holds the string denoting the password field in the database.
+	FieldPassword = "password"
 	// FieldSSHPrivateKey holds the string denoting the ssh_private_key field in the database.
 	FieldSSHPrivateKey = "ssh_private_key"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
@@ -64,8 +64,8 @@ var Columns = []string{
 	FieldStatus,
 	FieldHost,
 	FieldUser,
-	FieldPassword,
 	FieldAuthMethod,
+	FieldPassword,
 	FieldSSHPrivateKey,
 }
 
@@ -234,14 +234,14 @@ func ByUser(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUser, opts...).ToFunc()
 }
 
-// ByPassword orders the results by the password field.
-func ByPassword(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPassword, opts...).ToFunc()
-}
-
 // ByAuthMethod orders the results by the auth_method field.
 func ByAuthMethod(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAuthMethod, opts...).ToFunc()
+}
+
+// ByPassword orders the results by the password field.
+func ByPassword(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
 // BySSHPrivateKey orders the results by the ssh_private_key field.

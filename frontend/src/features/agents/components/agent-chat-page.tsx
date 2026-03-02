@@ -13,9 +13,45 @@ import { Main } from '@/components/layout/main';
 import { cn } from '@/lib/utils';
 import { useAgentDetail } from '../data/agent-detail';
 import { AgentChatMessage, AgentMessageType, useAgentChatMessages, usePullAgentMessagesToUser, useSendAgentMessage, useResolveApproval, useAckAgentMessages } from '../data/agent-chat';
+import { Checkbox } from '@/components/ui/checkbox';
 
 function messageKey(m: AgentChatMessage) {
   return `${m.id}:${m.sequence}`;
+}
+
+type PermissionResource = {
+  type: string;
+  path?: string;
+  workspace_rel?: string;
+  outside_workspace?: boolean;
+  url?: string;
+  domain?: string;
+  command?: string;
+  cwd?: string;
+  skill?: string;
+};
+
+function formatResource(resource: PermissionResource, idx: number): string {
+  switch (resource.type) {
+    case 'path':
+      const p = resource.workspace_rel || resource.path || '';
+      const extra = resource.outside_workspace ? ' (outside workspace)' : '';
+      return `path: ${p}${extra}`;
+    case 'dir':
+      const d = resource.workspace_rel || resource.path || '';
+      const dirExtra = resource.outside_workspace ? ' (outside workspace)' : '';
+      return `dir: ${d}${dirExtra}`;
+    case 'url':
+      return `url: ${resource.url || ''}`;
+    case 'domain':
+      return `domain: ${resource.domain || ''}`;
+    case 'command':
+      return `command: ${resource.command || ''}`;
+    case 'skill':
+      return `skill: ${resource.skill || ''}`;
+    default:
+      return `${resource.type}: ${JSON.stringify(resource)}`;
+  }
 }
 
 export function AgentChatPage() {
@@ -36,8 +72,36 @@ export function AgentChatPage() {
   const [text, setText] = useState('');
   const [afterSequence, setAfterSequence] = useState(0);
   const [isComposing, setIsComposing] = useState(false);
+  const [selectedResources, setSelectedResources] = useState<Map<string, Set<number>>>(new Map());
 
   const endRef = useRef<HTMLDivElement | null>(null);
+
+  const toggleResource = (msgKey: string, idx: number) => {
+    setSelectedResources((prev) => {
+      const newMap = new Map(prev);
+      const current = newMap.get(msgKey) || new Set();
+      const newSet = new Set(current);
+      if (newSet.has(idx)) {
+        newSet.delete(idx);
+      } else {
+        newSet.add(idx);
+      }
+      newMap.set(msgKey, newSet);
+      return newMap;
+    });
+  };
+
+  const selectAllResources = (msgKey: string, total: number) => {
+    setSelectedResources((prev) => {
+      const newMap = new Map(prev);
+      const newSet = new Set<number>();
+      for (let i = 0; i < total; i++) {
+        newSet.add(i);
+      }
+      newMap.set(msgKey, newSet);
+      return newMap;
+    });
+  };
 
   useEffect(() => {
     if (initialMessages && initialMessages.length > 0) {
@@ -120,7 +184,7 @@ export function AgentChatPage() {
     return `${agentName} - ${instanceName}`;
   }, [agent?.name, agent?.instances, agentId, agentInstanceId]);
 
-  const handleApprove = async (m: AgentChatMessage, granted: boolean, scope: 'once' | 'thread' | 'workspace' | 'global' = 'once') => {
+  const handleApprove = async (m: AgentChatMessage, granted: boolean, scope: 'once' | 'thread' | 'workspace' | 'global' = 'once', resourceIndices?: number[]) => {
     const requestID = m.correlationID || (m.content?.id as string);
     if (!requestID) return;
 
@@ -131,6 +195,7 @@ export function AgentChatPage() {
         requestID,
         granted,
         scope,
+        resourceIndices,
       });
       await refetchInitial();
     } catch (err) {
@@ -219,10 +284,42 @@ export function AgentChatPage() {
               )}
               {hasParams && (
                 <div className="mt-2">
-                  <div className="text-xs text-muted-foreground mb-1">{t('agents.chat.parameters')}:</div>
-                  <pre className="text-xs bg-amber-100/50 dark:bg-amber-900/50 rounded p-2 overflow-x-auto max-h-40 overflow-y-auto">
-                    <code className="font-mono">{JSON.stringify(content.resources, null, 2)}</code>
-                  </pre>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{t('agents.chat.resources')}:</span>
+                    {isPending && !approvalResult && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 px-2 text-[10px]"
+                        onClick={() => selectAllResources(messageKey(m), (content.resources as PermissionResource[]).length)}
+                      >
+                        {t('agents.chat.selectAll')}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    {(content.resources as PermissionResource[]).map((res, idx) => {
+                      const msgK = messageKey(m);
+                      const isSelected = selectedResources.get(msgK)?.has(idx) ?? false;
+                      return (
+                        <div key={idx} className="flex items-start gap-2">
+                          {isPending && !approvalResult && (
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleResource(msgK, idx)}
+                              className="mt-0.5"
+                            />
+                          )}
+                          <code className={cn(
+                            "text-xs font-mono flex-1 px-1.5 py-0.5 rounded",
+                            isSelected ? "bg-green-100 dark:bg-green-900" : "bg-amber-100/50 dark:bg-amber-900/50"
+                          )}>
+                            {formatResource(res, idx)}
+                          </code>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
               {content.capabilities && content.capabilities.length > 0 && (
@@ -274,58 +371,65 @@ export function AgentChatPage() {
             )}
 
             {isPending && !approvalResult ? (
-              <div className="flex items-center gap-2 mt-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs border-green-300 hover:bg-green-100 dark:border-green-700 dark:hover:bg-green-900"
-                  onClick={() => handleApprove(m, true, 'once')}
-                  disabled={resolveApproval.isPending}
-                >
-                  <Check className="h-3 w-3 mr-1" />
-                  {t('agents.chat.approveOnce')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs border-purple-300 hover:bg-purple-100 dark:border-purple-700 dark:hover:bg-purple-900"
-                  onClick={() => handleApprove(m, true, 'thread')}
-                  disabled={resolveApproval.isPending}
-                >
-                  <MessagesSquare className="h-3 w-3 mr-1" />
-                  {t('agents.chat.approveThread')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900"
-                  onClick={() => handleApprove(m, true, 'workspace')}
-                  disabled={resolveApproval.isPending}
-                >
-                  <Globe className="h-3 w-3 mr-1" />
-                  {t('agents.chat.approveWorkspace')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
-                  onClick={() => handleApprove(m, true, 'global')}
-                  disabled={resolveApproval.isPending}
-                >
-                  <Shield className="h-3 w-3 mr-1" />
-                  {t('agents.chat.approveGlobal')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 text-xs border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900"
-                  onClick={() => handleApprove(m, false)}
-                  disabled={resolveApproval.isPending}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  {t('agents.chat.deny')}
-                </Button>
-              </div>
+              (() => {
+                const msgK = messageKey(m);
+                const selected = selectedResources.get(msgK);
+                const resourceIndices = selected ? Array.from(selected).sort((a, b) => a - b) : undefined;
+                return (
+                  <div className="flex items-center gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs border-green-300 hover:bg-green-100 dark:border-green-700 dark:hover:bg-green-900"
+                      onClick={() => handleApprove(m, true, 'once', resourceIndices)}
+                      disabled={resolveApproval.isPending}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      {t('agents.chat.approveOnce')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs border-purple-300 hover:bg-purple-100 dark:border-purple-700 dark:hover:bg-purple-900"
+                      onClick={() => handleApprove(m, true, 'thread', resourceIndices)}
+                      disabled={resolveApproval.isPending}
+                    >
+                      <MessagesSquare className="h-3 w-3 mr-1" />
+                      {t('agents.chat.approveThread')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900"
+                      onClick={() => handleApprove(m, true, 'workspace', resourceIndices)}
+                      disabled={resolveApproval.isPending}
+                    >
+                      <Globe className="h-3 w-3 mr-1" />
+                      {t('agents.chat.approveWorkspace')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+                      onClick={() => handleApprove(m, true, 'global', resourceIndices)}
+                      disabled={resolveApproval.isPending}
+                    >
+                      <Shield className="h-3 w-3 mr-1" />
+                      {t('agents.chat.approveGlobal')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900"
+                      onClick={() => handleApprove(m, false)}
+                      disabled={resolveApproval.isPending}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      {t('agents.chat.deny')}
+                    </Button>
+                  </div>
+                );
+              })()
             ) : !isPending && !approvalResult ? (
               <div className="text-xs text-muted-foreground italic mt-3">{t('agents.chat.approvalResolved')}</div>
             ) : null}

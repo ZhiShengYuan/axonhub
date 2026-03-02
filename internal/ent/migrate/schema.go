@@ -269,8 +269,8 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive", "error"}, Default: "active"},
 		{Name: "host", Type: field.TypeString, Default: ""},
 		{Name: "user", Type: field.TypeString, Default: ""},
-		{Name: "password", Type: field.TypeString, Default: ""},
 		{Name: "auth_method", Type: field.TypeEnum, Enums: []string{"password", "ssh_key"}, Default: "password"},
+		{Name: "password", Type: field.TypeString, Default: ""},
 		{Name: "ssh_private_key", Type: field.TypeString, Default: ""},
 	}
 	// AgentRuntimesTable holds the schema information for the "agent_runtimes" table.

@@ -128,7 +128,7 @@ func (r *mutationResolver) RestartAxonclawInstance(ctx context.Context, instance
 }
 
 // RedeployAxonclawInstance is the resolver for the redeployAxonclawInstance field.
-func (r *mutationResolver) RedeployAxonclawInstance(ctx context.Context, instanceID objects.GUID) (*biz.ControlAxonclawInstanceResult, error) {
+func (r *mutationResolver) RedeployAxonclawInstance(ctx context.Context, instanceID objects.GUID, axonhubBaseURL *string) (*biz.ControlAxonclawInstanceResult, error) {
 	if err := authz.RequireScope(ctx, scopes.ScopeWriteAgents); err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (r *mutationResolver) RedeployAxonclawInstance(ctx context.Context, instanc
 		return nil, fmt.Errorf("invalid agent instance id type")
 	}
 
-	return r.agentDeployService.RedeployAxonclawInstance(ctx, instanceID.ID)
+	return r.agentDeployService.RedeployAxonclawInstance(ctx, instanceID.ID, axonhubBaseURL)
 }
 
 // AgentRuntime is the resolver for the agentRuntime field.
@@ -148,4 +148,26 @@ func (r *queryResolver) AgentRuntime(ctx context.Context, id objects.GUID) (*ent
 	return r.client.AgentRuntime.Query().
 		Where(agentruntime.IDEQ(id.ID)).
 		Only(ctx)
+}
+
+// Password is the resolver for the password field.
+func (r *agentRuntimeResolver) Password(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
+	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
+		return nil, nil
+	}
+
+	password := obj.Password
+
+	return &password, nil
+}
+
+// SSHPrivateKey is the resolver for the sshPrivateKey field.
+func (r *agentRuntimeResolver) SSHPrivateKey(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
+	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
+		return nil, nil
+	}
+
+	sshPrivateKey := obj.SSHPrivateKey
+
+	return &sshPrivateKey, nil
 }

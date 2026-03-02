@@ -319,7 +319,7 @@ func init() {
 	// agentruntime.DefaultUser holds the default value on creation for the user field.
 	agentruntime.DefaultUser = agentruntimeDescUser.Default.(string)
 	// agentruntimeDescPassword is the schema descriptor for password field.
-	agentruntimeDescPassword := agentruntimeFields[5].Descriptor()
+	agentruntimeDescPassword := agentruntimeFields[6].Descriptor()
 	// agentruntime.DefaultPassword holds the default value on creation for the password field.
 	agentruntime.DefaultPassword = agentruntimeDescPassword.Default.(string)
 	// agentruntimeDescSSHPrivateKey is the schema descriptor for ssh_private_key field.

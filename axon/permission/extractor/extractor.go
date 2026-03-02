@@ -21,6 +21,7 @@ const (
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
 	ResourceSkill   ResourceType = "skill"
+	ResourceDir     ResourceType = "dir"
 )
 
 type Resource struct {
@@ -59,7 +60,14 @@ func (e DefaultExtractor) Extract(workspace, toolName string, input json.RawMess
 		if err := json.Unmarshal(input, &v); err != nil {
 			return nil, fmt.Errorf("extract %s: invalid json: %w", toolName, err)
 		}
-		return []Resource{pathResource(workspace, v.Path)}, nil
+		abs := cleanPath(workspace, v.Path)
+		if isDirPath(v.Path) {
+			return []Resource{dirResource(workspace, abs)}, nil
+		}
+		return []Resource{
+			pathResource(workspace, abs),
+			dirResource(workspace, filepath.Dir(abs)),
+		}, nil
 	case "Glob":
 		var v struct {
 			Path string `json:"path,omitempty"`
@@ -71,7 +79,7 @@ func (e DefaultExtractor) Extract(workspace, toolName string, input json.RawMess
 		if strings.TrimSpace(p) == "" {
 			p = workspace
 		}
-		return []Resource{pathResource(workspace, p)}, nil
+		return []Resource{dirResource(workspace, p)}, nil
 	case "Grep":
 		var v struct {
 			Path string `json:"path,omitempty"`
@@ -83,7 +91,7 @@ func (e DefaultExtractor) Extract(workspace, toolName string, input json.RawMess
 		if strings.TrimSpace(p) == "" {
 			p = workspace
 		}
-		return []Resource{pathResource(workspace, p)}, nil
+		return []Resource{dirResource(workspace, p)}, nil
 	case "Bash":
 		var v struct {
 			Command string `json:"command"`
@@ -102,7 +110,7 @@ func (e DefaultExtractor) Extract(workspace, toolName string, input json.RawMess
 				Command: strings.TrimSpace(v.Command),
 				Cwd:     cleanPath(workspace, cwd),
 			},
-			pathResource(workspace, cwd),
+			dirResource(workspace, cwd),
 		}, nil
 	case "WebFetch":
 		var v struct {
@@ -188,6 +196,14 @@ func cleanPath(workspace, p string) string {
 	return filepath.Clean(p)
 }
 
+func isDirPath(p string) bool {
+	p = strings.TrimSpace(p)
+	if strings.HasSuffix(p, "/") {
+		return true
+	}
+	return filepath.Ext(p) == ""
+}
+
 func pathResource(workspace, p string) Resource {
 	abs := cleanPath(workspace, p)
 	ws := filepath.Clean(workspace)
@@ -200,6 +216,24 @@ func pathResource(workspace, p string) Resource {
 	}
 	return Resource{
 		Type:             ResourcePath,
+		Path:             abs,
+		WorkspaceRel:     rel,
+		OutsideWorkspace: outside,
+	}
+}
+
+func dirResource(workspace, dir string) Resource {
+	abs := cleanPath(workspace, dir)
+	ws := filepath.Clean(workspace)
+	outside := abs != ws && !strings.HasPrefix(abs, ws+string(filepath.Separator))
+	rel := ""
+	if !outside {
+		if r, err := filepath.Rel(ws, abs); err == nil {
+			rel = r
+		}
+	}
+	return Resource{
+		Type:             ResourceDir,
 		Path:             abs,
 		WorkspaceRel:     rel,
 		OutsideWorkspace: outside,

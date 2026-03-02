@@ -291,6 +291,7 @@ type ResolveApprovalInput struct {
 	Granted         bool           `json:"granted"`
 	Scope           *ApprovalScope `json:"scope,omitempty"`
 	Reason          *string        `json:"reason,omitempty"`
+	ResourceIndices []int          `json:"resourceIndices,omitempty"`
 }
 
 type RestorePayload struct {

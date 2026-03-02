@@ -7,6 +7,7 @@ if not defined INSTALL_DIR set "INSTALL_DIR=."
 
 echo [INFO] AxonClaw Installer
 echo [INFO] ==================
+echo [INFO] Note: This installer targets the 'axonclaw' component from the AxonHub project.
 
 :: Detect platform
 echo [INFO] Detected platform: windows-amd64
@@ -22,8 +23,17 @@ if "%VERSION%"=="" (
 
 echo [INFO] Latest version: %VERSION%
 
-:: Set download URL
-set "DOWNLOAD_URL=https://github.com/%REPO%/releases/download/%VERSION%/axonclaw-windows-amd64.zip"
+:: Resolve asset download URL
+echo [INFO] Resolving asset download URL for axonclaw...
+set "DOWNLOAD_URL="
+for /f "tokens=*" %%a in ('powershell -Command "try { $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/%REPO%/releases/tags/%VERSION%' -UseBasicParsing; $url = ($r.assets | Where-Object { $_.name -match 'axonclaw' -and $_.name -match 'windows' -and $_.name -match 'amd64' } | Select-Object -First 1).browser_download_url; if ($url) { Write-Output $url } else { exit 1 } } catch { exit 1 }"') do set "DOWNLOAD_URL=%%a"
+
+:: Fallback if API failed to find specific asset
+if "%DOWNLOAD_URL%"=="" (
+    echo [WARNING] API failed or no asset matched; trying constructed URL...
+    set "DOWNLOAD_URL=https://github.com/%REPO%/releases/download/%VERSION%/axonclaw-windows-amd64.zip"
+)
+
 echo [INFO] Download URL: %DOWNLOAD_URL%
 
 :: Create temp directory
@@ -31,7 +41,7 @@ set "TEMP_DIR=%TEMP%\axonclaw-install-%RANDOM%"
 mkdir "%TEMP_DIR%" 2>nul
 
 :: Download
-echo [INFO] Downloading axonclaw %VERSION%...
+echo [INFO] Downloading...
 powershell -Command "try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%TEMP_DIR%\axonclaw.zip' -UseBasicParsing } catch { exit 1 }"
 
 if errorlevel 1 (

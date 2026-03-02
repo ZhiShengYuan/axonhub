@@ -189,8 +189,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agentruntime.FieldStatus:        {Type: field.TypeEnum, Column: agentruntime.FieldStatus},
 			agentruntime.FieldHost:          {Type: field.TypeString, Column: agentruntime.FieldHost},
 			agentruntime.FieldUser:          {Type: field.TypeString, Column: agentruntime.FieldUser},
-			agentruntime.FieldPassword:      {Type: field.TypeString, Column: agentruntime.FieldPassword},
 			agentruntime.FieldAuthMethod:    {Type: field.TypeEnum, Column: agentruntime.FieldAuthMethod},
+			agentruntime.FieldPassword:      {Type: field.TypeString, Column: agentruntime.FieldPassword},
 			agentruntime.FieldSSHPrivateKey: {Type: field.TypeString, Column: agentruntime.FieldSSHPrivateKey},
 		},
 	}
@@ -2985,14 +2985,14 @@ func (f *AgentRuntimeFilter) WhereUser(p entql.StringP) {
 	f.Where(p.Field(agentruntime.FieldUser))
 }
 
-// WherePassword applies the entql string predicate on the password field.
-func (f *AgentRuntimeFilter) WherePassword(p entql.StringP) {
-	f.Where(p.Field(agentruntime.FieldPassword))
-}
-
 // WhereAuthMethod applies the entql string predicate on the auth_method field.
 func (f *AgentRuntimeFilter) WhereAuthMethod(p entql.StringP) {
 	f.Where(p.Field(agentruntime.FieldAuthMethod))
+}
+
+// WherePassword applies the entql string predicate on the password field.
+func (f *AgentRuntimeFilter) WherePassword(p entql.StringP) {
+	f.Where(p.Field(agentruntime.FieldPassword))
 }
 
 // WhereSSHPrivateKey applies the entql string predicate on the ssh_private_key field.

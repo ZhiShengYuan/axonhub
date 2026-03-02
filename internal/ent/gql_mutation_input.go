@@ -381,8 +381,8 @@ type CreateAgentRuntimeInput struct {
 	Status        *agentruntime.Status
 	Host          *string
 	User          *string
-	Password      *string
 	AuthMethod    *agentruntime.AuthMethod
+	Password      *string
 	SSHPrivateKey *string
 }
 
@@ -401,11 +401,11 @@ func (i *CreateAgentRuntimeInput) Mutate(m *AgentRuntimeMutation) {
 	if v := i.User; v != nil {
 		m.SetUser(*v)
 	}
-	if v := i.Password; v != nil {
-		m.SetPassword(*v)
-	}
 	if v := i.AuthMethod; v != nil {
 		m.SetAuthMethod(*v)
+	}
+	if v := i.Password; v != nil {
+		m.SetPassword(*v)
 	}
 	if v := i.SSHPrivateKey; v != nil {
 		m.SetSSHPrivateKey(*v)
@@ -425,8 +425,8 @@ type UpdateAgentRuntimeInput struct {
 	Status        *agentruntime.Status
 	Host          *string
 	User          *string
-	Password      *string
 	AuthMethod    *agentruntime.AuthMethod
+	Password      *string
 	SSHPrivateKey *string
 }
 
@@ -447,11 +447,11 @@ func (i *UpdateAgentRuntimeInput) Mutate(m *AgentRuntimeMutation) {
 	if v := i.User; v != nil {
 		m.SetUser(*v)
 	}
-	if v := i.Password; v != nil {
-		m.SetPassword(*v)
-	}
 	if v := i.AuthMethod; v != nil {
 		m.SetAuthMethod(*v)
+	}
+	if v := i.Password; v != nil {
+		m.SetPassword(*v)
 	}
 	if v := i.SSHPrivateKey; v != nil {
 		m.SetSSHPrivateKey(*v)

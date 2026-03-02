@@ -4,12 +4,17 @@ WORKDIR /build
 
 RUN apk add --no-cache git ca-certificates tzdata
 
-COPY go.mod go.sum ./
+# Copy axon module (dependency)
+COPY axon/ axon/
+
+# Copy axonclaw module
+COPY cmd/axonclaw/ cmd/axonclaw/
+
+WORKDIR /build/cmd/axonclaw
+
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOTOOLCHAIN=auto go mod download
-
-COPY . .
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -28,9 +33,9 @@ RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 
-COPY --from=builder /build/axonclaw /app/axonclaw
-COPY --from=builder /build/start.sh /app/start.sh
-COPY --from=builder /build/stop.sh /app/stop.sh
+COPY --from=builder /build/cmd/axonclaw/axonclaw /app/axonclaw
+COPY --from=builder /build/cmd/axonclaw/start.sh /app/start.sh
+COPY --from=builder /build/cmd/axonclaw/stop.sh /app/stop.sh
 
 RUN chmod +x /app/axonclaw /app/start.sh /app/stop.sh
 

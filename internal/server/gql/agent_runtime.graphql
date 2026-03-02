@@ -43,7 +43,7 @@ extend type Mutation {
     stopAxonclawInstance(instanceID: ID!): ControlAxonclawInstanceResult!
     startAxonclawInstance(instanceID: ID!): ControlAxonclawInstanceResult!
     restartAxonclawInstance(instanceID: ID!): ControlAxonclawInstanceResult!
-    redeployAxonclawInstance(instanceID: ID!): ControlAxonclawInstanceResult!
+    redeployAxonclawInstance(instanceID: ID!, axonhubBaseUrl: String): ControlAxonclawInstanceResult!
 }
 
 type AgentRuntimeTestResult {
@@ -54,4 +54,16 @@ type AgentRuntimeTestResult {
 
 extend type Query {
     agentRuntime(id: ID!): AgentRuntime
+}
+
+extend type AgentRuntime {
+  """
+  Runtime password for authentication. Sensitive: will be null if user can not access.
+  """
+  password: String @goField(forceResolver: true)
+
+    """
+  SSH private key for authentication. Sensitive: will be null if user can not access.
+  """
+  sshPrivateKey: String @goField(forceResolver: true)
 }

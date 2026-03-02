@@ -817,20 +817,20 @@ func (_m *AgentRuntime) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "user",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(_m.Password); err != nil {
-		return nil, err
-	}
-	node.Fields[7] = &Field{
-		Type:  "string",
-		Name:  "password",
-		Value: string(buf),
-	}
 	if buf, err = json.Marshal(_m.AuthMethod); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "agentruntime.AuthMethod",
 		Name:  "auth_method",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.Password); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "string",
+		Name:  "password",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(_m.SSHPrivateKey); err != nil {

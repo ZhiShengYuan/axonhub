@@ -127,20 +127,6 @@ func (_c *AgentRuntimeCreate) SetNillableUser(v *string) *AgentRuntimeCreate {
 	return _c
 }
 
-// SetPassword sets the "password" field.
-func (_c *AgentRuntimeCreate) SetPassword(v string) *AgentRuntimeCreate {
-	_c.mutation.SetPassword(v)
-	return _c
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (_c *AgentRuntimeCreate) SetNillablePassword(v *string) *AgentRuntimeCreate {
-	if v != nil {
-		_c.SetPassword(*v)
-	}
-	return _c
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (_c *AgentRuntimeCreate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeCreate {
 	_c.mutation.SetAuthMethod(v)
@@ -151,6 +137,20 @@ func (_c *AgentRuntimeCreate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRun
 func (_c *AgentRuntimeCreate) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeCreate {
 	if v != nil {
 		_c.SetAuthMethod(*v)
+	}
+	return _c
+}
+
+// SetPassword sets the "password" field.
+func (_c *AgentRuntimeCreate) SetPassword(v string) *AgentRuntimeCreate {
+	_c.mutation.SetPassword(v)
+	return _c
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (_c *AgentRuntimeCreate) SetNillablePassword(v *string) *AgentRuntimeCreate {
+	if v != nil {
+		_c.SetPassword(*v)
 	}
 	return _c
 }
@@ -255,13 +255,13 @@ func (_c *AgentRuntimeCreate) defaults() error {
 		v := agentruntime.DefaultUser
 		_c.mutation.SetUser(v)
 	}
-	if _, ok := _c.mutation.Password(); !ok {
-		v := agentruntime.DefaultPassword
-		_c.mutation.SetPassword(v)
-	}
 	if _, ok := _c.mutation.AuthMethod(); !ok {
 		v := agentruntime.DefaultAuthMethod
 		_c.mutation.SetAuthMethod(v)
+	}
+	if _, ok := _c.mutation.Password(); !ok {
+		v := agentruntime.DefaultPassword
+		_c.mutation.SetPassword(v)
 	}
 	if _, ok := _c.mutation.SSHPrivateKey(); !ok {
 		v := agentruntime.DefaultSSHPrivateKey
@@ -306,9 +306,6 @@ func (_c *AgentRuntimeCreate) check() error {
 	if _, ok := _c.mutation.User(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required field "AgentRuntime.user"`)}
 	}
-	if _, ok := _c.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "AgentRuntime.password"`)}
-	}
 	if _, ok := _c.mutation.AuthMethod(); !ok {
 		return &ValidationError{Name: "auth_method", err: errors.New(`ent: missing required field "AgentRuntime.auth_method"`)}
 	}
@@ -316,6 +313,9 @@ func (_c *AgentRuntimeCreate) check() error {
 		if err := agentruntime.AuthMethodValidator(v); err != nil {
 			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.auth_method": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Password(); !ok {
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "AgentRuntime.password"`)}
 	}
 	if _, ok := _c.mutation.SSHPrivateKey(); !ok {
 		return &ValidationError{Name: "ssh_private_key", err: errors.New(`ent: missing required field "AgentRuntime.ssh_private_key"`)}
@@ -379,13 +379,13 @@ func (_c *AgentRuntimeCreate) createSpec() (*AgentRuntime, *sqlgraph.CreateSpec)
 		_spec.SetField(agentruntime.FieldUser, field.TypeString, value)
 		_node.User = value
 	}
-	if value, ok := _c.mutation.Password(); ok {
-		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
-		_node.Password = value
-	}
 	if value, ok := _c.mutation.AuthMethod(); ok {
 		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
 		_node.AuthMethod = value
+	}
+	if value, ok := _c.mutation.Password(); ok {
+		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
+		_node.Password = value
 	}
 	if value, ok := _c.mutation.SSHPrivateKey(); ok {
 		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)
@@ -549,18 +549,6 @@ func (u *AgentRuntimeUpsert) UpdateUser() *AgentRuntimeUpsert {
 	return u
 }
 
-// SetPassword sets the "password" field.
-func (u *AgentRuntimeUpsert) SetPassword(v string) *AgentRuntimeUpsert {
-	u.Set(agentruntime.FieldPassword, v)
-	return u
-}
-
-// UpdatePassword sets the "password" field to the value that was provided on create.
-func (u *AgentRuntimeUpsert) UpdatePassword() *AgentRuntimeUpsert {
-	u.SetExcluded(agentruntime.FieldPassword)
-	return u
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (u *AgentRuntimeUpsert) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsert {
 	u.Set(agentruntime.FieldAuthMethod, v)
@@ -570,6 +558,18 @@ func (u *AgentRuntimeUpsert) SetAuthMethod(v agentruntime.AuthMethod) *AgentRunt
 // UpdateAuthMethod sets the "auth_method" field to the value that was provided on create.
 func (u *AgentRuntimeUpsert) UpdateAuthMethod() *AgentRuntimeUpsert {
 	u.SetExcluded(agentruntime.FieldAuthMethod)
+	return u
+}
+
+// SetPassword sets the "password" field.
+func (u *AgentRuntimeUpsert) SetPassword(v string) *AgentRuntimeUpsert {
+	u.Set(agentruntime.FieldPassword, v)
+	return u
+}
+
+// UpdatePassword sets the "password" field to the value that was provided on create.
+func (u *AgentRuntimeUpsert) UpdatePassword() *AgentRuntimeUpsert {
+	u.SetExcluded(agentruntime.FieldPassword)
 	return u
 }
 
@@ -735,20 +735,6 @@ func (u *AgentRuntimeUpsertOne) UpdateUser() *AgentRuntimeUpsertOne {
 	})
 }
 
-// SetPassword sets the "password" field.
-func (u *AgentRuntimeUpsertOne) SetPassword(v string) *AgentRuntimeUpsertOne {
-	return u.Update(func(s *AgentRuntimeUpsert) {
-		s.SetPassword(v)
-	})
-}
-
-// UpdatePassword sets the "password" field to the value that was provided on create.
-func (u *AgentRuntimeUpsertOne) UpdatePassword() *AgentRuntimeUpsertOne {
-	return u.Update(func(s *AgentRuntimeUpsert) {
-		s.UpdatePassword()
-	})
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (u *AgentRuntimeUpsertOne) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsertOne {
 	return u.Update(func(s *AgentRuntimeUpsert) {
@@ -760,6 +746,20 @@ func (u *AgentRuntimeUpsertOne) SetAuthMethod(v agentruntime.AuthMethod) *AgentR
 func (u *AgentRuntimeUpsertOne) UpdateAuthMethod() *AgentRuntimeUpsertOne {
 	return u.Update(func(s *AgentRuntimeUpsert) {
 		s.UpdateAuthMethod()
+	})
+}
+
+// SetPassword sets the "password" field.
+func (u *AgentRuntimeUpsertOne) SetPassword(v string) *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetPassword(v)
+	})
+}
+
+// UpdatePassword sets the "password" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertOne) UpdatePassword() *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdatePassword()
 	})
 }
 
@@ -1093,20 +1093,6 @@ func (u *AgentRuntimeUpsertBulk) UpdateUser() *AgentRuntimeUpsertBulk {
 	})
 }
 
-// SetPassword sets the "password" field.
-func (u *AgentRuntimeUpsertBulk) SetPassword(v string) *AgentRuntimeUpsertBulk {
-	return u.Update(func(s *AgentRuntimeUpsert) {
-		s.SetPassword(v)
-	})
-}
-
-// UpdatePassword sets the "password" field to the value that was provided on create.
-func (u *AgentRuntimeUpsertBulk) UpdatePassword() *AgentRuntimeUpsertBulk {
-	return u.Update(func(s *AgentRuntimeUpsert) {
-		s.UpdatePassword()
-	})
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (u *AgentRuntimeUpsertBulk) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsertBulk {
 	return u.Update(func(s *AgentRuntimeUpsert) {
@@ -1118,6 +1104,20 @@ func (u *AgentRuntimeUpsertBulk) SetAuthMethod(v agentruntime.AuthMethod) *Agent
 func (u *AgentRuntimeUpsertBulk) UpdateAuthMethod() *AgentRuntimeUpsertBulk {
 	return u.Update(func(s *AgentRuntimeUpsert) {
 		s.UpdateAuthMethod()
+	})
+}
+
+// SetPassword sets the "password" field.
+func (u *AgentRuntimeUpsertBulk) SetPassword(v string) *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetPassword(v)
+	})
+}
+
+// UpdatePassword sets the "password" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertBulk) UpdatePassword() *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdatePassword()
 	})
 }
 

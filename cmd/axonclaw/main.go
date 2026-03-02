@@ -214,6 +214,9 @@ func runAgent(cfg conf.Config, wd string, debug bool) error {
 	}))
 
 	grantsStore := grant.NewMemoryStore(grant.NewFileStore(filepath.Join(wd, ".axonclaw", "permission")))
+	if err := grantsStore.LoadGlobal(); err != nil {
+		return fmt.Errorf("load global grants: %w", err)
+	}
 	if err := grantsStore.LoadWorkspace(wd); err != nil {
 		return fmt.Errorf("load workspace grants: %w", err)
 	}

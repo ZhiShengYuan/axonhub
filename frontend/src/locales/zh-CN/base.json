@@ -171,12 +171,11 @@
   "common.buttons.remove": "移除",
   "common.buttons.openMenu": "打开菜单",
   "common.buttons.close": "关闭",
-<<<<<<< HEAD
   "common.buttons.retry": "重试",
-=======
   "common.buttons.deploy": "部署",
   "common.buttons.deploying": "部署中...",
->>>>>>> 0d5d0086 (feat: introduce agnet runtime and deploy)
+  "common.buttons.redeploy": "重部署",
+  "common.buttons.redeploying": "重部署中...",
   "common.actions.openMenu": "打开菜单",
   "common.actions.edit": "编辑",
   "common.actions.duplicate": "复制",

@@ -55,6 +55,7 @@ import {
 import { extractNumberID } from '@/lib/utils';
 import { useAgentDetail } from '../data/agent-detail';
 import { DeployAxonclawDialog } from './deploy-axonclaw-dialog';
+import { RedeployAxonclawDialog } from './redeploy-axonclaw-dialog';
 import { useControlAxonclawInstance } from '../data/control-axonclaw-instance';
 
 type ControlAction = 'start' | 'stop' | 'restart' | 'redeploy';
@@ -64,6 +65,13 @@ interface ConfirmDialogState {
   action: ControlAction | null;
   instanceID: string | null;
   instanceName: string | null;
+}
+
+interface RedeployDialogState {
+  open: boolean;
+  instanceID: string | null;
+  instanceName: string | null;
+  currentBaseUrl: string | null;
 }
 
 function isInstanceOnline(lastHeartbeatAt: string | Date, thresholdMs: number) {
@@ -92,13 +100,19 @@ export function AgentDetailPage() {
   const { getSearchParams } = usePaginationSearch({ defaultPageSize: 20 });
 
   const { data: agent, isLoading, refetch } = useAgentDetail(agentId);
-  const [onlineThresholdSeconds, setOnlineThresholdSeconds] = useState(30);
+  const [onlineThresholdSeconds, setOnlineThresholdSeconds] = useState(60);
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
     open: false,
     action: null,
     instanceID: null,
     instanceName: null,
+  });
+  const [redeployDialog, setRedeployDialog] = useState<RedeployDialogState>({
+    open: false,
+    instanceID: null,
+    instanceName: null,
+    currentBaseUrl: null,
   });
   const { agentRuntimesPermissions } = usePermissions();
   const controlInstance = useControlAxonclawInstance(agentId);
@@ -135,6 +149,24 @@ export function AgentDetailPage() {
       action: null,
       instanceID: null,
       instanceName: null,
+    });
+  };
+
+  const openRedeployDialog = (instanceID: string, instanceName: string, currentBaseUrl?: string) => {
+    setRedeployDialog({
+      open: true,
+      instanceID,
+      instanceName,
+      currentBaseUrl: currentBaseUrl || null,
+    });
+  };
+
+  const closeRedeployDialog = () => {
+    setRedeployDialog({
+      open: false,
+      instanceID: null,
+      instanceName: null,
+      currentBaseUrl: null,
     });
   };
 
@@ -399,16 +431,16 @@ export function AgentDetailPage() {
                     <div className='flex items-center justify-between'>
                       <CardTitle className='flex items-center gap-2 text-base'>
                         <Server className='text-primary h-4 w-4' />
-                        Instances
+                        {t('agents.instances.title')}
                       </CardTitle>
                       <Badge variant={onlineCount > 0 ? 'default' : 'secondary'} className='text-xs'>
-                        {onlineCount}/{instances.length} online
+                        {onlineCount}/{instances.length} {t('agents.instances.online')}
                       </Badge>
                     </div>
                     <CardDescription className='flex items-center gap-2 pt-1'>
-                      <span>Threshold:</span>
+                      <span>{t('agents.instances.threshold')}:</span>
                       <div className='flex items-center gap-1'>
-                        {[10, 30, 60].map((sec) => (
+                        {[60, 300, 600].map((sec) => (
                           <Button
                             key={sec}
                             type='button'
@@ -417,7 +449,7 @@ export function AgentDetailPage() {
                             onClick={() => setOnlineThresholdSeconds(sec)}
                             className='h-6 px-2 text-xs'
                           >
-                            {sec}s
+                            {sec === 60 ? t('agents.instances.thresholdOptions.1min') : sec === 300 ? t('agents.instances.thresholdOptions.5min') : t('agents.instances.thresholdOptions.10min')}
                           </Button>
                         ))}
                       </div>
@@ -427,7 +459,7 @@ export function AgentDetailPage() {
                     {instances.length === 0 ? (
                       <div className='text-muted-foreground py-8 text-center text-sm'>
                         <Server className='text-muted-foreground/50 mx-auto mb-2 h-8 w-8' />
-                        <p>No instances registered.</p>
+                        <p>{t('agents.instances.noInstances')}</p>
                       </div>
                     ) : (
                       <div className='space-y-2'>
@@ -446,7 +478,7 @@ export function AgentDetailPage() {
                                     />
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>{online ? 'Online' : 'Offline'}</p>
+                                    <p>{online ? t('agents.instances.status.online') : t('agents.instances.status.offline')}</p>
                                   </TooltipContent>
                                 </Tooltip>
                                 <div className='min-w-0'>
@@ -471,7 +503,7 @@ export function AgentDetailPage() {
                                     <p>
                                       {inst.lastHeartbeatAt
                                         ? format(new Date(inst.lastHeartbeatAt), 'yyyy-MM-dd HH:mm:ss')
-                                        : 'No heartbeat'}
+                                        : t('agents.instances.noHeartbeat')}
                                     </p>
                                   </TooltipContent>
                                 </Tooltip>
@@ -512,7 +544,7 @@ export function AgentDetailPage() {
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
                                         disabled={controlInstance.isPending}
-                                        onClick={() => openConfirmDialog(inst.id, inst.name, 'redeploy')}
+                                        onClick={() => openRedeployDialog(inst.id, inst.name, inst.deployment?.axonhubBaseUrl)}
                                       >
                                         <Rocket className='mr-2 h-4 w-4' />
                                         {t('agents.instanceActions.redeploy')}
@@ -566,18 +598,14 @@ export function AgentDetailPage() {
                 ? t('agents.instanceDialogs.start.title')
                 : confirmDialog.action === 'stop'
                   ? t('agents.instanceDialogs.stop.title')
-                  : confirmDialog.action === 'restart'
-                    ? t('agents.instanceDialogs.restart.title')
-                    : t('agents.instanceDialogs.redeploy.title')}
+                  : t('agents.instanceDialogs.restart.title')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmDialog.action === 'start'
                 ? t('agents.instanceDialogs.start.description', { name: confirmDialog.instanceName })
                 : confirmDialog.action === 'stop'
                   ? t('agents.instanceDialogs.stop.description', { name: confirmDialog.instanceName })
-                  : confirmDialog.action === 'restart'
-                    ? t('agents.instanceDialogs.restart.description', { name: confirmDialog.instanceName })
-                    : t('agents.instanceDialogs.redeploy.description', { name: confirmDialog.instanceName })}
+                  : t('agents.instanceDialogs.restart.description', { name: confirmDialog.instanceName })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -593,6 +621,17 @@ export function AgentDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RedeployAxonclawDialog
+        agentId={agentId}
+        instanceId={redeployDialog.instanceID || ''}
+        instanceName={redeployDialog.instanceName || ''}
+        currentBaseUrl={redeployDialog.currentBaseUrl || undefined}
+        open={redeployDialog.open}
+        onOpenChange={(open) => {
+          if (!open) closeRedeployDialog();
+        }}
+      />
     </div>
   );
 }

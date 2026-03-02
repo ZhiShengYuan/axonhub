@@ -83,6 +83,7 @@ func (r *mutationResolver) ResolveApproval(ctx context.Context, input ResolveApp
 		Granted:         input.Granted,
 		Scope:           scope,
 		Reason:          input.Reason,
+		ResourceIndices: input.ResourceIndices,
 	})
 }
 

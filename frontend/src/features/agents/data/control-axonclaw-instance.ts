@@ -34,8 +34,8 @@ const MUTATIONS: Record<ControlAction, string> = {
     }
   `,
   redeploy: `
-    mutation RedeployAxonclawInstance($instanceID: ID!) {
-      redeployAxonclawInstance(instanceID: $instanceID) {
+    mutation RedeployAxonclawInstance($instanceID: ID!, $axonhubBaseUrl: String) {
+      redeployAxonclawInstance(instanceID: $instanceID, axonhubBaseUrl: $axonhubBaseUrl) {
         success
         error
         instance { id status lastHeartbeatAt updatedAt }
@@ -68,12 +68,16 @@ export function useControlAxonclawInstance(agentID: string) {
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: async (input: { instanceID: string; action: ControlAction }) => {
+    mutationFn: async (input: { instanceID: string; action: ControlAction; axonhubBaseUrl?: string }) => {
       const mutation = MUTATIONS[input.action];
       const key = resultKey(input.action);
-      const data = await graphqlRequest<Record<string, ControlResult>>(mutation, {
+      const variables: Record<string, any> = {
         instanceID: input.instanceID,
-      });
+      };
+      if (input.action === 'redeploy' && input.axonhubBaseUrl !== undefined) {
+        variables.axonhubBaseUrl = input.axonhubBaseUrl;
+      }
+      const data = await graphqlRequest<Record<string, ControlResult>>(mutation, variables);
       return data[key];
     },
     onSuccess: (data, variables) => {
@@ -113,6 +117,20 @@ export function useControlAxonclawInstance(agentID: string) {
               ? 'agents.messages.instanceRestartError'
               : 'agents.messages.instanceRedeployError';
       toast.error(t(errorKey, { error: error.message }));
+    },
+  });
+}
+
+export function useRedeployAxonclawInstance(agentID: string) {
+  const controlInstance = useControlAxonclawInstance(agentID);
+
+  return useMutation({
+    mutationFn: async (input: { instanceID: string; axonhubBaseUrl?: string }) => {
+      return controlInstance.mutateAsync({
+        instanceID: input.instanceID,
+        action: 'redeploy',
+        axonhubBaseUrl: input.axonhubBaseUrl,
+      });
     },
   });
 }

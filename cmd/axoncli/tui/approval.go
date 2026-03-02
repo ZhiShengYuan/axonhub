@@ -92,6 +92,16 @@ func formatApprovalResources(raw json.RawMessage) string {
 			if r.Cwd != "" {
 				lines = append(lines, fmt.Sprintf("    cwd: %s", r.Cwd))
 			}
+		case permission.ResourceDir:
+			p := r.Path
+			if r.WorkspaceRel != "" {
+				p = r.WorkspaceRel
+			}
+			extra := ""
+			if r.OutsideWorkspace {
+				extra = " (outside workspace)"
+			}
+			lines = append(lines, fmt.Sprintf("  - dir: %s%s", p, extra))
 		default:
 			// ignore unknown for now
 		}

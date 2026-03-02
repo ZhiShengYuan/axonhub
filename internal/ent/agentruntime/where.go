@@ -450,6 +450,26 @@ func UserContainsFold(v string) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldContainsFold(FieldUser, v))
 }
 
+// AuthMethodEQ applies the EQ predicate on the "auth_method" field.
+func AuthMethodEQ(v AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldEQ(FieldAuthMethod, v))
+}
+
+// AuthMethodNEQ applies the NEQ predicate on the "auth_method" field.
+func AuthMethodNEQ(v AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNEQ(FieldAuthMethod, v))
+}
+
+// AuthMethodIn applies the In predicate on the "auth_method" field.
+func AuthMethodIn(vs ...AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldIn(FieldAuthMethod, vs...))
+}
+
+// AuthMethodNotIn applies the NotIn predicate on the "auth_method" field.
+func AuthMethodNotIn(vs ...AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNotIn(FieldAuthMethod, vs...))
+}
+
 // PasswordEQ applies the EQ predicate on the "password" field.
 func PasswordEQ(v string) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldEQ(FieldPassword, v))
@@ -513,26 +533,6 @@ func PasswordEqualFold(v string) predicate.AgentRuntime {
 // PasswordContainsFold applies the ContainsFold predicate on the "password" field.
 func PasswordContainsFold(v string) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldContainsFold(FieldPassword, v))
-}
-
-// AuthMethodEQ applies the EQ predicate on the "auth_method" field.
-func AuthMethodEQ(v AuthMethod) predicate.AgentRuntime {
-	return predicate.AgentRuntime(sql.FieldEQ(FieldAuthMethod, v))
-}
-
-// AuthMethodNEQ applies the NEQ predicate on the "auth_method" field.
-func AuthMethodNEQ(v AuthMethod) predicate.AgentRuntime {
-	return predicate.AgentRuntime(sql.FieldNEQ(FieldAuthMethod, v))
-}
-
-// AuthMethodIn applies the In predicate on the "auth_method" field.
-func AuthMethodIn(vs ...AuthMethod) predicate.AgentRuntime {
-	return predicate.AgentRuntime(sql.FieldIn(FieldAuthMethod, vs...))
-}
-
-// AuthMethodNotIn applies the NotIn predicate on the "auth_method" field.
-func AuthMethodNotIn(vs ...AuthMethod) predicate.AgentRuntime {
-	return predicate.AgentRuntime(sql.FieldNotIn(FieldAuthMethod, vs...))
 }
 
 // SSHPrivateKeyEQ applies the EQ predicate on the "ssh_private_key" field.

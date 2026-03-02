@@ -127,20 +127,6 @@ func (_u *AgentRuntimeUpdate) SetNillableUser(v *string) *AgentRuntimeUpdate {
 	return _u
 }
 
-// SetPassword sets the "password" field.
-func (_u *AgentRuntimeUpdate) SetPassword(v string) *AgentRuntimeUpdate {
-	_u.mutation.SetPassword(v)
-	return _u
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (_u *AgentRuntimeUpdate) SetNillablePassword(v *string) *AgentRuntimeUpdate {
-	if v != nil {
-		_u.SetPassword(*v)
-	}
-	return _u
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (_u *AgentRuntimeUpdate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpdate {
 	_u.mutation.SetAuthMethod(v)
@@ -151,6 +137,20 @@ func (_u *AgentRuntimeUpdate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRun
 func (_u *AgentRuntimeUpdate) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeUpdate {
 	if v != nil {
 		_u.SetAuthMethod(*v)
+	}
+	return _u
+}
+
+// SetPassword sets the "password" field.
+func (_u *AgentRuntimeUpdate) SetPassword(v string) *AgentRuntimeUpdate {
+	_u.mutation.SetPassword(v)
+	return _u
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (_u *AgentRuntimeUpdate) SetNillablePassword(v *string) *AgentRuntimeUpdate {
+	if v != nil {
+		_u.SetPassword(*v)
 	}
 	return _u
 }
@@ -314,11 +314,11 @@ func (_u *AgentRuntimeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.User(); ok {
 		_spec.SetField(agentruntime.FieldUser, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Password(); ok {
-		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.AuthMethod(); ok {
 		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Password(); ok {
+		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SSHPrivateKey(); ok {
 		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)
@@ -487,20 +487,6 @@ func (_u *AgentRuntimeUpdateOne) SetNillableUser(v *string) *AgentRuntimeUpdateO
 	return _u
 }
 
-// SetPassword sets the "password" field.
-func (_u *AgentRuntimeUpdateOne) SetPassword(v string) *AgentRuntimeUpdateOne {
-	_u.mutation.SetPassword(v)
-	return _u
-}
-
-// SetNillablePassword sets the "password" field if the given value is not nil.
-func (_u *AgentRuntimeUpdateOne) SetNillablePassword(v *string) *AgentRuntimeUpdateOne {
-	if v != nil {
-		_u.SetPassword(*v)
-	}
-	return _u
-}
-
 // SetAuthMethod sets the "auth_method" field.
 func (_u *AgentRuntimeUpdateOne) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpdateOne {
 	_u.mutation.SetAuthMethod(v)
@@ -511,6 +497,20 @@ func (_u *AgentRuntimeUpdateOne) SetAuthMethod(v agentruntime.AuthMethod) *Agent
 func (_u *AgentRuntimeUpdateOne) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeUpdateOne {
 	if v != nil {
 		_u.SetAuthMethod(*v)
+	}
+	return _u
+}
+
+// SetPassword sets the "password" field.
+func (_u *AgentRuntimeUpdateOne) SetPassword(v string) *AgentRuntimeUpdateOne {
+	_u.mutation.SetPassword(v)
+	return _u
+}
+
+// SetNillablePassword sets the "password" field if the given value is not nil.
+func (_u *AgentRuntimeUpdateOne) SetNillablePassword(v *string) *AgentRuntimeUpdateOne {
+	if v != nil {
+		_u.SetPassword(*v)
 	}
 	return _u
 }
@@ -704,11 +704,11 @@ func (_u *AgentRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *AgentRunti
 	if value, ok := _u.mutation.User(); ok {
 		_spec.SetField(agentruntime.FieldUser, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Password(); ok {
-		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.AuthMethod(); ok {
 		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Password(); ok {
+		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SSHPrivateKey(); ok {
 		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)

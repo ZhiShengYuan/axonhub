@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/looplj/axonhub/internal/ent"
+	"github.com/looplj/axonhub/internal/ent/agentruntime"
 )
 
 func (svc *AgentDeployService) deployToVM(ctx context.Context, runtime *ent.AgentRuntime, apiKey *ent.APIKey, name, directory, baseURL string) error {
@@ -50,18 +51,9 @@ func (svc *AgentDeployService) deployToVM(ctx context.Context, runtime *ent.Agen
 		return nil
 	}
 
-	config := &ssh.ClientConfig{
-		User: runtime.User,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(runtime.Password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         30 * time.Second,
-	}
-
-	client, err := ssh.Dial("tcp", runtime.Host, config)
+	client, err := sshDial(runtime)
 	if err != nil {
-		return fmt.Errorf("failed to connect to host %s: %w", runtime.Host, err)
+		return err
 	}
 	defer client.Close()
 
@@ -269,11 +261,14 @@ func (svc *AgentDeployService) vmInstallLatest(ctx context.Context, runtime *ent
 }
 
 func sshDial(runtime *ent.AgentRuntime) (*ssh.Client, error) {
+	authMethods, err := buildSSHAuthMethods(runtime)
+	if err != nil {
+		return nil, err
+	}
+
 	config := &ssh.ClientConfig{
 		User: runtime.User,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(runtime.Password),
-		},
+		Auth: authMethods,
 		//nolint:gosec // ignore G202, it's a test environment.
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         30 * time.Second,
@@ -285,4 +280,15 @@ func sshDial(runtime *ent.AgentRuntime) (*ssh.Client, error) {
 	}
 
 	return client, nil
+}
+
+func buildSSHAuthMethods(runtime *ent.AgentRuntime) ([]ssh.AuthMethod, error) {
+	if runtime.AuthMethod == agentruntime.AuthMethodSSHKey {
+		signer, err := ssh.ParsePrivateKey([]byte(runtime.SSHPrivateKey))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse SSH private key: %w", err)
+		}
+		return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+	}
+	return []ssh.AuthMethod{ssh.Password(runtime.Password)}, nil
 }

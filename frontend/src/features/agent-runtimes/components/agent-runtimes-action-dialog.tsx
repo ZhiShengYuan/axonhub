@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -34,6 +35,7 @@ import { AutoComplete } from '@/components/auto-complete';
 import { useCreateAgentRuntime, useUpdateAgentRuntime } from '../data/agent-runtimes';
 import {
   AgentRuntime,
+  AgentRuntimeAuthMethod,
   AgentRuntimeType,
   CreateAgentRuntimeInput,
   UpdateAgentRuntimeInput,
@@ -67,6 +69,8 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
           host: currentRow?.host || '',
           user: currentRow?.user || '',
           password: currentRow?.password || '',
+          authMethod: currentRow?.authMethod || 'password',
+          sshPrivateKey: currentRow?.sshPrivateKey || '',
         }
       : {
           name: '',
@@ -75,6 +79,8 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
           host: '',
           user: '',
           password: '',
+          authMethod: 'password',
+          sshPrivateKey: '',
         },
   });
 
@@ -92,6 +98,8 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
               host: hostValue,
               user: currentRow?.user || '',
               password: currentRow?.password || '',
+              authMethod: currentRow?.authMethod || 'password',
+              sshPrivateKey: currentRow?.sshPrivateKey || '',
             }
           : {
               name: '',
@@ -100,6 +108,8 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
               host: '',
               user: '',
               password: '',
+              authMethod: 'password',
+              sshPrivateKey: '',
             }
       );
     }
@@ -135,8 +145,14 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
 
   const typeValue = form.watch('type');
   const hostValue = form.watch('host');
+  const authMethodValue = (form.watch('authMethod') || 'password') as AgentRuntimeAuthMethod;
   const isLocalType = typeValue === 'local';
   const isLocalhost = hostValue === 'localhost' || hostValue === '127.0.0.1';
+
+  const authMethods: { value: AgentRuntimeAuthMethod; label: string }[] = [
+    { value: 'password', label: t('agentRuntimes.authMethods.password') },
+    { value: 'ssh_key', label: t('agentRuntimes.authMethods.ssh_key') },
+  ];
 
   const runtimeStatuses: { value: 'active' | 'inactive' | 'error'; label: string }[] = [
     { value: 'active', label: t('agentRuntimes.status.active') },
@@ -284,21 +300,69 @@ export function AgentRuntimesActionDialog({ currentRow, open, onOpenChange }: Pr
 
                 <FormField
                   control={form.control}
-                  name="password"
+                  name="authMethod"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('agentRuntimes.dialogs.fields.password.label')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder={t('agentRuntimes.dialogs.fields.password.placeholder')}
-                          {...field}
-                        />
-                      </FormControl>
+                      <FormLabel>{t('agentRuntimes.dialogs.fields.authMethod.label')}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value || 'password'}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('agentRuntimes.dialogs.fields.authMethod.placeholder')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {authMethods.map((method) => (
+                            <SelectItem key={method.value} value={method.value}>
+                              {method.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {authMethodValue === 'password' && (
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('agentRuntimes.dialogs.fields.password.label')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('agentRuntimes.dialogs.fields.password.placeholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {authMethodValue === 'ssh_key' && (
+                  <FormField
+                    control={form.control}
+                    name="sshPrivateKey"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('agentRuntimes.dialogs.fields.sshPrivateKey.label')}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t('agentRuntimes.dialogs.fields.sshPrivateKey.placeholder')}
+                            className="font-mono text-xs"
+                            rows={6}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </>
             )}
 

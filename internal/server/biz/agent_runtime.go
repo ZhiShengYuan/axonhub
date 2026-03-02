@@ -30,21 +30,9 @@ func NewAgentRuntimeService(params AgentRuntimeServiceParams) *AgentRuntimeServi
 	}
 }
 
-type CreateAgentRuntimeInput struct {
-	Name     string
-	Type     agentruntime.Type
-	Host     string
-	User     string
-	Password string
-}
-
-func (svc *AgentRuntimeService) CreateAgentRuntime(ctx context.Context, input CreateAgentRuntimeInput) (*ent.AgentRuntime, error) {
+func (svc *AgentRuntimeService) CreateAgentRuntime(ctx context.Context, input ent.CreateAgentRuntimeInput) (*ent.AgentRuntime, error) {
 	runtime, err := svc.db.AgentRuntime.Create().
-		SetName(input.Name).
-		SetType(input.Type).
-		SetHost(input.Host).
-		SetUser(input.User).
-		SetPassword(input.Password).
+		SetInput(input).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create agent runtime: %w", err)
@@ -53,21 +41,9 @@ func (svc *AgentRuntimeService) CreateAgentRuntime(ctx context.Context, input Cr
 	return runtime, nil
 }
 
-type UpdateAgentRuntimeInput struct {
-	Name     *string
-	Status   *agentruntime.Status
-	Host     *string
-	User     *string
-	Password *string
-}
-
-func (svc *AgentRuntimeService) UpdateAgentRuntime(ctx context.Context, id int, input UpdateAgentRuntimeInput) (*ent.AgentRuntime, error) {
+func (svc *AgentRuntimeService) UpdateAgentRuntime(ctx context.Context, id int, input ent.UpdateAgentRuntimeInput) (*ent.AgentRuntime, error) {
 	runtime, err := svc.db.AgentRuntime.UpdateOneID(id).
-		SetNillableName(input.Name).
-		SetNillableStatus(input.Status).
-		SetNillableHost(input.Host).
-		SetNillableUser(input.User).
-		SetNillablePassword(input.Password).
+		SetInput(input).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update agent runtime: %w", err)

@@ -27,6 +27,8 @@ const QUERY_AGENT_RUNTIMES_QUERY = `
           host
           user
           password
+          authMethod
+          sshPrivateKey
         }
         cursor
       }
@@ -53,6 +55,8 @@ const CREATE_AGENT_RUNTIME_MUTATION = `
       host
       user
       password
+      authMethod
+      sshPrivateKey
     }
   }
 `;
@@ -69,6 +73,8 @@ const UPDATE_AGENT_RUNTIME_MUTATION = `
       host
       user
       password
+      authMethod
+      sshPrivateKey
     }
   }
 `;

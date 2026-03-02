@@ -55,6 +55,14 @@ func (AgentRuntime) Fields() []ent.Field {
 			Default("").
 			Sensitive().
 			Comment("Runtime password for authentication"),
+		field.Enum("auth_method").
+			Values("password", "ssh_key").
+			Default("password").
+			Comment("Authentication method: password or ssh_key"),
+		field.String("ssh_private_key").
+			Default("").
+			Sensitive().
+			Comment("SSH private key for authentication"),
 	}
 }
 

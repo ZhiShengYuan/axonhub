@@ -2811,6 +2811,27 @@ type AgentRuntimeWhereInput struct {
 	PasswordEqualFold    *string  `json:"passwordEqualFold,omitempty"`
 	PasswordContainsFold *string  `json:"passwordContainsFold,omitempty"`
 
+	// "auth_method" field predicates.
+	AuthMethod      *agentruntime.AuthMethod  `json:"authMethod,omitempty"`
+	AuthMethodNEQ   *agentruntime.AuthMethod  `json:"authMethodNEQ,omitempty"`
+	AuthMethodIn    []agentruntime.AuthMethod `json:"authMethodIn,omitempty"`
+	AuthMethodNotIn []agentruntime.AuthMethod `json:"authMethodNotIn,omitempty"`
+
+	// "ssh_private_key" field predicates.
+	SSHPrivateKey             *string  `json:"sshPrivateKey,omitempty"`
+	SSHPrivateKeyNEQ          *string  `json:"sshPrivateKeyNEQ,omitempty"`
+	SSHPrivateKeyIn           []string `json:"sshPrivateKeyIn,omitempty"`
+	SSHPrivateKeyNotIn        []string `json:"sshPrivateKeyNotIn,omitempty"`
+	SSHPrivateKeyGT           *string  `json:"sshPrivateKeyGT,omitempty"`
+	SSHPrivateKeyGTE          *string  `json:"sshPrivateKeyGTE,omitempty"`
+	SSHPrivateKeyLT           *string  `json:"sshPrivateKeyLT,omitempty"`
+	SSHPrivateKeyLTE          *string  `json:"sshPrivateKeyLTE,omitempty"`
+	SSHPrivateKeyContains     *string  `json:"sshPrivateKeyContains,omitempty"`
+	SSHPrivateKeyHasPrefix    *string  `json:"sshPrivateKeyHasPrefix,omitempty"`
+	SSHPrivateKeyHasSuffix    *string  `json:"sshPrivateKeyHasSuffix,omitempty"`
+	SSHPrivateKeyEqualFold    *string  `json:"sshPrivateKeyEqualFold,omitempty"`
+	SSHPrivateKeyContainsFold *string  `json:"sshPrivateKeyContainsFold,omitempty"`
+
 	// "instances" edge predicates.
 	HasInstances     *bool                      `json:"hasInstances,omitempty"`
 	HasInstancesWith []*AgentInstanceWhereInput `json:"hasInstancesWith,omitempty"`
@@ -3138,6 +3159,57 @@ func (i *AgentRuntimeWhereInput) P() (predicate.AgentRuntime, error) {
 	}
 	if i.PasswordContainsFold != nil {
 		predicates = append(predicates, agentruntime.PasswordContainsFold(*i.PasswordContainsFold))
+	}
+	if i.AuthMethod != nil {
+		predicates = append(predicates, agentruntime.AuthMethodEQ(*i.AuthMethod))
+	}
+	if i.AuthMethodNEQ != nil {
+		predicates = append(predicates, agentruntime.AuthMethodNEQ(*i.AuthMethodNEQ))
+	}
+	if len(i.AuthMethodIn) > 0 {
+		predicates = append(predicates, agentruntime.AuthMethodIn(i.AuthMethodIn...))
+	}
+	if len(i.AuthMethodNotIn) > 0 {
+		predicates = append(predicates, agentruntime.AuthMethodNotIn(i.AuthMethodNotIn...))
+	}
+	if i.SSHPrivateKey != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyEQ(*i.SSHPrivateKey))
+	}
+	if i.SSHPrivateKeyNEQ != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyNEQ(*i.SSHPrivateKeyNEQ))
+	}
+	if len(i.SSHPrivateKeyIn) > 0 {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyIn(i.SSHPrivateKeyIn...))
+	}
+	if len(i.SSHPrivateKeyNotIn) > 0 {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyNotIn(i.SSHPrivateKeyNotIn...))
+	}
+	if i.SSHPrivateKeyGT != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyGT(*i.SSHPrivateKeyGT))
+	}
+	if i.SSHPrivateKeyGTE != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyGTE(*i.SSHPrivateKeyGTE))
+	}
+	if i.SSHPrivateKeyLT != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyLT(*i.SSHPrivateKeyLT))
+	}
+	if i.SSHPrivateKeyLTE != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyLTE(*i.SSHPrivateKeyLTE))
+	}
+	if i.SSHPrivateKeyContains != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyContains(*i.SSHPrivateKeyContains))
+	}
+	if i.SSHPrivateKeyHasPrefix != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyHasPrefix(*i.SSHPrivateKeyHasPrefix))
+	}
+	if i.SSHPrivateKeyHasSuffix != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyHasSuffix(*i.SSHPrivateKeyHasSuffix))
+	}
+	if i.SSHPrivateKeyEqualFold != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyEqualFold(*i.SSHPrivateKeyEqualFold))
+	}
+	if i.SSHPrivateKeyContainsFold != nil {
+		predicates = append(predicates, agentruntime.SSHPrivateKeyContainsFold(*i.SSHPrivateKeyContainsFold))
 	}
 
 	if i.HasInstances != nil {

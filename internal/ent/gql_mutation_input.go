@@ -376,12 +376,14 @@ func (c *AgentMessageUpdateOne) SetInput(i UpdateAgentMessageInput) *AgentMessag
 
 // CreateAgentRuntimeInput represents a mutation input for creating agentruntimes.
 type CreateAgentRuntimeInput struct {
-	Name     string
-	Type     *agentruntime.Type
-	Status   *agentruntime.Status
-	Host     *string
-	User     *string
-	Password *string
+	Name          string
+	Type          *agentruntime.Type
+	Status        *agentruntime.Status
+	Host          *string
+	User          *string
+	Password      *string
+	AuthMethod    *agentruntime.AuthMethod
+	SSHPrivateKey *string
 }
 
 // Mutate applies the CreateAgentRuntimeInput on the AgentRuntimeMutation builder.
@@ -402,6 +404,12 @@ func (i *CreateAgentRuntimeInput) Mutate(m *AgentRuntimeMutation) {
 	if v := i.Password; v != nil {
 		m.SetPassword(*v)
 	}
+	if v := i.AuthMethod; v != nil {
+		m.SetAuthMethod(*v)
+	}
+	if v := i.SSHPrivateKey; v != nil {
+		m.SetSSHPrivateKey(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateAgentRuntimeInput on the AgentRuntimeCreate builder.
@@ -412,12 +420,14 @@ func (c *AgentRuntimeCreate) SetInput(i CreateAgentRuntimeInput) *AgentRuntimeCr
 
 // UpdateAgentRuntimeInput represents a mutation input for updating agentruntimes.
 type UpdateAgentRuntimeInput struct {
-	Name     *string
-	Type     *agentruntime.Type
-	Status   *agentruntime.Status
-	Host     *string
-	User     *string
-	Password *string
+	Name          *string
+	Type          *agentruntime.Type
+	Status        *agentruntime.Status
+	Host          *string
+	User          *string
+	Password      *string
+	AuthMethod    *agentruntime.AuthMethod
+	SSHPrivateKey *string
 }
 
 // Mutate applies the UpdateAgentRuntimeInput on the AgentRuntimeMutation builder.
@@ -439,6 +449,12 @@ func (i *UpdateAgentRuntimeInput) Mutate(m *AgentRuntimeMutation) {
 	}
 	if v := i.Password; v != nil {
 		m.SetPassword(*v)
+	}
+	if v := i.AuthMethod; v != nil {
+		m.SetAuthMethod(*v)
+	}
+	if v := i.SSHPrivateKey; v != nil {
+		m.SetSSHPrivateKey(*v)
 	}
 }
 

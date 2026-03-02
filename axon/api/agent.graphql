@@ -4,6 +4,7 @@ query AgentBootstrap {
     agentID
     agentName
     model
+    reasoningEffort
     systemPrompt
     tools { name description parameters config }
     skills { name content entrypoint args }

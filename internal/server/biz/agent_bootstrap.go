@@ -60,10 +60,11 @@ type AgentSkillDefinition struct {
 }
 
 type AgentBootstrap struct {
-	AgentID      int
-	AgentName    string
-	Model        *string
-	SystemPrompt string
+	AgentID         int
+	AgentName       string
+	Model           *string
+	ReasoningEffort string
+	SystemPrompt    string
 
 	Tools        []AgentToolDefinition
 	Skills       []AgentSkillDefinition
@@ -290,15 +291,16 @@ func (s *AgentBootstrapService) AgentBootstrap(ctx context.Context, inst *ent.Ag
 		}
 
 		return &AgentBootstrap{
-			AgentID:      a.ID,
-			AgentName:    a.Name,
-			Model:        model,
-			SystemPrompt: p.Content,
-			Tools:        tools,
-			Skills:       skills,
-			BuiltinTools: builtinTools,
-			SkillsPolicy: skillsPolicy,
-			MemoryPolicy: nil,
+			AgentID:         a.ID,
+			AgentName:       a.Name,
+			Model:           model,
+			ReasoningEffort: string(a.ReasoningEffort),
+			SystemPrompt:    p.Content,
+			Tools:           tools,
+			Skills:          skills,
+			BuiltinTools:    builtinTools,
+			SkillsPolicy:    skillsPolicy,
+			MemoryPolicy:    nil,
 		}, nil
 	})
 }

@@ -4,6 +4,9 @@ import { pageInfoSchema } from '@/gql/pagination';
 export const agentStatusSchema = z.enum(['enabled', 'disabled', 'archived']);
 export type AgentStatus = z.infer<typeof agentStatusSchema>;
 
+export const reasoningEffortSchema = z.enum(['none', 'low', 'medium', 'high']);
+export type ReasoningEffort = z.infer<typeof reasoningEffortSchema>;
+
 export const agentBuiltinToolSchema = z.object({
   name: z.string(),
   enabled: z.boolean(),
@@ -21,6 +24,7 @@ export const agentSchema = z.object({
   description: z.string(),
   status: agentStatusSchema,
   model: z.string(),
+  reasoningEffort: reasoningEffortSchema,
   agentBuiltinTools: z.any(),
   skillsPolicy: z.any(),
   prompt: z
@@ -62,6 +66,7 @@ export const createAgentInputSchema = z.object({
   description: z.string().optional(),
   status: agentStatusSchema.optional(),
   model: z.string().optional(),
+  reasoningEffort: reasoningEffortSchema.optional(),
   systemPrompt: z.string().min(1),
   builtinTools: z.array(agentBuiltinToolInputSchema).optional(),
   skillsPolicy: agentSkillsPolicyInputSchema.optional(),
@@ -73,6 +78,7 @@ export const updateAgentInputSchema = z.object({
   description: z.string().optional(),
   status: agentStatusSchema.optional(),
   model: z.string().optional(),
+  reasoningEffort: reasoningEffortSchema.optional(),
   systemPrompt: z.string().optional(),
   builtinTools: z.array(agentBuiltinToolInputSchema).optional(),
   skillsPolicy: agentSkillsPolicyInputSchema.optional(),

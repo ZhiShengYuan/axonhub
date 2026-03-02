@@ -49,15 +49,16 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	AgentBootstrap struct {
-		AgentID      func(childComplexity int) int
-		AgentName    func(childComplexity int) int
-		BuiltinTools func(childComplexity int) int
-		MemoryPolicy func(childComplexity int) int
-		Model        func(childComplexity int) int
-		Skills       func(childComplexity int) int
-		SkillsPolicy func(childComplexity int) int
-		SystemPrompt func(childComplexity int) int
-		Tools        func(childComplexity int) int
+		AgentID         func(childComplexity int) int
+		AgentName       func(childComplexity int) int
+		BuiltinTools    func(childComplexity int) int
+		MemoryPolicy    func(childComplexity int) int
+		Model           func(childComplexity int) int
+		ReasoningEffort func(childComplexity int) int
+		Skills          func(childComplexity int) int
+		SkillsPolicy    func(childComplexity int) int
+		SystemPrompt    func(childComplexity int) int
+		Tools           func(childComplexity int) int
 	}
 
 	AgentBuiltinTool struct {
@@ -192,6 +193,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.AgentBootstrap.Model(childComplexity), true
+	case "AgentBootstrap.reasoningEffort":
+		if e.complexity.AgentBootstrap.ReasoningEffort == nil {
+			break
+		}
+
+		return e.complexity.AgentBootstrap.ReasoningEffort(childComplexity), true
 	case "AgentBootstrap.skills":
 		if e.complexity.AgentBootstrap.Skills == nil {
 			break
@@ -857,6 +864,35 @@ func (ec *executionContext) _AgentBootstrap_model(ctx context.Context, field gra
 }
 
 func (ec *executionContext) fieldContext_AgentBootstrap_model(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AgentBootstrap",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AgentBootstrap_reasoningEffort(ctx context.Context, field graphql.CollectedField, obj *AgentBootstrap) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_AgentBootstrap_reasoningEffort,
+		func(ctx context.Context) (any, error) {
+			return obj.ReasoningEffort, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_AgentBootstrap_reasoningEffort(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AgentBootstrap",
 		Field:      field,
@@ -2296,6 +2332,8 @@ func (ec *executionContext) fieldContext_Query_agentBootstrap(_ context.Context,
 				return ec.fieldContext_AgentBootstrap_agentName(ctx, field)
 			case "model":
 				return ec.fieldContext_AgentBootstrap_model(ctx, field)
+			case "reasoningEffort":
+				return ec.fieldContext_AgentBootstrap_reasoningEffort(ctx, field)
 			case "systemPrompt":
 				return ec.fieldContext_AgentBootstrap_systemPrompt(ctx, field)
 			case "tools":
@@ -4328,6 +4366,11 @@ func (ec *executionContext) _AgentBootstrap(ctx context.Context, sel ast.Selecti
 			}
 		case "model":
 			out.Values[i] = ec._AgentBootstrap_model(ctx, field, obj)
+		case "reasoningEffort":
+			out.Values[i] = ec._AgentBootstrap_reasoningEffort(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "systemPrompt":
 			out.Values[i] = ec._AgentBootstrap_systemPrompt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

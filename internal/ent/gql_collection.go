@@ -953,6 +953,11 @@ func (_q *AgentQuery) collectField(ctx context.Context, oneNode bool, opCtx *gra
 				selectedFields = append(selectedFields, agent.FieldModel)
 				fieldSeen[agent.FieldModel] = struct{}{}
 			}
+		case "reasoningEffort":
+			if _, ok := fieldSeen[agent.FieldReasoningEffort]; !ok {
+				selectedFields = append(selectedFields, agent.FieldReasoningEffort)
+				fieldSeen[agent.FieldReasoningEffort] = struct{}{}
+			}
 		case "agentBuiltinTools":
 			if _, ok := fieldSeen[agent.FieldAgentBuiltinTools]; !ok {
 				selectedFields = append(selectedFields, agent.FieldAgentBuiltinTools)

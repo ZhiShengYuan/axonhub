@@ -26,13 +26,14 @@ func (v *AckAgentMessagesResponse) GetAckAgentMessages() bool { return v.AckAgen
 
 // AgentBootstrapAgentBootstrap includes the requested fields of the GraphQL type AgentBootstrap.
 type AgentBootstrapAgentBootstrap struct {
-	AgentID      string                                                      `json:"agentID"`
-	AgentName    string                                                      `json:"agentName"`
-	Model        *string                                                     `json:"model"`
-	SystemPrompt string                                                      `json:"systemPrompt"`
-	Tools        []*AgentBootstrapAgentBootstrapToolsAgentToolDefinition     `json:"tools"`
-	Skills       []*AgentBootstrapAgentBootstrapSkillsAgentSkillDefinition   `json:"skills"`
-	BuiltinTools []*AgentBootstrapAgentBootstrapBuiltinToolsAgentBuiltinTool `json:"builtinTools"`
+	AgentID         string                                                      `json:"agentID"`
+	AgentName       string                                                      `json:"agentName"`
+	Model           *string                                                     `json:"model"`
+	ReasoningEffort string                                                      `json:"reasoningEffort"`
+	SystemPrompt    string                                                      `json:"systemPrompt"`
+	Tools           []*AgentBootstrapAgentBootstrapToolsAgentToolDefinition     `json:"tools"`
+	Skills          []*AgentBootstrapAgentBootstrapSkillsAgentSkillDefinition   `json:"skills"`
+	BuiltinTools    []*AgentBootstrapAgentBootstrapBuiltinToolsAgentBuiltinTool `json:"builtinTools"`
 }
 
 // GetAgentID returns AgentBootstrapAgentBootstrap.AgentID, and is useful for accessing the field via an interface.
@@ -43,6 +44,9 @@ func (v *AgentBootstrapAgentBootstrap) GetAgentName() string { return v.AgentNam
 
 // GetModel returns AgentBootstrapAgentBootstrap.Model, and is useful for accessing the field via an interface.
 func (v *AgentBootstrapAgentBootstrap) GetModel() *string { return v.Model }
+
+// GetReasoningEffort returns AgentBootstrapAgentBootstrap.ReasoningEffort, and is useful for accessing the field via an interface.
+func (v *AgentBootstrapAgentBootstrap) GetReasoningEffort() string { return v.ReasoningEffort }
 
 // GetSystemPrompt returns AgentBootstrapAgentBootstrap.SystemPrompt, and is useful for accessing the field via an interface.
 func (v *AgentBootstrapAgentBootstrap) GetSystemPrompt() string { return v.SystemPrompt }
@@ -470,6 +474,7 @@ query AgentBootstrap {
 		agentID
 		agentName
 		model
+		reasoningEffort
 		systemPrompt
 		tools {
 			name

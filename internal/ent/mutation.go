@@ -1308,6 +1308,7 @@ type AgentMutation struct {
 	description               *string
 	status                    *agent.Status
 	model                     *string
+	reasoning_effort          *agent.ReasoningEffort
 	agent_builtin_tools       *[]objects.AgentBuiltinTool
 	appendagent_builtin_tools []objects.AgentBuiltinTool
 	skills_policy             *objects.AgentSkillsPolicy
@@ -1817,6 +1818,42 @@ func (m *AgentMutation) OldModel(ctx context.Context) (v string, err error) {
 // ResetModel resets all changes to the "model" field.
 func (m *AgentMutation) ResetModel() {
 	m.model = nil
+}
+
+// SetReasoningEffort sets the "reasoning_effort" field.
+func (m *AgentMutation) SetReasoningEffort(ae agent.ReasoningEffort) {
+	m.reasoning_effort = &ae
+}
+
+// ReasoningEffort returns the value of the "reasoning_effort" field in the mutation.
+func (m *AgentMutation) ReasoningEffort() (r agent.ReasoningEffort, exists bool) {
+	v := m.reasoning_effort
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReasoningEffort returns the old "reasoning_effort" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldReasoningEffort(ctx context.Context) (v agent.ReasoningEffort, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReasoningEffort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReasoningEffort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReasoningEffort: %w", err)
+	}
+	return oldValue.ReasoningEffort, nil
+}
+
+// ResetReasoningEffort resets all changes to the "reasoning_effort" field.
+func (m *AgentMutation) ResetReasoningEffort() {
+	m.reasoning_effort = nil
 }
 
 // SetAgentBuiltinTools sets the "agent_builtin_tools" field.
@@ -2345,7 +2382,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, agent.FieldCreatedAt)
 	}
@@ -2375,6 +2412,9 @@ func (m *AgentMutation) Fields() []string {
 	}
 	if m.model != nil {
 		fields = append(fields, agent.FieldModel)
+	}
+	if m.reasoning_effort != nil {
+		fields = append(fields, agent.FieldReasoningEffort)
 	}
 	if m.agent_builtin_tools != nil {
 		fields = append(fields, agent.FieldAgentBuiltinTools)
@@ -2410,6 +2450,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.PromptID()
 	case agent.FieldModel:
 		return m.Model()
+	case agent.FieldReasoningEffort:
+		return m.ReasoningEffort()
 	case agent.FieldAgentBuiltinTools:
 		return m.AgentBuiltinTools()
 	case agent.FieldSkillsPolicy:
@@ -2443,6 +2485,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldPromptID(ctx)
 	case agent.FieldModel:
 		return m.OldModel(ctx)
+	case agent.FieldReasoningEffort:
+		return m.OldReasoningEffort(ctx)
 	case agent.FieldAgentBuiltinTools:
 		return m.OldAgentBuiltinTools(ctx)
 	case agent.FieldSkillsPolicy:
@@ -2525,6 +2569,13 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModel(v)
+		return nil
+	case agent.FieldReasoningEffort:
+		v, ok := value.(agent.ReasoningEffort)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReasoningEffort(v)
 		return nil
 	case agent.FieldAgentBuiltinTools:
 		v, ok := value.([]objects.AgentBuiltinTool)
@@ -2633,6 +2684,9 @@ func (m *AgentMutation) ResetField(name string) error {
 		return nil
 	case agent.FieldModel:
 		m.ResetModel()
+		return nil
+	case agent.FieldReasoningEffort:
+		m.ResetReasoningEffort()
 		return nil
 	case agent.FieldAgentBuiltinTools:
 		m.ResetAgentBuiltinTools()

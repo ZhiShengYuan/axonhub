@@ -62,10 +62,11 @@ type newRootCommandOptions struct {
 
 func newRootCommand(opts newRootCommandOptions) *cobra.Command {
 	var (
-		baseURL string
-		apiKey  string
-		name    string
-		debug   bool
+		baseURL    string
+		apiKey     string
+		name       string
+		autoSyncConfig bool
+		debug      bool
 	)
 
 	rootCmd := &cobra.Command{
@@ -85,6 +86,9 @@ Git Commit: %s`, build.GetVersion(), build.GetBuildTime(), build.GetGitCommit())
 			}
 			wd := mustGetwd()
 
+			if autoSyncConfig {
+				cfg.AutoSyncConfig = true
+			}
 			// CLI flag overrides config file, but config can still enable debug by default.
 			runDebug := debug || cfg.Debug
 			return opts.RunAgent(cfg, wd, runDebug)
@@ -95,6 +99,7 @@ Git Commit: %s`, build.GetVersion(), build.GetBuildTime(), build.GetGitCommit())
 	rootCmd.Flags().StringVar(&baseURL, "base-url", "", "AxonHub base URL")
 	rootCmd.Flags().StringVar(&apiKey, "api-key", "", "Agent API key")
 	rootCmd.Flags().StringVar(&name, "name", "", "Agent instance name")
+	rootCmd.Flags().BoolVar(&autoSyncConfig, "auto-sync-config", false, "Automatically sync agent configuration from server")
 	rootCmd.Flags().BoolVar(&debug, "debug", false, "Enable debug logging")
 
 	rootCmd.SetHelpCommand(cmds.NewHelpCommand(rootCmd))

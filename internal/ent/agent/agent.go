@@ -39,6 +39,8 @@ const (
 	FieldPromptID = "prompt_id"
 	// FieldModel holds the string denoting the model field in the database.
 	FieldModel = "model"
+	// FieldReasoningEffort holds the string denoting the reasoning_effort field in the database.
+	FieldReasoningEffort = "reasoning_effort"
 	// FieldAgentBuiltinTools holds the string denoting the agent_builtin_tools field in the database.
 	FieldAgentBuiltinTools = "agent_builtin_tools"
 	// FieldSkillsPolicy holds the string denoting the skills_policy field in the database.
@@ -141,6 +143,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldPromptID,
 	FieldModel,
+	FieldReasoningEffort,
 	FieldAgentBuiltinTools,
 	FieldSkillsPolicy,
 }
@@ -209,6 +212,34 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// ReasoningEffort defines the type for the "reasoning_effort" enum field.
+type ReasoningEffort string
+
+// ReasoningEffortNone is the default value of the ReasoningEffort enum.
+const DefaultReasoningEffort = ReasoningEffortNone
+
+// ReasoningEffort values.
+const (
+	ReasoningEffortNone   ReasoningEffort = "none"
+	ReasoningEffortLow    ReasoningEffort = "low"
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	ReasoningEffortHigh   ReasoningEffort = "high"
+)
+
+func (re ReasoningEffort) String() string {
+	return string(re)
+}
+
+// ReasoningEffortValidator is a validator for the "reasoning_effort" field enum values. It is called by the builders before save.
+func ReasoningEffortValidator(re ReasoningEffort) error {
+	switch re {
+	case ReasoningEffortNone, ReasoningEffortLow, ReasoningEffortMedium, ReasoningEffortHigh:
+		return nil
+	default:
+		return fmt.Errorf("agent: invalid enum value for reasoning_effort field: %q", re)
+	}
+}
+
 // OrderOption defines the ordering options for the Agent queries.
 type OrderOption func(*sql.Selector)
 
@@ -265,6 +296,11 @@ func ByPromptID(opts ...sql.OrderTermOption) OrderOption {
 // ByModel orders the results by the model field.
 func ByModel(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModel, opts...).ToFunc()
+}
+
+// ByReasoningEffort orders the results by the reasoning_effort field.
+func ByReasoningEffort(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReasoningEffort, opts...).ToFunc()
 }
 
 // ByProjectField orders the results by project field.
@@ -449,6 +485,24 @@ func (e *Status) UnmarshalGQL(val interface{}) error {
 	*e = Status(str)
 	if err := StatusValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e ReasoningEffort) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *ReasoningEffort) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = ReasoningEffort(str)
+	if err := ReasoningEffortValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid ReasoningEffort", str)
 	}
 	return nil
 }

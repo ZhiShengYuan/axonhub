@@ -331,6 +331,13 @@ export function AgentDetailPage() {
                       </div>
                       <div className='space-y-1'>
                         <div className='text-muted-foreground flex items-center gap-1.5 text-xs'>
+                          <Cpu className='h-3 w-3' />
+                          {t('agents.fields.reasoningEffort')}
+                        </div>
+                        <div className='text-sm font-medium'>{t(`agents.reasoningEffort.${agent.reasoningEffort || 'none'}`)}</div>
+                      </div>
+                      <div className='space-y-1'>
+                        <div className='text-muted-foreground flex items-center gap-1.5 text-xs'>
                           <Settings className='h-3 w-3' />
                           {t('agents.fields.skillsPolicy')}
                         </div>

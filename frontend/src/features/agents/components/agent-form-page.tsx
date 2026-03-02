@@ -40,6 +40,7 @@ const agentFormSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   model: z.string().min(1, 'Model is required'),
+  reasoningEffort: z.enum(['none', 'low', 'medium', 'high']),
   systemPrompt: z.string().min(1),
   skillsPolicyAdd: z.enum(['open', 'approval_required', 'registry_only']),
   builtinTools: z.array(builtinToolSchema),
@@ -175,6 +176,7 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
       name: '',
       description: '',
       model: '',
+      reasoningEffort: 'none',
       systemPrompt: defaultSystemPrompt,
       skillsPolicyAdd: 'open',
       builtinTools: builtinToolOptions
@@ -231,6 +233,7 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
         name: agent.name,
         description: agent.description || '',
         model: agent.model || '',
+        reasoningEffort: agent.reasoningEffort || 'none',
         systemPrompt: agent.prompt?.content || '',
         skillsPolicyAdd: existingSkillsPolicyAdd,
         builtinTools: existingBuiltinTools,
@@ -254,6 +257,7 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
           name: values.name,
           description: values.description,
           model: values.model,
+          reasoningEffort: values.reasoningEffort,
           systemPrompt: values.systemPrompt,
           builtinTools,
           skillsPolicy,
@@ -264,6 +268,7 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
         name: values.name,
         description: values.description,
         model: values.model,
+        reasoningEffort: values.reasoningEffort,
         systemPrompt: values.systemPrompt,
         builtinTools,
         skillsPolicy,
@@ -334,35 +339,58 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
                 {/* Left column – Basic Info & System Prompt (2/3) */}
                 <div className='flex flex-col gap-6 lg:col-span-2'>
                   <Card className='border-0 shadow-sm'>
-                    <CardHeader className='pb-3'>
+                    <CardHeader className='pb-4'>
                       <CardTitle className='flex items-center gap-2 text-base'>
-                        <Info className='h-4 w-4' />
+                        <Info className='h-4 w-4 text-primary' />
                         {t('agents.form.basicInfo')}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className='space-y-4'>
-                      {/* Name and Model in one row */}
-                      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                        <FormField
-                          control={form.control}
-                          name='name'
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('agents.fields.name')}</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder={t('agents.fields.namePlaceholder')} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                    <CardContent className='space-y-5'>
+                      {/* Name - Full width */}
+                      <FormField
+                        control={form.control}
+                        name='name'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-sm font-medium'>{t('agents.fields.name')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder={t('agents.fields.namePlaceholder')}
+                                className='h-10'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
+                      {/* Description - Full width, below name */}
+                      <FormField
+                        control={form.control}
+                        name='description'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-sm font-medium'>{t('agents.fields.description')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder={t('agents.fields.descriptionPlaceholder')}
+                                className='h-10'
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Model and Reasoning Effort in one row */}
+                      <div className='grid grid-cols-1 gap-5 sm:grid-cols-2'>
                         <FormField
                           control={form.control}
                           name='model'
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{t('agents.fields.model')}</FormLabel>
+                              <FormLabel className='text-sm font-medium'>{t('agents.fields.model')}</FormLabel>
                               <FormControl>
                                 <AutoComplete
                                   selectedValue={field.value || ''}
@@ -378,21 +406,30 @@ export function AgentFormPage({ mode }: AgentFormPageProps) {
                             </FormItem>
                           )}
                         />
-                      </div>
 
-                      {/* Description in separate row */}
-                      <FormField
-                        control={form.control}
-                        name='description'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('agents.fields.description')}</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder={t('agents.fields.descriptionPlaceholder')} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name='reasoningEffort'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-sm font-medium'>{t('agents.fields.reasoningEffort')}</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className='h-10'>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value='none'>{t('agents.reasoningEffort.none')}</SelectItem>
+                                  <SelectItem value='low'>{t('agents.reasoningEffort.low')}</SelectItem>
+                                  <SelectItem value='medium'>{t('agents.reasoningEffort.medium')}</SelectItem>
+                                  <SelectItem value='high'>{t('agents.reasoningEffort.high')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
 

@@ -91,6 +91,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			agent.FieldStatus:            {Type: field.TypeEnum, Column: agent.FieldStatus},
 			agent.FieldPromptID:          {Type: field.TypeInt, Column: agent.FieldPromptID},
 			agent.FieldModel:             {Type: field.TypeString, Column: agent.FieldModel},
+			agent.FieldReasoningEffort:   {Type: field.TypeEnum, Column: agent.FieldReasoningEffort},
 			agent.FieldAgentBuiltinTools: {Type: field.TypeJSON, Column: agent.FieldAgentBuiltinTools},
 			agent.FieldSkillsPolicy:      {Type: field.TypeJSON, Column: agent.FieldSkillsPolicy},
 		},
@@ -2369,6 +2370,11 @@ func (f *AgentFilter) WherePromptID(p entql.IntP) {
 // WhereModel applies the entql string predicate on the model field.
 func (f *AgentFilter) WhereModel(p entql.StringP) {
 	f.Where(p.Field(agent.FieldModel))
+}
+
+// WhereReasoningEffort applies the entql string predicate on the reasoning_effort field.
+func (f *AgentFilter) WhereReasoningEffort(p entql.StringP) {
+	f.Where(p.Field(agent.FieldReasoningEffort))
 }
 
 // WhereAgentBuiltinTools applies the entql json.RawMessage predicate on the agent_builtin_tools field.

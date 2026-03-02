@@ -280,6 +280,10 @@ type Agent implements Node {
   """
   model: String!
   """
+  Reasoning effort level for extended thinking
+  """
+  reasoningEffort: AgentReasoningEffort!
+  """
   Agent built-in tools configuration (JSON)
   """
   agentBuiltinTools: [AgentBuiltinTool!]!
@@ -1298,6 +1302,15 @@ enum AgentOrderField {
   CREATED_AT
   UPDATED_AT
 }
+"""
+AgentReasoningEffort is enum for the field reasoning_effort
+"""
+enum AgentReasoningEffort @goModel(model: "github.com/looplj/axonhub/internal/ent/agent.ReasoningEffort") {
+  none
+  low
+  medium
+  high
+}
 type AgentRuntime implements Node {
   id: ID!
   createdAt: Time!
@@ -2159,6 +2172,13 @@ input AgentWhereInput {
   modelHasSuffix: String
   modelEqualFold: String
   modelContainsFold: String
+  """
+  reasoning_effort field predicates
+  """
+  reasoningEffort: AgentReasoningEffort
+  reasoningEffortNEQ: AgentReasoningEffort
+  reasoningEffortIn: [AgentReasoningEffort!]
+  reasoningEffortNotIn: [AgentReasoningEffort!]
   """
   project edge predicates
   """

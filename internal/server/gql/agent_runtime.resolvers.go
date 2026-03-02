@@ -17,6 +17,28 @@ import (
 	"github.com/looplj/axonhub/internal/server/biz"
 )
 
+// Password is the resolver for the password field.
+func (r *agentRuntimeResolver) Password(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
+	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
+		return nil, nil
+	}
+
+	password := obj.Password
+
+	return &password, nil
+}
+
+// SSHPrivateKey is the resolver for the sshPrivateKey field.
+func (r *agentRuntimeResolver) SSHPrivateKey(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
+	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
+		return nil, nil
+	}
+
+	sshPrivateKey := obj.SSHPrivateKey
+
+	return &sshPrivateKey, nil
+}
+
 // CreateAgentRuntime is the resolver for the createAgentRuntime field.
 func (r *mutationResolver) CreateAgentRuntime(ctx context.Context, input ent.CreateAgentRuntimeInput) (*ent.AgentRuntime, error) {
 	return r.agentRuntimeService.CreateAgentRuntime(ctx, input)
@@ -148,26 +170,4 @@ func (r *queryResolver) AgentRuntime(ctx context.Context, id objects.GUID) (*ent
 	return r.client.AgentRuntime.Query().
 		Where(agentruntime.IDEQ(id.ID)).
 		Only(ctx)
-}
-
-// Password is the resolver for the password field.
-func (r *agentRuntimeResolver) Password(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
-	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
-		return nil, nil
-	}
-
-	password := obj.Password
-
-	return &password, nil
-}
-
-// SSHPrivateKey is the resolver for the sshPrivateKey field.
-func (r *agentRuntimeResolver) SSHPrivateKey(ctx context.Context, obj *ent.AgentRuntime) (*string, error) {
-	if !scopes.UserHasScope(ctx, scopes.ScopeWriteAgents) {
-		return nil, nil
-	}
-
-	sshPrivateKey := obj.SSHPrivateKey
-
-	return &sshPrivateKey, nil
 }

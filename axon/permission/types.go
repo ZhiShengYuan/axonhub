@@ -38,6 +38,7 @@ const (
 	ResourceCommand ResourceType = "command"
 	ResourceURL     ResourceType = "url"
 	ResourceDomain  ResourceType = "domain"
+	ResourceSkill   ResourceType = "skill"
 )
 
 type Resource struct {
@@ -56,6 +57,9 @@ type Resource struct {
 	URL    string `json:"url,omitempty"`    // redacted
 	Domain string `json:"domain,omitempty"` // host
 	Scheme string `json:"scheme,omitempty"`
+
+	// Skill
+	Skill string `json:"skill,omitempty"`
 }
 
 type DecisionDisplay struct {

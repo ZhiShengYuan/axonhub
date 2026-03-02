@@ -31,6 +31,7 @@ const (
 	ResourcePath    ResourceType = "path"
 	ResourceDomain  ResourceType = "domain"
 	ResourceCommand ResourceType = "command"
+	ResourceSkill   ResourceType = "skill"
 )
 
 type Resource struct {
@@ -42,6 +43,7 @@ type Resource struct {
 
 	Domain  string
 	Command string
+	Skill   string
 }
 
 type Entry struct {
@@ -227,6 +229,10 @@ func BuildKey(req Request, resources []Resource) string {
 		case ResourceCommand:
 			if r.Command != "" {
 				parts = append(parts, "cmd:"+commandSummary(r.Command))
+			}
+		case ResourceSkill:
+			if r.Skill != "" {
+				parts = append(parts, "skill:"+strings.ToLower(r.Skill))
 			}
 		}
 	}

@@ -288,7 +288,9 @@ func buildSSHAuthMethods(runtime *ent.AgentRuntime) ([]ssh.AuthMethod, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse SSH private key: %w", err)
 		}
+
 		return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
 	}
+
 	return []ssh.AuthMethod{ssh.Password(runtime.Password)}, nil
 }

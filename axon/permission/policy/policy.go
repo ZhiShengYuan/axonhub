@@ -98,6 +98,8 @@ type ResourceWhen struct {
 	SchemeIn       []string `yaml:"scheme_in,omitempty"`
 	// CommandMatches is a regexp list matched against command resources.
 	CommandMatches []string `yaml:"command_matches,omitempty"`
+	// SkillIn matches skill resources by exact skill name.
+	SkillIn        []string `yaml:"skill_in,omitempty"`
 }
 
 func LoadFiles(paths ...string) (Document, error) {

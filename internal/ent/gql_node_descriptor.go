@@ -757,7 +757,7 @@ func (_m *AgentRuntime) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     _m.ID,
 		Type:   "AgentRuntime",
-		Fields: make([]*Field, 8),
+		Fields: make([]*Field, 10),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
@@ -823,6 +823,22 @@ func (_m *AgentRuntime) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "password",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.AuthMethod); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "agentruntime.AuthMethod",
+		Name:  "auth_method",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.SSHPrivateKey); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "string",
+		Name:  "ssh_private_key",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

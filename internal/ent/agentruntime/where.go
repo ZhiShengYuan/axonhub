@@ -90,6 +90,11 @@ func Password(v string) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldEQ(FieldPassword, v))
 }
 
+// SSHPrivateKey applies equality check predicate on the "ssh_private_key" field. It's identical to SSHPrivateKeyEQ.
+func SSHPrivateKey(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldEQ(FieldSSHPrivateKey, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldEQ(FieldCreatedAt, v))
@@ -508,6 +513,91 @@ func PasswordEqualFold(v string) predicate.AgentRuntime {
 // PasswordContainsFold applies the ContainsFold predicate on the "password" field.
 func PasswordContainsFold(v string) predicate.AgentRuntime {
 	return predicate.AgentRuntime(sql.FieldContainsFold(FieldPassword, v))
+}
+
+// AuthMethodEQ applies the EQ predicate on the "auth_method" field.
+func AuthMethodEQ(v AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldEQ(FieldAuthMethod, v))
+}
+
+// AuthMethodNEQ applies the NEQ predicate on the "auth_method" field.
+func AuthMethodNEQ(v AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNEQ(FieldAuthMethod, v))
+}
+
+// AuthMethodIn applies the In predicate on the "auth_method" field.
+func AuthMethodIn(vs ...AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldIn(FieldAuthMethod, vs...))
+}
+
+// AuthMethodNotIn applies the NotIn predicate on the "auth_method" field.
+func AuthMethodNotIn(vs ...AuthMethod) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNotIn(FieldAuthMethod, vs...))
+}
+
+// SSHPrivateKeyEQ applies the EQ predicate on the "ssh_private_key" field.
+func SSHPrivateKeyEQ(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldEQ(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyNEQ applies the NEQ predicate on the "ssh_private_key" field.
+func SSHPrivateKeyNEQ(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNEQ(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyIn applies the In predicate on the "ssh_private_key" field.
+func SSHPrivateKeyIn(vs ...string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldIn(FieldSSHPrivateKey, vs...))
+}
+
+// SSHPrivateKeyNotIn applies the NotIn predicate on the "ssh_private_key" field.
+func SSHPrivateKeyNotIn(vs ...string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldNotIn(FieldSSHPrivateKey, vs...))
+}
+
+// SSHPrivateKeyGT applies the GT predicate on the "ssh_private_key" field.
+func SSHPrivateKeyGT(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldGT(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyGTE applies the GTE predicate on the "ssh_private_key" field.
+func SSHPrivateKeyGTE(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldGTE(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyLT applies the LT predicate on the "ssh_private_key" field.
+func SSHPrivateKeyLT(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldLT(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyLTE applies the LTE predicate on the "ssh_private_key" field.
+func SSHPrivateKeyLTE(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldLTE(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyContains applies the Contains predicate on the "ssh_private_key" field.
+func SSHPrivateKeyContains(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldContains(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyHasPrefix applies the HasPrefix predicate on the "ssh_private_key" field.
+func SSHPrivateKeyHasPrefix(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldHasPrefix(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyHasSuffix applies the HasSuffix predicate on the "ssh_private_key" field.
+func SSHPrivateKeyHasSuffix(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldHasSuffix(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyEqualFold applies the EqualFold predicate on the "ssh_private_key" field.
+func SSHPrivateKeyEqualFold(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldEqualFold(FieldSSHPrivateKey, v))
+}
+
+// SSHPrivateKeyContainsFold applies the ContainsFold predicate on the "ssh_private_key" field.
+func SSHPrivateKeyContainsFold(v string) predicate.AgentRuntime {
+	return predicate.AgentRuntime(sql.FieldContainsFold(FieldSSHPrivateKey, v))
 }
 
 // HasInstances applies the HasEdge predicate on the "instances" edge.

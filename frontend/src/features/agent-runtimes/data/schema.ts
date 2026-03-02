@@ -9,6 +9,10 @@ export type AgentRuntimeType = z.infer<typeof agentRuntimeTypeSchema>;
 export const agentRuntimeStatusSchema = z.enum(['active', 'inactive', 'error']);
 export type AgentRuntimeStatus = z.infer<typeof agentRuntimeStatusSchema>;
 
+// Agent Runtime Auth Method
+export const agentRuntimeAuthMethodSchema = z.enum(['password', 'ssh_key']);
+export type AgentRuntimeAuthMethod = z.infer<typeof agentRuntimeAuthMethodSchema>;
+
 // Agent Runtime
 export const agentRuntimeSchema = z.object({
   id: z.string(),
@@ -20,6 +24,8 @@ export const agentRuntimeSchema = z.object({
   host: z.string(),
   user: z.string(),
   password: z.string(),
+  authMethod: agentRuntimeAuthMethodSchema,
+  sshPrivateKey: z.string(),
 });
 export type AgentRuntime = z.infer<typeof agentRuntimeSchema>;
 
@@ -31,6 +37,8 @@ export const createAgentRuntimeInputSchema = z.object({
   host: z.string().optional(),
   user: z.string().optional(),
   password: z.string().optional(),
+  authMethod: agentRuntimeAuthMethodSchema.optional(),
+  sshPrivateKey: z.string().optional(),
 }).refine(
   (data) => {
     if (data.type === 'local') {
@@ -43,10 +51,17 @@ export const createAgentRuntimeInputSchema = z.object({
     if (isLocalhost) {
       return true;
     }
-    return data.user && data.user.length > 0 && data.password && data.password.length > 0;
+    if (!data.user || data.user.length === 0) {
+      return false;
+    }
+    const method = data.authMethod || 'password';
+    if (method === 'password') {
+      return data.password && data.password.length > 0;
+    }
+    return data.sshPrivateKey && data.sshPrivateKey.length > 0;
   },
   {
-    message: 'Host is required for VM and Docker types. User and password are required for non-localhost hosts.',
+    message: 'Host is required for VM and Docker types. User and credentials are required for non-localhost hosts.',
     path: ['host'],
   }
 );
@@ -60,6 +75,8 @@ export const updateAgentRuntimeInputSchema = z.object({
   host: z.string().min(1, 'Host is required').optional(),
   user: z.string().optional(),
   password: z.string().optional(),
+  authMethod: agentRuntimeAuthMethodSchema.optional(),
+  sshPrivateKey: z.string().optional(),
 });
 export type UpdateAgentRuntimeInput = z.infer<typeof updateAgentRuntimeInputSchema>;
 

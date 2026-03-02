@@ -102,7 +102,10 @@ func (r *agentInstanceResolver) AgentRuntimeID(ctx context.Context, obj *ent.Age
 
 // APIKeyID is the resolver for the apiKeyID field.
 func (r *agentInstanceResolver) APIKeyID(ctx context.Context, obj *ent.AgentInstance) (*objects.GUID, error) {
-	panic(fmt.Errorf("not implemented: APIKeyID - apiKeyID"))
+	return &objects.GUID{
+		Type: ent.TypeAPIKey,
+		ID:   obj.APIKeyID,
+	}, nil
 }
 
 // ID is the resolver for the id field.

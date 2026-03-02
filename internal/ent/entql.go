@@ -181,15 +181,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AgentRuntime",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			agentruntime.FieldCreatedAt: {Type: field.TypeTime, Column: agentruntime.FieldCreatedAt},
-			agentruntime.FieldUpdatedAt: {Type: field.TypeTime, Column: agentruntime.FieldUpdatedAt},
-			agentruntime.FieldDeletedAt: {Type: field.TypeInt, Column: agentruntime.FieldDeletedAt},
-			agentruntime.FieldName:      {Type: field.TypeString, Column: agentruntime.FieldName},
-			agentruntime.FieldType:      {Type: field.TypeEnum, Column: agentruntime.FieldType},
-			agentruntime.FieldStatus:    {Type: field.TypeEnum, Column: agentruntime.FieldStatus},
-			agentruntime.FieldHost:      {Type: field.TypeString, Column: agentruntime.FieldHost},
-			agentruntime.FieldUser:      {Type: field.TypeString, Column: agentruntime.FieldUser},
-			agentruntime.FieldPassword:  {Type: field.TypeString, Column: agentruntime.FieldPassword},
+			agentruntime.FieldCreatedAt:     {Type: field.TypeTime, Column: agentruntime.FieldCreatedAt},
+			agentruntime.FieldUpdatedAt:     {Type: field.TypeTime, Column: agentruntime.FieldUpdatedAt},
+			agentruntime.FieldDeletedAt:     {Type: field.TypeInt, Column: agentruntime.FieldDeletedAt},
+			agentruntime.FieldName:          {Type: field.TypeString, Column: agentruntime.FieldName},
+			agentruntime.FieldType:          {Type: field.TypeEnum, Column: agentruntime.FieldType},
+			agentruntime.FieldStatus:        {Type: field.TypeEnum, Column: agentruntime.FieldStatus},
+			agentruntime.FieldHost:          {Type: field.TypeString, Column: agentruntime.FieldHost},
+			agentruntime.FieldUser:          {Type: field.TypeString, Column: agentruntime.FieldUser},
+			agentruntime.FieldPassword:      {Type: field.TypeString, Column: agentruntime.FieldPassword},
+			agentruntime.FieldAuthMethod:    {Type: field.TypeEnum, Column: agentruntime.FieldAuthMethod},
+			agentruntime.FieldSSHPrivateKey: {Type: field.TypeString, Column: agentruntime.FieldSSHPrivateKey},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -2986,6 +2988,16 @@ func (f *AgentRuntimeFilter) WhereUser(p entql.StringP) {
 // WherePassword applies the entql string predicate on the password field.
 func (f *AgentRuntimeFilter) WherePassword(p entql.StringP) {
 	f.Where(p.Field(agentruntime.FieldPassword))
+}
+
+// WhereAuthMethod applies the entql string predicate on the auth_method field.
+func (f *AgentRuntimeFilter) WhereAuthMethod(p entql.StringP) {
+	f.Where(p.Field(agentruntime.FieldAuthMethod))
+}
+
+// WhereSSHPrivateKey applies the entql string predicate on the ssh_private_key field.
+func (f *AgentRuntimeFilter) WhereSSHPrivateKey(p entql.StringP) {
+	f.Where(p.Field(agentruntime.FieldSSHPrivateKey))
 }
 
 // WhereHasInstances applies a predicate to check if query has an edge instances.

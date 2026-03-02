@@ -36,6 +36,10 @@ const (
 	FieldUser = "user"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldAuthMethod holds the string denoting the auth_method field in the database.
+	FieldAuthMethod = "auth_method"
+	// FieldSSHPrivateKey holds the string denoting the ssh_private_key field in the database.
+	FieldSSHPrivateKey = "ssh_private_key"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// Table holds the table name of the agentruntime in the database.
@@ -61,6 +65,8 @@ var Columns = []string{
 	FieldHost,
 	FieldUser,
 	FieldPassword,
+	FieldAuthMethod,
+	FieldSSHPrivateKey,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -96,6 +102,8 @@ var (
 	DefaultUser string
 	// DefaultPassword holds the default value on creation for the "password" field.
 	DefaultPassword string
+	// DefaultSSHPrivateKey holds the default value on creation for the "ssh_private_key" field.
+	DefaultSSHPrivateKey string
 )
 
 // Type defines the type for the "type" enum field.
@@ -152,6 +160,32 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// AuthMethod defines the type for the "auth_method" enum field.
+type AuthMethod string
+
+// AuthMethodPassword is the default value of the AuthMethod enum.
+const DefaultAuthMethod = AuthMethodPassword
+
+// AuthMethod values.
+const (
+	AuthMethodPassword AuthMethod = "password"
+	AuthMethodSSHKey   AuthMethod = "ssh_key"
+)
+
+func (am AuthMethod) String() string {
+	return string(am)
+}
+
+// AuthMethodValidator is a validator for the "auth_method" field enum values. It is called by the builders before save.
+func AuthMethodValidator(am AuthMethod) error {
+	switch am {
+	case AuthMethodPassword, AuthMethodSSHKey:
+		return nil
+	default:
+		return fmt.Errorf("agentruntime: invalid enum value for auth_method field: %q", am)
+	}
+}
+
 // OrderOption defines the ordering options for the AgentRuntime queries.
 type OrderOption func(*sql.Selector)
 
@@ -203,6 +237,16 @@ func ByUser(opts ...sql.OrderTermOption) OrderOption {
 // ByPassword orders the results by the password field.
 func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
+}
+
+// ByAuthMethod orders the results by the auth_method field.
+func ByAuthMethod(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthMethod, opts...).ToFunc()
+}
+
+// BySSHPrivateKey orders the results by the ssh_private_key field.
+func BySSHPrivateKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSSHPrivateKey, opts...).ToFunc()
 }
 
 // ByInstancesCount orders the results by instances count.
@@ -258,6 +302,24 @@ func (e *Status) UnmarshalGQL(val interface{}) error {
 	*e = Status(str)
 	if err := StatusValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e AuthMethod) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *AuthMethod) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = AuthMethod(str)
+	if err := AuthMethodValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid AuthMethod", str)
 	}
 	return nil
 }

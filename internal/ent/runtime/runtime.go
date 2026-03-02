@@ -322,6 +322,10 @@ func init() {
 	agentruntimeDescPassword := agentruntimeFields[5].Descriptor()
 	// agentruntime.DefaultPassword holds the default value on creation for the password field.
 	agentruntime.DefaultPassword = agentruntimeDescPassword.Default.(string)
+	// agentruntimeDescSSHPrivateKey is the schema descriptor for ssh_private_key field.
+	agentruntimeDescSSHPrivateKey := agentruntimeFields[7].Descriptor()
+	// agentruntime.DefaultSSHPrivateKey holds the default value on creation for the ssh_private_key field.
+	agentruntime.DefaultSSHPrivateKey = agentruntimeDescSSHPrivateKey.Default.(string)
 	agentskillMixin := schema.AgentSkill{}.Mixin()
 	agentskill.Policy = privacy.NewPolicies(schema.AgentSkill{})
 	agentskill.Hooks[0] = func(next ent.Mutator) ent.Mutator {

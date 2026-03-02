@@ -141,6 +141,34 @@ func (_u *AgentRuntimeUpdate) SetNillablePassword(v *string) *AgentRuntimeUpdate
 	return _u
 }
 
+// SetAuthMethod sets the "auth_method" field.
+func (_u *AgentRuntimeUpdate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpdate {
+	_u.mutation.SetAuthMethod(v)
+	return _u
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_u *AgentRuntimeUpdate) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeUpdate {
+	if v != nil {
+		_u.SetAuthMethod(*v)
+	}
+	return _u
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (_u *AgentRuntimeUpdate) SetSSHPrivateKey(v string) *AgentRuntimeUpdate {
+	_u.mutation.SetSSHPrivateKey(v)
+	return _u
+}
+
+// SetNillableSSHPrivateKey sets the "ssh_private_key" field if the given value is not nil.
+func (_u *AgentRuntimeUpdate) SetNillableSSHPrivateKey(v *string) *AgentRuntimeUpdate {
+	if v != nil {
+		_u.SetSSHPrivateKey(*v)
+	}
+	return _u
+}
+
 // AddInstanceIDs adds the "instances" edge to the AgentInstance entity by IDs.
 func (_u *AgentRuntimeUpdate) AddInstanceIDs(ids ...int) *AgentRuntimeUpdate {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -236,6 +264,11 @@ func (_u *AgentRuntimeUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AuthMethod(); ok {
+		if err := agentruntime.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.auth_method": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -283,6 +316,12 @@ func (_u *AgentRuntimeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AuthMethod(); ok {
+		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SSHPrivateKey(); ok {
+		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)
 	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -462,6 +501,34 @@ func (_u *AgentRuntimeUpdateOne) SetNillablePassword(v *string) *AgentRuntimeUpd
 	return _u
 }
 
+// SetAuthMethod sets the "auth_method" field.
+func (_u *AgentRuntimeUpdateOne) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpdateOne {
+	_u.mutation.SetAuthMethod(v)
+	return _u
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_u *AgentRuntimeUpdateOne) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeUpdateOne {
+	if v != nil {
+		_u.SetAuthMethod(*v)
+	}
+	return _u
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (_u *AgentRuntimeUpdateOne) SetSSHPrivateKey(v string) *AgentRuntimeUpdateOne {
+	_u.mutation.SetSSHPrivateKey(v)
+	return _u
+}
+
+// SetNillableSSHPrivateKey sets the "ssh_private_key" field if the given value is not nil.
+func (_u *AgentRuntimeUpdateOne) SetNillableSSHPrivateKey(v *string) *AgentRuntimeUpdateOne {
+	if v != nil {
+		_u.SetSSHPrivateKey(*v)
+	}
+	return _u
+}
+
 // AddInstanceIDs adds the "instances" edge to the AgentInstance entity by IDs.
 func (_u *AgentRuntimeUpdateOne) AddInstanceIDs(ids ...int) *AgentRuntimeUpdateOne {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -570,6 +637,11 @@ func (_u *AgentRuntimeUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AuthMethod(); ok {
+		if err := agentruntime.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.auth_method": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -634,6 +706,12 @@ func (_u *AgentRuntimeUpdateOne) sqlSave(ctx context.Context) (_node *AgentRunti
 	}
 	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AuthMethod(); ok {
+		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SSHPrivateKey(); ok {
+		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)
 	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{

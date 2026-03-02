@@ -7,8 +7,6 @@ import (
 	"os/exec"
 	"time"
 
-	"golang.org/x/crypto/ssh"
-
 	"github.com/looplj/axonhub/internal/ent"
 )
 
@@ -73,18 +71,9 @@ func (svc *AgentDeployService) deployToDocker(ctx context.Context, runtime *ent.
 		return nil
 	}
 
-	config := &ssh.ClientConfig{
-		User: runtime.User,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(runtime.Password),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         30 * time.Second,
-	}
-
-	client, err := ssh.Dial("tcp", runtime.Host, config)
+	client, err := sshDial(runtime)
 	if err != nil {
-		return fmt.Errorf("failed to connect to Docker host %s: %w", runtime.Host, err)
+		return err
 	}
 	defer client.Close()
 

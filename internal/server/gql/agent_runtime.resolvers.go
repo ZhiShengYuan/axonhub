@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/looplj/axonhub/internal/authz"
-	"github.com/looplj/axonhub/internal/contexts"
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/ent/agentruntime"
 	"github.com/looplj/axonhub/internal/objects"
@@ -20,87 +19,23 @@ import (
 
 // CreateAgentRuntime is the resolver for the createAgentRuntime field.
 func (r *mutationResolver) CreateAgentRuntime(ctx context.Context, input ent.CreateAgentRuntimeInput) (*ent.AgentRuntime, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return nil, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return nil, fmt.Errorf("only owner can create agent runtime")
-	}
-
-	runtimeType := agentruntime.TypeVM
-	if input.Type != nil {
-		runtimeType = *input.Type
-	}
-
-	var host, userVal, password string
-	if input.Host != nil {
-		host = *input.Host
-	}
-	if input.User != nil {
-		userVal = *input.User
-	}
-	if input.Password != nil {
-		password = *input.Password
-	}
-
-	return r.agentRuntimeService.CreateAgentRuntime(ctx, biz.CreateAgentRuntimeInput{
-		Name:     input.Name,
-		Type:     runtimeType,
-		Host:     host,
-		User:     userVal,
-		Password: password,
-	})
+	return r.agentRuntimeService.CreateAgentRuntime(ctx, input)
 }
 
 // UpdateAgentRuntime is the resolver for the updateAgentRuntime field.
 func (r *mutationResolver) UpdateAgentRuntime(ctx context.Context, id objects.GUID, input ent.UpdateAgentRuntimeInput) (*ent.AgentRuntime, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return nil, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return nil, fmt.Errorf("only owner can update agent runtime")
-	}
-
-	return r.agentRuntimeService.UpdateAgentRuntime(ctx, id.ID, biz.UpdateAgentRuntimeInput{
-		Name:     input.Name,
-		Status:   input.Status,
-		Host:     input.Host,
-		User:     input.User,
-		Password: input.Password,
-	})
+	return r.agentRuntimeService.UpdateAgentRuntime(ctx, id.ID, input)
 }
 
 // UpdateAgentRuntimeStatus is the resolver for the updateAgentRuntimeStatus field.
 func (r *mutationResolver) UpdateAgentRuntimeStatus(ctx context.Context, id objects.GUID, status agentruntime.Status) (*ent.AgentRuntime, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return nil, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return nil, fmt.Errorf("only owner can update agent runtime status")
-	}
-
-	return r.agentRuntimeService.UpdateAgentRuntime(ctx, id.ID, biz.UpdateAgentRuntimeInput{
+	return r.agentRuntimeService.UpdateAgentRuntime(ctx, id.ID, ent.UpdateAgentRuntimeInput{
 		Status: &status,
 	})
 }
 
 // DeleteAgentRuntime is the resolver for the deleteAgentRuntime field.
 func (r *mutationResolver) DeleteAgentRuntime(ctx context.Context, id objects.GUID) (bool, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return false, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return false, fmt.Errorf("only owner can delete agent runtime")
-	}
-
 	if err := r.agentRuntimeService.DeleteAgentRuntime(ctx, id.ID); err != nil {
 		return false, err
 	}
@@ -110,17 +45,9 @@ func (r *mutationResolver) DeleteAgentRuntime(ctx context.Context, id objects.GU
 
 // BulkDeleteAgentRuntimes is the resolver for the bulkDeleteAgentRuntimes field.
 func (r *mutationResolver) BulkDeleteAgentRuntimes(ctx context.Context, ids []*objects.GUID) (bool, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return false, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return false, fmt.Errorf("only owner can delete agent runtimes")
-	}
-
-	for _, id := range ids {
-		if err := r.agentRuntimeService.DeleteAgentRuntime(ctx, id.ID); err != nil {
+	intIDs := objects.IntGuids(ids)
+	for _, id := range intIDs {
+		if err := r.agentRuntimeService.DeleteAgentRuntime(ctx, id); err != nil {
 			return false, err
 		}
 	}
@@ -130,17 +57,9 @@ func (r *mutationResolver) BulkDeleteAgentRuntimes(ctx context.Context, ids []*o
 
 // BulkUpdateAgentRuntimeStatus is the resolver for the bulkUpdateAgentRuntimeStatus field.
 func (r *mutationResolver) BulkUpdateAgentRuntimeStatus(ctx context.Context, ids []*objects.GUID, status agentruntime.Status) (bool, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return false, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return false, fmt.Errorf("only owner can update agent runtime status")
-	}
-
-	for _, id := range ids {
-		_, err := r.agentRuntimeService.UpdateAgentRuntime(ctx, id.ID, biz.UpdateAgentRuntimeInput{
+	intIDs := objects.IntGuids(ids)
+	for _, id := range intIDs {
+		_, err := r.agentRuntimeService.UpdateAgentRuntime(ctx, id, ent.UpdateAgentRuntimeInput{
 			Status: &status,
 		})
 		if err != nil {
@@ -153,21 +72,7 @@ func (r *mutationResolver) BulkUpdateAgentRuntimeStatus(ctx context.Context, ids
 
 // TestAgentRuntimeConnection is the resolver for the testAgentRuntimeConnection field.
 func (r *mutationResolver) TestAgentRuntimeConnection(ctx context.Context, id objects.GUID) (*biz.TestConnectionResult, error) {
-	user, ok := contexts.GetUser(ctx)
-	if !ok || user == nil {
-		return nil, fmt.Errorf("user not found in context")
-	}
-
-	if !user.IsOwner {
-		return nil, fmt.Errorf("only owner can test agent runtime connection")
-	}
-
-	result, err := r.agentRuntimeService.TestConnection(ctx, id.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return r.agentRuntimeService.TestConnection(ctx, id.ID)
 }
 
 // DeployAxonclaw is the resolver for the deployAxonclaw field.
@@ -180,18 +85,7 @@ func (r *mutationResolver) DeployAxonclaw(ctx context.Context, input biz.DeployA
 		return nil, fmt.Errorf("axonhub base url is required")
 	}
 
-	result, err := r.agentDeployService.DeployAxonclaw(ctx, biz.DeployAxonclawInput{
-		AgentID:        input.AgentID,
-		RuntimeID:      input.RuntimeID,
-		Name:           input.Name,
-		Directory:      input.Directory,
-		AxonhubBaseURL: input.AxonhubBaseURL,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return r.agentDeployService.DeployAxonclaw(ctx, input)
 }
 
 // StopAxonclawInstance is the resolver for the stopAxonclawInstance field.

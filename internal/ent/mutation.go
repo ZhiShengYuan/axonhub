@@ -6480,6 +6480,8 @@ type AgentRuntimeMutation struct {
 	host             *string
 	user             *string
 	password         *string
+	auth_method      *agentruntime.AuthMethod
+	ssh_private_key  *string
 	clearedFields    map[string]struct{}
 	instances        map[int]struct{}
 	removedinstances map[int]struct{}
@@ -6931,6 +6933,78 @@ func (m *AgentRuntimeMutation) ResetPassword() {
 	m.password = nil
 }
 
+// SetAuthMethod sets the "auth_method" field.
+func (m *AgentRuntimeMutation) SetAuthMethod(am agentruntime.AuthMethod) {
+	m.auth_method = &am
+}
+
+// AuthMethod returns the value of the "auth_method" field in the mutation.
+func (m *AgentRuntimeMutation) AuthMethod() (r agentruntime.AuthMethod, exists bool) {
+	v := m.auth_method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthMethod returns the old "auth_method" field's value of the AgentRuntime entity.
+// If the AgentRuntime object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRuntimeMutation) OldAuthMethod(ctx context.Context) (v agentruntime.AuthMethod, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthMethod: %w", err)
+	}
+	return oldValue.AuthMethod, nil
+}
+
+// ResetAuthMethod resets all changes to the "auth_method" field.
+func (m *AgentRuntimeMutation) ResetAuthMethod() {
+	m.auth_method = nil
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (m *AgentRuntimeMutation) SetSSHPrivateKey(s string) {
+	m.ssh_private_key = &s
+}
+
+// SSHPrivateKey returns the value of the "ssh_private_key" field in the mutation.
+func (m *AgentRuntimeMutation) SSHPrivateKey() (r string, exists bool) {
+	v := m.ssh_private_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSSHPrivateKey returns the old "ssh_private_key" field's value of the AgentRuntime entity.
+// If the AgentRuntime object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentRuntimeMutation) OldSSHPrivateKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSSHPrivateKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSSHPrivateKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSSHPrivateKey: %w", err)
+	}
+	return oldValue.SSHPrivateKey, nil
+}
+
+// ResetSSHPrivateKey resets all changes to the "ssh_private_key" field.
+func (m *AgentRuntimeMutation) ResetSSHPrivateKey() {
+	m.ssh_private_key = nil
+}
+
 // AddInstanceIDs adds the "instances" edge to the AgentInstance entity by ids.
 func (m *AgentRuntimeMutation) AddInstanceIDs(ids ...int) {
 	if m.instances == nil {
@@ -7019,7 +7093,7 @@ func (m *AgentRuntimeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentRuntimeMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, agentruntime.FieldCreatedAt)
 	}
@@ -7047,6 +7121,12 @@ func (m *AgentRuntimeMutation) Fields() []string {
 	if m.password != nil {
 		fields = append(fields, agentruntime.FieldPassword)
 	}
+	if m.auth_method != nil {
+		fields = append(fields, agentruntime.FieldAuthMethod)
+	}
+	if m.ssh_private_key != nil {
+		fields = append(fields, agentruntime.FieldSSHPrivateKey)
+	}
 	return fields
 }
 
@@ -7073,6 +7153,10 @@ func (m *AgentRuntimeMutation) Field(name string) (ent.Value, bool) {
 		return m.User()
 	case agentruntime.FieldPassword:
 		return m.Password()
+	case agentruntime.FieldAuthMethod:
+		return m.AuthMethod()
+	case agentruntime.FieldSSHPrivateKey:
+		return m.SSHPrivateKey()
 	}
 	return nil, false
 }
@@ -7100,6 +7184,10 @@ func (m *AgentRuntimeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUser(ctx)
 	case agentruntime.FieldPassword:
 		return m.OldPassword(ctx)
+	case agentruntime.FieldAuthMethod:
+		return m.OldAuthMethod(ctx)
+	case agentruntime.FieldSSHPrivateKey:
+		return m.OldSSHPrivateKey(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentRuntime field %s", name)
 }
@@ -7171,6 +7259,20 @@ func (m *AgentRuntimeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPassword(v)
+		return nil
+	case agentruntime.FieldAuthMethod:
+		v, ok := value.(agentruntime.AuthMethod)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthMethod(v)
+		return nil
+	case agentruntime.FieldSSHPrivateKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSSHPrivateKey(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRuntime field %s", name)
@@ -7262,6 +7364,12 @@ func (m *AgentRuntimeMutation) ResetField(name string) error {
 		return nil
 	case agentruntime.FieldPassword:
 		m.ResetPassword()
+		return nil
+	case agentruntime.FieldAuthMethod:
+		m.ResetAuthMethod()
+		return nil
+	case agentruntime.FieldSSHPrivateKey:
+		m.ResetSSHPrivateKey()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentRuntime field %s", name)

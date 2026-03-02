@@ -1322,6 +1322,10 @@ type AgentRuntime implements Node {
   Runtime user for authentication
   """
   user: String!
+  """
+  Authentication method: password or ssh_key
+  """
+  authMethod: AgentRuntimeAuthMethod!
   instances(
     """
     Returns the elements in the list that come after the specified cursor.
@@ -1353,6 +1357,13 @@ type AgentRuntime implements Node {
     """
     where: AgentInstanceWhereInput
   ): AgentInstanceConnection!
+}
+"""
+AgentRuntimeAuthMethod is enum for the field auth_method
+"""
+enum AgentRuntimeAuthMethod @goModel(model: "github.com/looplj/axonhub/internal/ent/agentruntime.AuthMethod") {
+  password
+  ssh_key
 }
 """
 A connection to a list of items.
@@ -1523,6 +1534,13 @@ input AgentRuntimeWhereInput {
   userHasSuffix: String
   userEqualFold: String
   userContainsFold: String
+  """
+  auth_method field predicates
+  """
+  authMethod: AgentRuntimeAuthMethod
+  authMethodNEQ: AgentRuntimeAuthMethod
+  authMethodIn: [AgentRuntimeAuthMethod!]
+  authMethodNotIn: [AgentRuntimeAuthMethod!]
   """
   instances edge predicates
   """
@@ -3434,6 +3452,14 @@ input CreateAgentRuntimeInput {
   Runtime password for authentication
   """
   password: String
+  """
+  Authentication method: password or ssh_key
+  """
+  authMethod: AgentRuntimeAuthMethod
+  """
+  SSH private key for authentication
+  """
+  sshPrivateKey: String
 }
 """
 CreateAgentSkillInput is used for create AgentSkill object.
@@ -8995,6 +9021,14 @@ input UpdateAgentRuntimeInput {
   Runtime password for authentication
   """
   password: String
+  """
+  Authentication method: password or ssh_key
+  """
+  authMethod: AgentRuntimeAuthMethod
+  """
+  SSH private key for authentication
+  """
+  sshPrivateKey: String
 }
 """
 UpdateAgentSkillInput is used for update AgentSkill object.

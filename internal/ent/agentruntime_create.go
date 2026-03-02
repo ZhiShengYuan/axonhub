@@ -141,6 +141,34 @@ func (_c *AgentRuntimeCreate) SetNillablePassword(v *string) *AgentRuntimeCreate
 	return _c
 }
 
+// SetAuthMethod sets the "auth_method" field.
+func (_c *AgentRuntimeCreate) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeCreate {
+	_c.mutation.SetAuthMethod(v)
+	return _c
+}
+
+// SetNillableAuthMethod sets the "auth_method" field if the given value is not nil.
+func (_c *AgentRuntimeCreate) SetNillableAuthMethod(v *agentruntime.AuthMethod) *AgentRuntimeCreate {
+	if v != nil {
+		_c.SetAuthMethod(*v)
+	}
+	return _c
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (_c *AgentRuntimeCreate) SetSSHPrivateKey(v string) *AgentRuntimeCreate {
+	_c.mutation.SetSSHPrivateKey(v)
+	return _c
+}
+
+// SetNillableSSHPrivateKey sets the "ssh_private_key" field if the given value is not nil.
+func (_c *AgentRuntimeCreate) SetNillableSSHPrivateKey(v *string) *AgentRuntimeCreate {
+	if v != nil {
+		_c.SetSSHPrivateKey(*v)
+	}
+	return _c
+}
+
 // AddInstanceIDs adds the "instances" edge to the AgentInstance entity by IDs.
 func (_c *AgentRuntimeCreate) AddInstanceIDs(ids ...int) *AgentRuntimeCreate {
 	_c.mutation.AddInstanceIDs(ids...)
@@ -231,6 +259,14 @@ func (_c *AgentRuntimeCreate) defaults() error {
 		v := agentruntime.DefaultPassword
 		_c.mutation.SetPassword(v)
 	}
+	if _, ok := _c.mutation.AuthMethod(); !ok {
+		v := agentruntime.DefaultAuthMethod
+		_c.mutation.SetAuthMethod(v)
+	}
+	if _, ok := _c.mutation.SSHPrivateKey(); !ok {
+		v := agentruntime.DefaultSSHPrivateKey
+		_c.mutation.SetSSHPrivateKey(v)
+	}
 	return nil
 }
 
@@ -272,6 +308,17 @@ func (_c *AgentRuntimeCreate) check() error {
 	}
 	if _, ok := _c.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "AgentRuntime.password"`)}
+	}
+	if _, ok := _c.mutation.AuthMethod(); !ok {
+		return &ValidationError{Name: "auth_method", err: errors.New(`ent: missing required field "AgentRuntime.auth_method"`)}
+	}
+	if v, ok := _c.mutation.AuthMethod(); ok {
+		if err := agentruntime.AuthMethodValidator(v); err != nil {
+			return &ValidationError{Name: "auth_method", err: fmt.Errorf(`ent: validator failed for field "AgentRuntime.auth_method": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.SSHPrivateKey(); !ok {
+		return &ValidationError{Name: "ssh_private_key", err: errors.New(`ent: missing required field "AgentRuntime.ssh_private_key"`)}
 	}
 	return nil
 }
@@ -335,6 +382,14 @@ func (_c *AgentRuntimeCreate) createSpec() (*AgentRuntime, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.Password(); ok {
 		_spec.SetField(agentruntime.FieldPassword, field.TypeString, value)
 		_node.Password = value
+	}
+	if value, ok := _c.mutation.AuthMethod(); ok {
+		_spec.SetField(agentruntime.FieldAuthMethod, field.TypeEnum, value)
+		_node.AuthMethod = value
+	}
+	if value, ok := _c.mutation.SSHPrivateKey(); ok {
+		_spec.SetField(agentruntime.FieldSSHPrivateKey, field.TypeString, value)
+		_node.SSHPrivateKey = value
 	}
 	if nodes := _c.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -506,6 +561,30 @@ func (u *AgentRuntimeUpsert) UpdatePassword() *AgentRuntimeUpsert {
 	return u
 }
 
+// SetAuthMethod sets the "auth_method" field.
+func (u *AgentRuntimeUpsert) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsert {
+	u.Set(agentruntime.FieldAuthMethod, v)
+	return u
+}
+
+// UpdateAuthMethod sets the "auth_method" field to the value that was provided on create.
+func (u *AgentRuntimeUpsert) UpdateAuthMethod() *AgentRuntimeUpsert {
+	u.SetExcluded(agentruntime.FieldAuthMethod)
+	return u
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (u *AgentRuntimeUpsert) SetSSHPrivateKey(v string) *AgentRuntimeUpsert {
+	u.Set(agentruntime.FieldSSHPrivateKey, v)
+	return u
+}
+
+// UpdateSSHPrivateKey sets the "ssh_private_key" field to the value that was provided on create.
+func (u *AgentRuntimeUpsert) UpdateSSHPrivateKey() *AgentRuntimeUpsert {
+	u.SetExcluded(agentruntime.FieldSSHPrivateKey)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -667,6 +746,34 @@ func (u *AgentRuntimeUpsertOne) SetPassword(v string) *AgentRuntimeUpsertOne {
 func (u *AgentRuntimeUpsertOne) UpdatePassword() *AgentRuntimeUpsertOne {
 	return u.Update(func(s *AgentRuntimeUpsert) {
 		s.UpdatePassword()
+	})
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (u *AgentRuntimeUpsertOne) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetAuthMethod(v)
+	})
+}
+
+// UpdateAuthMethod sets the "auth_method" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertOne) UpdateAuthMethod() *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdateAuthMethod()
+	})
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (u *AgentRuntimeUpsertOne) SetSSHPrivateKey(v string) *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetSSHPrivateKey(v)
+	})
+}
+
+// UpdateSSHPrivateKey sets the "ssh_private_key" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertOne) UpdateSSHPrivateKey() *AgentRuntimeUpsertOne {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdateSSHPrivateKey()
 	})
 }
 
@@ -997,6 +1104,34 @@ func (u *AgentRuntimeUpsertBulk) SetPassword(v string) *AgentRuntimeUpsertBulk {
 func (u *AgentRuntimeUpsertBulk) UpdatePassword() *AgentRuntimeUpsertBulk {
 	return u.Update(func(s *AgentRuntimeUpsert) {
 		s.UpdatePassword()
+	})
+}
+
+// SetAuthMethod sets the "auth_method" field.
+func (u *AgentRuntimeUpsertBulk) SetAuthMethod(v agentruntime.AuthMethod) *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetAuthMethod(v)
+	})
+}
+
+// UpdateAuthMethod sets the "auth_method" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertBulk) UpdateAuthMethod() *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdateAuthMethod()
+	})
+}
+
+// SetSSHPrivateKey sets the "ssh_private_key" field.
+func (u *AgentRuntimeUpsertBulk) SetSSHPrivateKey(v string) *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.SetSSHPrivateKey(v)
+	})
+}
+
+// UpdateSSHPrivateKey sets the "ssh_private_key" field to the value that was provided on create.
+func (u *AgentRuntimeUpsertBulk) UpdateSSHPrivateKey() *AgentRuntimeUpsertBulk {
+	return u.Update(func(s *AgentRuntimeUpsert) {
+		s.UpdateSSHPrivateKey()
 	})
 }
 

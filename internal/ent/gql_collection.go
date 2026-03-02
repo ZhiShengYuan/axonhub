@@ -1767,6 +1767,11 @@ func (_q *AgentRuntimeQuery) collectField(ctx context.Context, oneNode bool, opC
 				selectedFields = append(selectedFields, agentruntime.FieldUser)
 				fieldSeen[agentruntime.FieldUser] = struct{}{}
 			}
+		case "authMethod":
+			if _, ok := fieldSeen[agentruntime.FieldAuthMethod]; !ok {
+				selectedFields = append(selectedFields, agentruntime.FieldAuthMethod)
+				fieldSeen[agentruntime.FieldAuthMethod] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

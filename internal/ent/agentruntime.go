@@ -35,6 +35,10 @@ type AgentRuntime struct {
 	User string `json:"user,omitempty"`
 	// Runtime password for authentication
 	Password string `json:"-"`
+	// Authentication method: password or ssh_key
+	AuthMethod agentruntime.AuthMethod `json:"auth_method,omitempty"`
+	// SSH private key for authentication
+	SSHPrivateKey string `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRuntimeQuery when eager-loading is set.
 	Edges        AgentRuntimeEdges `json:"edges"`
@@ -70,7 +74,7 @@ func (*AgentRuntime) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentruntime.FieldID, agentruntime.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
-		case agentruntime.FieldName, agentruntime.FieldType, agentruntime.FieldStatus, agentruntime.FieldHost, agentruntime.FieldUser, agentruntime.FieldPassword:
+		case agentruntime.FieldName, agentruntime.FieldType, agentruntime.FieldStatus, agentruntime.FieldHost, agentruntime.FieldUser, agentruntime.FieldPassword, agentruntime.FieldAuthMethod, agentruntime.FieldSSHPrivateKey:
 			values[i] = new(sql.NullString)
 		case agentruntime.FieldCreatedAt, agentruntime.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -149,6 +153,18 @@ func (_m *AgentRuntime) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Password = value.String
 			}
+		case agentruntime.FieldAuthMethod:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field auth_method", values[i])
+			} else if value.Valid {
+				_m.AuthMethod = agentruntime.AuthMethod(value.String)
+			}
+		case agentruntime.FieldSSHPrivateKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ssh_private_key", values[i])
+			} else if value.Valid {
+				_m.SSHPrivateKey = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -215,6 +231,11 @@ func (_m *AgentRuntime) String() string {
 	builder.WriteString(_m.User)
 	builder.WriteString(", ")
 	builder.WriteString("password=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("auth_method=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AuthMethod))
+	builder.WriteString(", ")
+	builder.WriteString("ssh_private_key=<sensitive>")
 	builder.WriteByte(')')
 	return builder.String()
 }

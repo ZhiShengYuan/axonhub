@@ -47,7 +47,7 @@ jobs:
       - name: Build binary
         working-directory: cmd/axonclaw
         run: |
-          OUTPUT="axonclaw-${{ matrix.os }}-${{ matrix.arch }}"
+          OUTPUT="axonclaw_${{ matrix.os }}_${{ matrix.arch }}"
           if [[ "${{ matrix.os }}" == "windows" ]]; then
             OUTPUT="${OUTPUT}.exe"
           fi
@@ -59,17 +59,18 @@ jobs:
             .
 
           # Create archive
+          ARCHIVE="axonclaw_${{ matrix.os }}_${{ matrix.arch }}.zip"
           if [[ "${{ matrix.os }}" == "windows" ]]; then
-            zip -j "axonclaw-${{ matrix.os }}-${{ matrix.arch }}.zip" "${OUTPUT}" install.bat start.bat stop.bat restart.bat
+            zip -j "${ARCHIVE}" "${OUTPUT}" install.bat start.bat stop.bat restart.bat start.ps1 stop.ps1 restart.ps1
           else
-            tar -czf "axonclaw-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" "${OUTPUT}" install.sh start.sh stop.sh restart.sh
+            zip -j "${ARCHIVE}" "${OUTPUT}" install.sh start.sh stop.sh restart.sh
           fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: axonclaw-${{ matrix.os }}-${{ matrix.arch }}
-          path: cmd/axonclaw/axonclaw-*.*
+          name: axonclaw_${{ matrix.os }}_${{ matrix.arch }}
+          path: cmd/axonclaw/axonclaw_*.zip
 
   build-docker:
     runs-on: ubuntu-latest
@@ -116,7 +117,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: axonclaw-*
+          pattern: axonclaw_*
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

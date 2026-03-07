@@ -84,7 +84,6 @@ func (Channel) Fields() []ent.Field {
 				"search_brave",
 				"search_exa",
 			).
-			Immutable().
 			Annotations(
 				entgql.OrderField("TYPE"),
 			),

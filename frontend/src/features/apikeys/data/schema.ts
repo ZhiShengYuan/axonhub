@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import { pageInfoSchema } from '@/gql/pagination';
-import { userSchema } from '@/features/users/data/schema';
+import {z} from 'zod';
+import {pageInfoSchema} from '@/gql/pagination';
+import {userSchema} from '@/features/users/data/schema';
 
 // API Key Type
-export const apiKeyTypeSchema = z.enum(['user', 'service_account', 'agent']);
+export const apiKeyTypeSchema = z.enum(['user', 'service_account', 'noauth', 'agent']);
 export type ApiKeyType = z.infer<typeof apiKeyTypeSchema>;
 
 // API Key Status
@@ -333,3 +333,21 @@ export const apiKeyProfileQuotaUsageSchema = z.object({
   usage: apiKeyQuotaUsageSchema,
 });
 export type ApiKeyProfileQuotaUsage = z.infer<typeof apiKeyProfileQuotaUsageSchema>;
+
+export const apiKeyTokenUsageStatsSchema = z.object({
+  apiKeyId: z.string(),
+  inputTokens: z.number().default(0),
+  outputTokens: z.number().default(0),
+  cachedTokens: z.number().default(0),
+  reasoningTokens: z.number().default(0),
+  topModels: z.array(
+    z.object({
+      modelId: z.string(),
+      inputTokens: z.number().default(0),
+      outputTokens: z.number().default(0),
+      cachedTokens: z.number().default(0),
+      reasoningTokens: z.number().default(0),
+    })
+  ),
+});
+export type ApiKeyTokenUsageStats = z.infer<typeof apiKeyTokenUsageStatsSchema>;

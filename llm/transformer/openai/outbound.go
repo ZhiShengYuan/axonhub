@@ -16,6 +16,7 @@ import (
 	"github.com/looplj/axonhub/llm/httpclient"
 	"github.com/looplj/axonhub/llm/streams"
 	"github.com/looplj/axonhub/llm/transformer"
+	"github.com/looplj/axonhub/llm/transformer/shared"
 )
 
 // PlatformType represents the platform type for OpenAI API.
@@ -33,6 +34,8 @@ type Config struct {
 
 	// BaseURL is the base URL for the OpenAI API, required.
 	BaseURL string `json:"base_url,omitempty"`
+
+	AccountIdentity string `json:"account_identity,omitempty"`
 
 	// RawURL is whether to use raw URL for requests, default is false.
 	// If true, the request URL will be used as is, without appending the chat completions endpoint.
@@ -151,6 +154,10 @@ func (t *OutboundTransformer) TransformRequest(ctx context.Context, llmReq *llm.
 
 	// Get API key from provider
 	apiKey := t.config.APIKeyProvider.Get(ctx)
+	scope := shared.TransportScope{
+		BaseURL:         t.config.BaseURL,
+		AccountIdentity: t.config.AccountIdentity,
+	}
 
 	// Prepare headers
 	headers := make(http.Header)
@@ -169,11 +176,12 @@ func (t *OutboundTransformer) TransformRequest(ctx context.Context, llmReq *llm.
 	}
 
 	return &httpclient.Request{
-		Method:  http.MethodPost,
-		URL:     url,
-		Headers: headers,
-		Body:    body,
-		Auth:    authConfig,
+		Method:   http.MethodPost,
+		URL:      url,
+		Headers:  headers,
+		Body:     body,
+		Auth:     authConfig,
+		Metadata: scope.Metadata(),
 	}, nil
 }
 
@@ -236,13 +244,11 @@ func (t *OutboundTransformer) TransformStreamChunk(
 		return llm.DoneResponse, nil
 	}
 
-	ep := gjson.GetBytes(event.Data, "error")
-	if ep.Exists() {
-		return nil, &llm.ResponseError{
-			Detail: llm.ErrorDetail{
-				Message: ep.String(),
-			},
-		}
+	// Some providers emit structured error events in-stream (e.g. SSE `event: error`,
+	// or JSON payloads like {"event":"error","data":{...}}). Treat them as stream errors
+	// so the caller can surface them and persistence can mark the request as failed/canceled.
+	if streamErr := parseStreamErrorEvent(event); streamErr != nil {
+		return nil, streamErr
 	}
 
 	// Create a synthetic HTTP response for compatibility with existing logic
@@ -251,6 +257,88 @@ func (t *OutboundTransformer) TransformStreamChunk(
 	}
 
 	return t.TransformResponse(ctx, httpResp)
+}
+
+func parseStreamErrorEvent(event *httpclient.StreamEvent) *llm.ResponseError {
+	if event == nil {
+		return nil
+	}
+
+	// A provider may emit `event: error` with empty payload. Treat it as an error anyway.
+	if event.Type == "error" && len(event.Data) == 0 {
+		return &llm.ResponseError{
+			Detail: llm.ErrorDetail{
+				Message: "stream error",
+				Type:    "stream_error",
+			},
+		}
+	}
+
+	if len(event.Data) == 0 {
+		return nil
+	}
+
+	root := gjson.ParseBytes(event.Data)
+
+	// Prefer explicit SSE event type when present.
+	if event.Type == "error" || root.Get("event").String() == "error" {
+		// Zai-style (SSE `event: error`): {"error":{"code":"...","message":"..."},"request_id":"..."}
+		// Also tolerate wrapped form: {"event":"error","data":{"error":{...},"request_id":"..."}}
+		errObj := root.Get("error")
+		if !errObj.Exists() {
+			errObj = root.Get("data.error")
+		}
+
+		detail := llm.ErrorDetail{
+			Message: errObj.Get("message").String(),
+			Type:    errObj.Get("type").String(),
+			Code:    errObj.Get("code").String(),
+			Param:   errObj.Get("param").String(),
+		}
+
+		if detail.Message == "" && errObj.Exists() {
+			detail.Message = errObj.String()
+		}
+
+		if detail.Message == "" {
+			detail.Message = "stream error"
+		}
+
+		if rid := root.Get("request_id").String(); rid != "" {
+			detail.RequestID = rid
+		} else if rid := root.Get("data.request_id").String(); rid != "" {
+			detail.RequestID = rid
+		} else if rid := errObj.Get("request_id").String(); rid != "" {
+			detail.RequestID = rid
+		}
+
+		return &llm.ResponseError{Detail: detail}
+	}
+
+	// OpenAI-style: {"error":{...}} or {"error":"..."}
+	ep := root.Get("error")
+	if !ep.Exists() {
+		return nil
+	}
+
+	detail := llm.ErrorDetail{
+		Message: ep.Get("message").String(),
+		Type:    ep.Get("type").String(),
+		Code:    ep.Get("code").String(),
+		Param:   ep.Get("param").String(),
+	}
+	if detail.Message == "" {
+		detail.Message = ep.String()
+	}
+
+	// Best-effort request_id extraction (provider-specific).
+	if rid := root.Get("request_id").String(); rid != "" {
+		detail.RequestID = rid
+	} else if rid := ep.Get("request_id").String(); rid != "" {
+		detail.RequestID = rid
+	}
+
+	return &llm.ResponseError{Detail: detail}
 }
 
 // buildFullRequestURL constructs the appropriate URL based on the platform.

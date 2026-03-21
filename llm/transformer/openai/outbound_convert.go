@@ -4,7 +4,6 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/looplj/axonhub/llm"
-	"github.com/looplj/axonhub/llm/transformer/shared"
 )
 
 // RequestFromLLM creates OpenAI Request from unified llm.Request.
@@ -97,19 +96,40 @@ func RequestFromLLM(r *llm.Request) *Request {
 
 // MessageFromLLM creates OpenAI Message from unified llm.Message.
 func MessageFromLLM(m llm.Message) Message {
-	// OpenAI Chat Completions has no notion of provider-specific reasoning signatures.
-	// If we detect a foreign signature (Gemini/Anthropic), drop reasoning_content to avoid upstream validation errors.
-	reasoningContent := m.ReasoningContent
-	if m.ReasoningSignature != nil && *m.ReasoningSignature != "" && !shared.IsOpenAIEncryptedContent(m.ReasoningSignature) {
-		reasoningContent = nil
+	var reasoningContent, reasoning *string
+
+	reasoningContent = m.ReasoningContent
+
+	// Fallback: if ReasoningContent is empty but Reasoning has value, use Reasoning
+	if reasoningContent == nil && m.Reasoning != nil && *m.Reasoning != "" {
+		reasoningContent = m.Reasoning
 	}
 
+	// Determine final reasoning value
+	reasoning = m.Reasoning
+
+	// Sync: if Reasoning is empty but ReasoningContent has value, use ReasoningContent
+	if reasoning == nil && reasoningContent != nil && *reasoningContent != "" {
+		reasoning = reasoningContent
+	}
+
+	// Build the Message with both fields determined
 	msg := Message{
 		Role:             m.Role,
 		Name:             m.Name,
 		Refusal:          m.Refusal,
 		ToolCallID:       m.ToolCallID,
 		ReasoningContent: reasoningContent,
+		Reasoning:        reasoning,
+	}
+
+	if m.Audio != nil {
+		msg.Audio = &OutputAudio{
+			ID:         m.Audio.ID,
+			Data:       m.Audio.Data,
+			ExpiresAt:  m.Audio.ExpiresAt,
+			Transcript: m.Audio.Transcript,
+		}
 	}
 
 	// Convert Content
@@ -177,10 +197,16 @@ func MessageContentPartFromLLM(p llm.MessageContentPart) MessageContentPart {
 		}
 	}
 
-	if p.Audio != nil {
-		part.Audio = &Audio{
-			Format: p.Audio.Format,
-			Data:   p.Audio.Data,
+	if p.VideoURL != nil {
+		part.VideoURL = &VideoURL{
+			URL: p.VideoURL.URL,
+		}
+	}
+
+	if p.InputAudio != nil {
+		part.InputAudio = &InputAudio{
+			Format: p.InputAudio.Format,
+			Data:   p.InputAudio.Data,
 		}
 	}
 

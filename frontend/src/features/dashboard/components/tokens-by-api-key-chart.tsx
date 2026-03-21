@@ -10,7 +10,6 @@ const TOKEN_COLORS = {
   input: 'var(--chart-1)',
   output: 'var(--chart-2)',
   cached: 'var(--chart-3)',
-  reasoning: 'var(--chart-4)',
 };
 
 export function TokensByAPIKeyChart() {
@@ -49,7 +48,6 @@ export function TokensByAPIKeyChart() {
     inputTokens: item.inputTokens,
     outputTokens: item.outputTokens,
     cachedTokens: item.cachedTokens,
-    reasoningTokens: item.reasoningTokens,
     totalTokens: item.totalTokens,
   }));
 
@@ -62,7 +60,6 @@ export function TokensByAPIKeyChart() {
         inputTokens: number;
         outputTokens: number;
         cachedTokens: number;
-        reasoningTokens: number;
         totalTokens: number;
       };
     }>;
@@ -89,10 +86,6 @@ export function TokensByAPIKeyChart() {
           <div className='flex justify-between gap-4'>
             <span className='text-muted-foreground'>{t('dashboard.stats.cachedTokens')}:</span>
             <span className='font-medium'>{formatNumber(data.cachedTokens)}</span>
-          </div>
-          <div className='flex justify-between gap-4'>
-            <span className='text-muted-foreground'>{t('dashboard.stats.reasoningTokens')}:</span>
-            <span className='font-medium'>{formatNumber(data.reasoningTokens)}</span>
           </div>
           <div className='border-t pt-1 flex justify-between gap-4'>
             <span className='text-foreground font-medium'>{t('dashboard.stats.totalTokens')}:</span>
@@ -144,13 +137,6 @@ export function TokensByAPIKeyChart() {
             dataKey='cachedTokens'
             fill={TOKEN_COLORS.cached}
             name={t('dashboard.stats.cachedTokens')}
-            radius={[6, 6, 0, 0]}
-            isAnimationActive={false}
-          />
-          <Bar
-            dataKey='reasoningTokens'
-            fill={TOKEN_COLORS.reasoning}
-            name={t('dashboard.stats.reasoningTokens')}
             radius={[6, 6, 0, 0]}
             isAnimationActive={false}
           />

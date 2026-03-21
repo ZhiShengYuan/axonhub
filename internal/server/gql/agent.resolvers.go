@@ -247,7 +247,5 @@ func (r *Resolver) CreateAgentInput() CreateAgentInputResolver { return &createA
 // UpdateAgentInput returns UpdateAgentInputResolver implementation.
 func (r *Resolver) UpdateAgentInput() UpdateAgentInputResolver { return &updateAgentInputResolver{r} }
 
-type (
-	createAgentInputResolver struct{ *Resolver }
-	updateAgentInputResolver struct{ *Resolver }
-)
+type createAgentInputResolver struct{ *Resolver }
+type updateAgentInputResolver struct{ *Resolver }

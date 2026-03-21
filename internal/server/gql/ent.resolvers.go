@@ -10,12 +10,11 @@ import (
 	"fmt"
 
 	"entgo.io/contrib/entgql"
-	"github.com/samber/lo"
-
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/ent/agentmessage"
 	"github.com/looplj/axonhub/internal/log"
 	"github.com/looplj/axonhub/internal/objects"
+	"github.com/samber/lo"
 )
 
 // ID is the resolver for the id field.
@@ -535,6 +534,14 @@ func (r *promptResolver) DraftVersionID(ctx context.Context, obj *ent.Prompt) (*
 }
 
 // ID is the resolver for the id field.
+func (r *promptProtectionRuleResolver) ID(ctx context.Context, obj *ent.PromptProtectionRule) (*objects.GUID, error) {
+	return &objects.GUID{
+		Type: ent.TypePromptProtectionRule,
+		ID:   obj.ID,
+	}, nil
+}
+
+// ID is the resolver for the id field.
 func (r *promptVersionResolver) ID(ctx context.Context, obj *ent.PromptVersion) (*objects.GUID, error) {
 	return &objects.GUID{
 		Type: ent.TypePromptVersion,
@@ -840,7 +847,10 @@ func (r *queryResolver) MessageChannelAgentInstances(ctx context.Context, after 
 
 // MessageChannelBindingRequests is the resolver for the messageChannelBindingRequests field.
 func (r *queryResolver) MessageChannelBindingRequests(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MessageChannelBindingRequestOrder, where *ent.MessageChannelBindingRequestWhereInput) (*ent.MessageChannelBindingRequestConnection, error) {
-	panic(fmt.Errorf("not implemented: MessageChannelBindingRequests - messageChannelBindingRequests"))
+	return r.client.MessageChannelBindingRequest.Query().Paginate(ctx, after, first, before, last,
+		ent.WithMessageChannelBindingRequestOrder(orderBy),
+		ent.WithMessageChannelBindingRequestFilter(where.Filter),
+	)
 }
 
 // Models is the resolver for the models field.
@@ -883,6 +893,22 @@ func (r *queryResolver) Prompts(ctx context.Context, after *entgql.Cursor[int], 
 	return r.client.Prompt.Query().Paginate(ctx, after, first, before, last,
 		ent.WithPromptOrder(orderBy),
 		ent.WithPromptFilter(where.Filter),
+	)
+}
+
+// PromptProtectionRules is the resolver for the promptProtectionRules field.
+func (r *queryResolver) PromptProtectionRules(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PromptProtectionRuleOrder, where *ent.PromptProtectionRuleWhereInput) (*ent.PromptProtectionRuleConnection, error) {
+	if err := validatePaginationArgs(first, last); err != nil {
+		return nil, err
+	}
+
+	if orderBy != nil && orderBy.Field.String() == "CREATED_AT" {
+		orderBy.Field = ent.DefaultPromptProtectionRuleOrder.Field
+	}
+
+	return r.client.PromptProtectionRule.Query().Paginate(ctx, after, first, before, last,
+		ent.WithPromptProtectionRuleOrder(orderBy),
+		ent.WithPromptProtectionRuleFilter(where.Filter),
 	)
 }
 
@@ -1541,6 +1567,11 @@ func (r *Resolver) Project() ProjectResolver { return &projectResolver{r} }
 // Prompt returns PromptResolver implementation.
 func (r *Resolver) Prompt() PromptResolver { return &promptResolver{r} }
 
+// PromptProtectionRule returns PromptProtectionRuleResolver implementation.
+func (r *Resolver) PromptProtectionRule() PromptProtectionRuleResolver {
+	return &promptProtectionRuleResolver{r}
+}
+
 // PromptVersion returns PromptVersionResolver implementation.
 func (r *Resolver) PromptVersion() PromptVersionResolver { return &promptVersionResolver{r} }
 
@@ -1588,41 +1619,40 @@ func (r *Resolver) UserProject() UserProjectResolver { return &userProjectResolv
 // UserRole returns UserRoleResolver implementation.
 func (r *Resolver) UserRole() UserRoleResolver { return &userRoleResolver{r} }
 
-type (
-	aPIKeyResolver                       struct{ *Resolver }
-	agentResolver                        struct{ *Resolver }
-	agentHostResolver                    struct{ *Resolver }
-	agentInstanceResolver                struct{ *Resolver }
-	agentMemoryResolver                  struct{ *Resolver }
-	agentMessageResolver                 struct{ *Resolver }
-	agentSkillResolver                   struct{ *Resolver }
-	agentThreadResolver                  struct{ *Resolver }
-	agentToolResolver                    struct{ *Resolver }
-	channelResolver                      struct{ *Resolver }
-	channelModelPriceResolver            struct{ *Resolver }
-	channelModelPriceVersionResolver     struct{ *Resolver }
-	channelOverrideTemplateResolver      struct{ *Resolver }
-	channelProbeResolver                 struct{ *Resolver }
-	dataStorageResolver                  struct{ *Resolver }
-	messageChannelResolver               struct{ *Resolver }
-	messageChannelAgentInstanceResolver  struct{ *Resolver }
-	messageChannelBindingRequestResolver struct{ *Resolver }
-	modelResolver                        struct{ *Resolver }
-	projectResolver                      struct{ *Resolver }
-	promptResolver                       struct{ *Resolver }
-	promptVersionResolver                struct{ *Resolver }
-	providerQuotaStatusResolver          struct{ *Resolver }
-	queryResolver                        struct{ *Resolver }
-	requestResolver                      struct{ *Resolver }
-	requestExecutionResolver             struct{ *Resolver }
-	roleResolver                         struct{ *Resolver }
-	skillResolver                        struct{ *Resolver }
-	systemResolver                       struct{ *Resolver }
-	threadResolver                       struct{ *Resolver }
-	toolResolver                         struct{ *Resolver }
-	traceResolver                        struct{ *Resolver }
-	usageLogResolver                     struct{ *Resolver }
-	userResolver                         struct{ *Resolver }
-	userProjectResolver                  struct{ *Resolver }
-	userRoleResolver                     struct{ *Resolver }
-)
+type aPIKeyResolver struct{ *Resolver }
+type agentResolver struct{ *Resolver }
+type agentHostResolver struct{ *Resolver }
+type agentInstanceResolver struct{ *Resolver }
+type agentMemoryResolver struct{ *Resolver }
+type agentMessageResolver struct{ *Resolver }
+type agentSkillResolver struct{ *Resolver }
+type agentThreadResolver struct{ *Resolver }
+type agentToolResolver struct{ *Resolver }
+type channelResolver struct{ *Resolver }
+type channelModelPriceResolver struct{ *Resolver }
+type channelModelPriceVersionResolver struct{ *Resolver }
+type channelOverrideTemplateResolver struct{ *Resolver }
+type channelProbeResolver struct{ *Resolver }
+type dataStorageResolver struct{ *Resolver }
+type messageChannelResolver struct{ *Resolver }
+type messageChannelAgentInstanceResolver struct{ *Resolver }
+type messageChannelBindingRequestResolver struct{ *Resolver }
+type modelResolver struct{ *Resolver }
+type projectResolver struct{ *Resolver }
+type promptResolver struct{ *Resolver }
+type promptProtectionRuleResolver struct{ *Resolver }
+type promptVersionResolver struct{ *Resolver }
+type providerQuotaStatusResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
+type requestResolver struct{ *Resolver }
+type requestExecutionResolver struct{ *Resolver }
+type roleResolver struct{ *Resolver }
+type skillResolver struct{ *Resolver }
+type systemResolver struct{ *Resolver }
+type threadResolver struct{ *Resolver }
+type toolResolver struct{ *Resolver }
+type traceResolver struct{ *Resolver }
+type usageLogResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }
+type userProjectResolver struct{ *Resolver }
+type userRoleResolver struct{ *Resolver }

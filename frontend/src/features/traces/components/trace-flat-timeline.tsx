@@ -358,6 +358,9 @@ function SpanRow({ span, totalDuration, segmentSequentialOffset, onSelectSpan, s
   const toolType = spanSource.span.value?.toolUse?.type;
   const isResponsesCustomTool = normalizeSpanType(toolType) === 'responses_custom_tool';
 
+  const imageUrl = spanSource.span.value?.userImageUrl?.url || spanSource.span.value?.imageUrl?.url;
+  const videoUrl = spanSource.span.value?.userVideoUrl?.url || spanSource.span.value?.videoUrl?.url;
+
   return (
     <div className='border-border/40 border-b'>
       <div
@@ -377,6 +380,21 @@ function SpanRow({ span, totalDuration, segmentSequentialOffset, onSelectSpan, s
         </div>
 
         <div className='flex min-w-0 flex-1 items-center gap-2'>
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt=''
+              className='h-8 w-8 flex-shrink-0 rounded border object-cover'
+            />
+          )}
+          {!imageUrl && videoUrl && (
+            <video
+              src={videoUrl}
+              className='h-8 w-8 flex-shrink-0 rounded border object-cover'
+              muted
+              preload='metadata'
+            />
+          )}
           <span className='truncate text-sm font-medium'>{spanDisplay?.primary ?? span.name}</span>
           {spanKindLabel && (
             <Badge variant='secondary' className='text-[10px] tracking-wide uppercase'>

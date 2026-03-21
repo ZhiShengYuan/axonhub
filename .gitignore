@@ -127,7 +127,6 @@ dumps
 .builds
 .pnpm-store
 .serena
-.claude
 .gomodcache
 .gocache
 
@@ -144,7 +143,6 @@ scripts/e2e/axonhub-e2e.db
 scripts/e2e/e2e-backend.log
 scripts/e2e/axonhub-e2e
 scripts/e2e/.e2e-backend-db-type
-scripts/migration/migration-test/
 # Migration testing artifacts
 scripts/migration/migration-test/
 llm/tools/*.jsonl
@@ -164,3 +162,4 @@ locales_backup
 *.db-wal
 deploy_dev.sh
 redeploy_dev.sh
+.snow/

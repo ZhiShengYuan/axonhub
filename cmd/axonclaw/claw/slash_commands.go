@@ -98,10 +98,17 @@ func NewDefaultSlashCommands(client graphql.Client) *SlashCommandRegistry {
 		Execute:     executeSubagent,
 	})
 
+	registry.Register(&SlashCommand{
+		Name:        "/stop",
+		Description: "Stop the agent's current processing immediately",
+		Execute:     executeStop,
+	})
+
 	return registry
 }
 
 func executeReset(ctx context.Context, r *Runner, _ []string) (string, error) {
+	r.stopProcessing()
 	r.Agent.ClearMessages()
 
 	newBoot, err := bootstrap.Do(ctx, r.Client, bootstrap.Params{
@@ -146,8 +153,17 @@ func executeHelp(_ context.Context, r *Runner, _ []string) (string, error) {
 }
 
 func executeClear(_ context.Context, r *Runner, _ []string) (string, error) {
+	r.stopProcessing()
 	r.Agent.ClearMessages()
 	return "Conversation history cleared.", nil
+}
+
+func executeStop(_ context.Context, r *Runner, _ []string) (string, error) {
+	if !r.stopProcessing() {
+		return "Agent is not currently processing.", nil
+	}
+
+	return "Agent stopped.", nil
 }
 
 func executeSubagent(ctx context.Context, r *Runner, args []string) (string, error) {

@@ -43,6 +43,7 @@ type Runner struct {
 	TaskScheduler *task.Scheduler
 	processMu     sync.Mutex
 	processing    atomic.Bool
+	processCancel context.CancelFunc
 	mcpManager    *mcp.Manager
 	toolSource    subagent.ToolSource
 	slashCommands *SlashCommandRegistry
@@ -180,6 +181,20 @@ func (r *Runner) Run(ctx context.Context) error {
 			}
 
 		case msg := <-msgCh:
+			// Slash commands are handled immediately, regardless of
+			// whether the agent is currently processing.
+			if cmd, args, ok := r.slashCommands.Match(msg.Text); ok {
+				result, err := cmd.Execute(ctx, r, args)
+				if err != nil {
+					r.Logger.Warn("slash command failed", "command", cmd.Name, "error", err)
+					result = fmt.Sprintf("Error executing %s: %v", cmd.Name, err)
+				}
+
+				r.sendSlashCommandResult(ctx, result, msg.Id)
+
+				continue
+			}
+
 			if r.processing.Load() {
 				r.Logger.Info("agent busy, delivering as steering", "text_len", len(msg.Text))
 				t := r.formatMessageForLLM(msg)
@@ -292,28 +307,40 @@ func (r *Runner) processMessage(ctx context.Context, msg IncomingMessage) error 
 	r.processMu.Lock()
 	defer r.processMu.Unlock()
 
+	processCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	r.processCancel = cancel
 	r.processing.Store(true)
-	defer r.processing.Store(false)
 
-	if cmd, args, ok := r.slashCommands.Match(msg.Text); ok {
-		result, err := cmd.Execute(ctx, r, args)
-		if err != nil {
-			r.Logger.Warn("slash command failed", "command", cmd.Name, "error", err)
-			result = fmt.Sprintf("Error executing %s: %v", cmd.Name, err)
-		}
-
-		r.sendSlashCommandResult(ctx, result, msg.Id)
-
-		return nil
-	}
+	defer func() {
+		r.processing.Store(false)
+		r.processCancel = nil
+	}()
 
 	traceID := uuid.New().String()
-	ctx = axoncontext.WithThreadID(ctx, r.ThreadID)
-	ctx = axoncontext.WithTraceID(ctx, traceID)
+	processCtx = axoncontext.WithThreadID(processCtx, r.ThreadID)
+	processCtx = axoncontext.WithTraceID(processCtx, traceID)
 	formatted := r.formatMessageForLLM(msg)
-	_, err := r.Agent.Process(ctx, agent.Content{Text: &formatted})
+	_, err := r.Agent.Process(processCtx, agent.Content{Text: &formatted})
 
 	return err
+}
+
+// stopProcessing cancels the active agent processing if running.
+// Returns true if processing was active and has been canceled.
+func (r *Runner) stopProcessing() bool {
+	if !r.processing.Load() {
+		return false
+	}
+
+	r.Logger.Info("stopping current processing")
+
+	if r.processCancel != nil {
+		r.processCancel()
+	}
+
+	return true
 }
 
 func (r *Runner) autoUpdateConfig(ctx context.Context) {

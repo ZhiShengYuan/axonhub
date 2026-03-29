@@ -70,6 +70,7 @@ export const channelTypeSchema = z.enum([
   'search_tavily',
   'search_brave',
   'search_exa',
+  'fireworks',
 ]);
 export type ChannelType = z.infer<typeof channelTypeSchema>;
 

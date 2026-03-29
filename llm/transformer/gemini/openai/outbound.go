@@ -287,6 +287,8 @@ func (t *OutboundTransformer) TransformRequest(
 	switch llmReq.RequestType {
 	case llm.RequestTypeChat, "":
 		// continue
+	case llm.RequestTypeCompact:
+		return nil, fmt.Errorf("%w: compact is only supported by OpenAI Responses API", transformer.ErrInvalidRequest)
 	default:
 		return nil, fmt.Errorf("%w: %s is not supported", transformer.ErrInvalidRequest, llmReq.RequestType)
 	}
@@ -302,6 +304,8 @@ func (t *OutboundTransformer) TransformRequest(
 
 	// Make a copy to avoid modifying the original request
 	req := *llmReq
+	// Gemini OpenAI endpoint does not accept metadata.
+	req.Metadata = nil
 	scope := shared.TransportScope{
 		BaseURL:         t.BaseURL,
 		AccountIdentity: t.AccountIdentity,
@@ -365,12 +369,13 @@ func (t *OutboundTransformer) TransformRequest(
 	url := t.BaseURL + "/chat/completions"
 
 	return &httpclient.Request{
-		Method:   http.MethodPost,
-		URL:      url,
-		Headers:  headers,
-		Body:     body,
-		Auth:     auth,
-		Metadata: scope.Metadata(),
+		Method:                http.MethodPost,
+		URL:                   url,
+		Headers:               headers,
+		Body:                  body,
+		Auth:                  auth,
+		SkipInboundQueryMerge: true,
+		Metadata:              scope.Metadata(),
 	}, nil
 }
 

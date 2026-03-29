@@ -3205,6 +3205,7 @@ enum ChannelType @goModel(model: "github.com/looplj/axonhub/internal/ent/channel
   deepseek
   deepseek_anthropic
   deepinfra
+  fireworks
   doubao
   doubao_anthropic
   moonshot

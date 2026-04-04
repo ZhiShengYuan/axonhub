@@ -109,6 +109,7 @@ type ChannelSettings {
   transformOptions: TransformOptions
   headerOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
   bodyOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
+  passThroughUserAgent: Boolean
 }
 
 enum CapabilityPolicy {
@@ -140,6 +141,7 @@ input ChannelSettingsInput {
   transformOptions: TransformOptionsInput
   headerOverrideOperations: [OverrideOperationInput!]
   bodyOverrideOperations: [OverrideOperationInput!]
+  passThroughUserAgent: Boolean
 }
 
 type ChannelCredentials {
@@ -277,6 +279,7 @@ input APIKeyProfileInput {
   modelMappings: [ModelMappingInput!]
   channelIDs: [Int!]
   channelTags: [String!]
+  channelTagsMatchMode: APIKeyMatchMode
   modelIDs: [String!]
   quota: APIKeyQuotaInput
   loadBalanceStrategy: String
@@ -296,9 +299,15 @@ type APIKeyProfile {
   modelMappings: [ModelMapping!]
   channelIDs: [Int!]
   channelTags: [String!]
+  channelTagsMatchMode: APIKeyMatchMode
   modelIDs: [String!]
   quota: APIKeyQuota
   loadBalanceStrategy: String
+}
+
+enum APIKeyMatchMode {
+  any
+  all
 }
 
 input APIKeyQuotaInput {
@@ -638,6 +647,7 @@ type Mutation {
   bulkArchiveChannels(ids: [ID!]!): Boolean!
   bulkDisableChannels(ids: [ID!]!): Boolean!
   bulkEnableChannels(ids: [ID!]!): Boolean!
+  bulkRecoverChannels(ids: [ID!]!): Boolean!
   bulkDeleteChannels(ids: [ID!]!): Boolean!
   testChannel(input: TestChannelInput!): TestChannelPayload!
   bulkImportChannels(input: BulkImportChannelsInput!): BulkImportChannelsResult!

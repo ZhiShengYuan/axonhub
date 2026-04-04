@@ -219,6 +219,10 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 	// Add outbound middlewares (executed after outbound.TransformRequest)
 	middlewares = append(middlewares,
 		applyOverrideRequestBody(outbound),
+		// applyUserAgentPassThrough runs before header overrides to set the initial
+		// User-Agent value (either from client pass-through or default "axonhub/1.0").
+		// This allows override headers to modify the User-Agent if configured.
+		applyUserAgentPassThrough(outbound, processor.SystemService),
 		applyOverrideRequestHeaders(outbound),
 
 		// Unified performance tracking middleware.

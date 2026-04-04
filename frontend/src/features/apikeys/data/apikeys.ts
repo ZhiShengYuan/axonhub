@@ -86,6 +86,7 @@ function buildApiKeyQuery(permissions: { canViewUsers: boolean }) {
             modelMappings { from to }
             channelIDs
             channelTags
+            channelTagsMatchMode
             modelIDs
             loadBalanceStrategy
             quota {
@@ -183,6 +184,7 @@ const UPDATE_APIKEY_PROFILES_MUTATION = `
           }
           channelIDs
           channelTags
+          channelTagsMatchMode
           modelIDs
           loadBalanceStrategy
           quota {
@@ -417,8 +419,8 @@ export function useCreateApiKey() {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
       toast.success(t('apikeys.messages.createSuccess'));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.createError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -440,8 +442,8 @@ export function useUpdateApiKey() {
       queryClient.invalidateQueries({ queryKey: ['apiKey', variables.id] });
       toast.success(t('apikeys.messages.updateSuccess'));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.updateError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -467,8 +469,8 @@ export function useUpdateApiKeyStatus() {
             : t('apikeys.status.archived');
       toast.success(t('apikeys.messages.statusUpdateSuccess', { status: statusText }));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.statusUpdateError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -488,8 +490,8 @@ export function useUpdateApiKeyProfiles() {
       queryClient.invalidateQueries({ queryKey: ['apiKey', variables.id] });
       toast.success(t('apikeys.messages.profilesUpdateSuccess'));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.profilesUpdateError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -509,8 +511,8 @@ export function useBulkDisableApiKeys() {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
       toast.success(t('apikeys.messages.bulkDisableSuccess', { count: variables.length }));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.bulkDisableError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -530,8 +532,8 @@ export function useBulkEnableApiKeys() {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
       toast.success(t('apikeys.messages.bulkEnableSuccess', { count: variables.length }));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.bulkEnableError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }
@@ -551,8 +553,8 @@ export function useBulkArchiveApiKeys() {
       queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
       toast.success(t('apikeys.messages.bulkArchiveSuccess', { count: variables.length }));
     },
-    onError: (_error) => {
-      toast.error(t('apikeys.messages.bulkArchiveError'));
+    onError: () => {
+      toast.error(t('common.errors.internalServerError'));
     },
   });
 }

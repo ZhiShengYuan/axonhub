@@ -199,6 +199,9 @@ models:
   APIKeyProfile:
     model:
       - github.com/looplj/axonhub/internal/objects.APIKeyProfile
+  APIKeyMatchMode:
+    model:
+      - github.com/looplj/axonhub/internal/objects.APIKeyMatchMode
   APIKeyQuotaInput:
     model:
       - github.com/looplj/axonhub/internal/objects.APIKeyQuota
@@ -568,6 +571,12 @@ models:
   UpdateChannelProbeSettingInput:
     model:
       - github.com/looplj/axonhub/internal/server/biz.ChannelProbeSetting
+  ChannelModelAutoSyncSetting:
+    model:
+      - github.com/looplj/axonhub/internal/server/biz.ChannelModelAutoSyncSetting
+  UpdateChannelModelAutoSyncSettingInput:
+    model:
+      - github.com/looplj/axonhub/internal/server/biz.ChannelModelAutoSyncSetting
   ChannelProbePoint:
     model:
       - github.com/looplj/axonhub/internal/server/biz.ChannelProbePoint
@@ -580,6 +589,9 @@ models:
   ProbeFrequency:
     model:
       - github.com/looplj/axonhub/internal/server/biz.ProbeFrequency
+  AutoSyncFrequency:
+    model:
+      - github.com/looplj/axonhub/internal/server/biz.AutoSyncFrequency
   PromptSettings:
     model:
       - github.com/looplj/axonhub/internal/objects.PromptSettings

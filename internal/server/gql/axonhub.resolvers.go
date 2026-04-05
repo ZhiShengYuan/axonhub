@@ -358,6 +358,15 @@ func (r *mutationResolver) UpdateUserStatus(ctx context.Context, id objects.GUID
 	return r.userService.UpdateUserStatus(ctx, id.ID, status)
 }
 
+// DeleteUser is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, id objects.GUID) (bool, error) {
+	if err := r.userService.DeleteUser(ctx, id.ID); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // CreateRole is the resolver for the createRole field.
 func (r *mutationResolver) CreateRole(ctx context.Context, input ent.CreateRoleInput) (*ent.Role, error) {
 	return r.roleService.CreateRole(ctx, input)
@@ -403,6 +412,15 @@ func (r *mutationResolver) UpdateProject(ctx context.Context, id objects.GUID, i
 // UpdateProjectStatus is the resolver for the updateProjectStatus field.
 func (r *mutationResolver) UpdateProjectStatus(ctx context.Context, id objects.GUID, status project.Status) (*ent.Project, error) {
 	return r.projectService.UpdateProjectStatus(ctx, id.ID, status)
+}
+
+// DeleteProject is the resolver for the deleteProject field.
+func (r *mutationResolver) DeleteProject(ctx context.Context, id objects.GUID) (bool, error) {
+	if err := r.projectService.DeleteProject(ctx, id.ID); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // AddUserToProject is the resolver for the addUserToProject field.

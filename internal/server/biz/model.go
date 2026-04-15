@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -180,10 +181,17 @@ func validateFilterLeaf(condition objects.Condition) error {
 		return fmt.Errorf("condition field is required")
 	}
 
-	if condition.Field != "prompt_tokens" {
+	switch condition.Field {
+	case "prompt_tokens":
+		return validateFilterLeafPromptTokens(condition)
+	case "current_time":
+		return validateFilterLeafCurrentTime(condition)
+	default:
 		return fmt.Errorf("unsupported condition field %q", condition.Field)
 	}
+}
 
+func validateFilterLeafPromptTokens(condition objects.Condition) error {
 	switch condition.Operator {
 	case "lt", "lte", "gt", "gte", "<", "<=", ">", ">=":
 	default:
@@ -201,6 +209,32 @@ func validateFilterLeaf(condition objects.Condition) error {
 
 	if value < 0 {
 		return fmt.Errorf("%s must be greater than or equal to 0", condition.Field)
+	}
+
+	return nil
+}
+
+// validateFilterLeafCurrentTime validates time-based conditions with RFC3339 timezone format.
+func validateFilterLeafCurrentTime(condition objects.Condition) error {
+	switch condition.Operator {
+	case "lt", "lte", "gt", "gte", "<", "<=", ">", ">=", "eq", "==", "ne", "!=":
+	default:
+		return fmt.Errorf("unsupported condition operator %q for time-based conditions", condition.Operator)
+	}
+
+	value, ok := condition.Value.(string)
+	if !ok {
+		return fmt.Errorf("condition value for %s must be an RFC3339-formatted string (e.g., \"14:00:00+08:00\")", condition.Field)
+	}
+
+	if value == "" {
+		return fmt.Errorf("condition value for %s cannot be empty", condition.Field)
+	}
+
+	// RFC3339 with timezone required
+	if !strings.Contains(value, "+") && !strings.Contains(value, "-") ||
+		(strings.Count(value, ":") < 2) {
+		return fmt.Errorf("condition value for %s must be RFC3339 format with timezone (e.g., \"14:00:00+08:00\" or \"2024-01-15T14:00:00+08:00\")", condition.Field)
 	}
 
 	return nil

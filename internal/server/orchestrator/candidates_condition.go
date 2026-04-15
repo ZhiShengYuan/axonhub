@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"time"
 	"unicode"
 
 	"github.com/samber/lo"
@@ -66,6 +67,7 @@ func matchesAssociationWhen(promptTokens int64, when *objects.ModelAssociationWh
 
 	if when.Condition != nil && !objects.Evaluate(*when.Condition, map[string]any{
 		"prompt_tokens": promptTokens,
+		"current_time":  time.Now().UTC().Format(time.RFC3339),
 	}) {
 		return false
 	}

@@ -29,6 +29,9 @@ import { ChannelModelsList } from './channel-models-list';
 const promptTokensOperators = ['lt', 'lte', 'gt', 'gte'] as const;
 type PromptTokensOperator = (typeof promptTokensOperators)[number];
 
+const currentTimeOperators = ['lt', 'lte', 'gt', 'gte', 'eq', 'ne'] as const;
+type CurrentTimeOperator = (typeof currentTimeOperators)[number];
+
 const whenFilterFields: FilterBuilderField[] = [
   {
     value: 'prompt_tokens',
@@ -40,6 +43,20 @@ const whenFilterFields: FilterBuilderField[] = [
       { value: 'lte', label: '<= Less than or equal' },
       { value: 'gt', label: '> Greater than' },
       { value: 'gte', label: '>= Greater than or equal' },
+    ],
+  },
+  {
+    value: 'current_time',
+    label: 'Current time',
+    type: 'string',
+    placeholder: 'e.g. 14:00:00+08:00',
+    operators: [
+      { value: 'lt', label: '< Less than' },
+      { value: 'lte', label: '<= Less than or equal' },
+      { value: 'gt', label: '> Greater than' },
+      { value: 'gte', label: '>= Greater than or equal' },
+      { value: 'eq', label: '= Equal' },
+      { value: 'ne', label: '!= Not equal' },
     ],
   },
 ];
@@ -126,6 +143,13 @@ function validateWhenConditionNode(
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Value must be a number',
+      path: [...path, 'value'],
+    });
+  }
+  if (condition.field === 'current_time' && typeof condition.value !== 'string') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Value must be a time string',
       path: [...path, 'value'],
     });
   }

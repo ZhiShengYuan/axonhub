@@ -187,9 +187,9 @@ func TestChannelRetryableWrapper_CanRetry(t *testing.T) {
 	underlying := &mockOutboundTransformer{apiFormat: "test/mock"}
 	wrapper := NewChannelRetryableWrapper(underlying, 3)
 
-	t.Run("should retry on 429 (rate limiting)", func(t *testing.T) {
+	t.Run("should not retry on 429 (rate limiting - failover immediately)", func(t *testing.T) {
 		err := errors.New("HTTP error 429")
-		require.True(t, wrapper.CanRetry(err))
+		require.False(t, wrapper.CanRetry(err))
 	})
 
 	t.Run("should not retry on 400 (bad request)", func(t *testing.T) {

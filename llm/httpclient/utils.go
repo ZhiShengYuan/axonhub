@@ -56,11 +56,13 @@ func getClientIP(req *http.Request) string {
 }
 
 // IsHTTPStatusCodeRetryable checks if an HTTP status code is retryable.
-// 4xx status codes are generally not retryable except for 429 (Too Many Requests).
+// 4xx status codes are generally not retryable.
 // 5xx status codes are typically retryable.
 func IsHTTPStatusCodeRetryable(statusCode int) bool {
+	// 429 (Too Many Requests) is NOT retryable - treat as hard failure
+	// to allow immediate failover to next channel instead of waiting.
 	if statusCode == http.StatusTooManyRequests {
-		return true // 429 is retryable (rate limiting)
+		return false
 	}
 
 	if statusCode >= 400 && statusCode < 500 {

@@ -9,11 +9,11 @@ import (
 )
 
 func TestIsHTTPStatusCodeRetryable(t *testing.T) {
-	t.Run("429 is retryable", func(t *testing.T) {
-		require.True(t, IsHTTPStatusCodeRetryable(429))
+	t.Run("429 is not retryable (failover immediately)", func(t *testing.T) {
+		require.False(t, IsHTTPStatusCodeRetryable(429))
 	})
 
-	t.Run("4xx errors (except 429) are not retryable", func(t *testing.T) {
+	t.Run("4xx errors are not retryable", func(t *testing.T) {
 		require.False(t, IsHTTPStatusCodeRetryable(400))
 		require.False(t, IsHTTPStatusCodeRetryable(401))
 		require.False(t, IsHTTPStatusCodeRetryable(403))
@@ -379,12 +379,12 @@ func TestMergeInboundRequest(t *testing.T) {
 		}
 		src := &Request{
 			Headers: http.Header{
-				"Cf-Ray":          []string{"abc123"},
+				"Cf-Ray":           []string{"abc123"},
 				"Cf-Connecting-Ip": []string{"1.2.3.4"},
-				"Cf-Ipcountry":    []string{"US"},
-				"Cf-Visitor":      []string{`{"scheme":"https"}`},
-				"Cdn-Loop":        []string{"cloudflare; loops=1"},
-				"User-Agent":      []string{"Test/1.0"},
+				"Cf-Ipcountry":     []string{"US"},
+				"Cf-Visitor":       []string{`{"scheme":"https"}`},
+				"Cdn-Loop":         []string{"cloudflare; loops=1"},
+				"User-Agent":       []string{"Test/1.0"},
 			},
 			Query: url.Values{},
 		}

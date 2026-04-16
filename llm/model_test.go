@@ -2,6 +2,8 @@ package llm
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -278,4 +280,25 @@ func TestStop_UnmarshalJSON_ClearsConflictingRepresentation(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, stop.Stop)
 	require.Equal(t, []string{"a", "b"}, stop.MultipleStop)
+}
+
+func TestIncompleteStreamError(t *testing.T) {
+	t.Run("error message includes chunks count", func(t *testing.T) {
+		err := &IncompleteStreamError{ChunksReceived: 3}
+		require.Equal(t, "stream ended without terminal event (received 3 chunks)", err.Error())
+	})
+
+	t.Run("IsIncompleteStreamError detects direct error", func(t *testing.T) {
+		err := &IncompleteStreamError{ChunksReceived: 0}
+		require.True(t, IsIncompleteStreamError(err))
+	})
+
+	t.Run("IsIncompleteStreamError detects wrapped error", func(t *testing.T) {
+		err := fmt.Errorf("wrapped: %w", &IncompleteStreamError{ChunksReceived: 5})
+		require.True(t, IsIncompleteStreamError(err))
+	})
+
+	t.Run("IsIncompleteStreamError returns false for other errors", func(t *testing.T) {
+		require.False(t, IsIncompleteStreamError(errors.New("other")))
+	})
 }

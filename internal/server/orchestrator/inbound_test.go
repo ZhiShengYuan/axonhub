@@ -227,7 +227,7 @@ func TestInboundPersistentStream_Close_WithTerminalEvent(t *testing.T) {
 }
 
 // TestInboundPersistentStream_Close_WithAggregationError tests the error path:
-// aggregation fails but fallback behavior still works (persistResponseChunks called in final block).
+// aggregation fails and stream has no terminal event, so IncompleteStreamError is returned.
 func TestInboundPersistentStream_Close_WithAggregationError(t *testing.T) {
 	regularResponseChunk := &httpclient.StreamEvent{
 		Type: "chunk",
@@ -253,7 +253,8 @@ func TestInboundPersistentStream_Close_WithAggregationError(t *testing.T) {
 	assert.False(t, state.StreamCompleted, "StreamCompleted should be false before Close()")
 
 	err := stream.Close()
-	require.NoError(t, err, "Close() should not return an error")
+	require.Error(t, err, "Close() should return IncompleteStreamError")
+	assert.True(t, llm.IsIncompleteStreamError(err), "Error should be IncompleteStreamError")
 
 	assert.False(t, state.StreamCompleted, "StreamCompleted should remain false after Close() with aggregation error")
 	assert.True(t, mockStream.closed, "Stream should be closed")

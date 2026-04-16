@@ -769,3 +769,19 @@ type ModalityTokenCount struct {
 	// Number of tokens.
 	TokenCount int64 `json:"token_count,omitempty"`
 }
+
+// IncompleteStreamError indicates that a stream ended without a proper terminal event
+// (e.g., [DONE], message_stop, response.completed) and without a valid complete response.
+type IncompleteStreamError struct {
+	ChunksReceived int
+}
+
+func (e *IncompleteStreamError) Error() string {
+	return fmt.Sprintf("stream ended without terminal event (received %d chunks)", e.ChunksReceived)
+}
+
+// IsIncompleteStreamError checks if an error is an IncompleteStreamError.
+func IsIncompleteStreamError(err error) bool {
+	var e *IncompleteStreamError
+	return errors.As(err, &e)
+}

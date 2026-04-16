@@ -128,6 +128,11 @@ func (w *ChannelRetryableWrapper) CanRetry(err error) bool {
 		return false
 	}
 
+	// IncompleteStreamError is NOT retryable on same channel - failover immediately
+	if llm.IsIncompleteStreamError(err) {
+		return false
+	}
+
 	// Use custom retry logic if provided
 	if w.customCanRetry != nil {
 		return w.customCanRetry(err)
@@ -189,6 +194,11 @@ func TestChannelRetryableWrapper_CanRetry(t *testing.T) {
 
 	t.Run("should not retry on 429 (rate limiting - failover immediately)", func(t *testing.T) {
 		err := errors.New("HTTP error 429")
+		require.False(t, wrapper.CanRetry(err))
+	})
+
+	t.Run("should not retry on incomplete stream error (failover immediately)", func(t *testing.T) {
+		err := &llm.IncompleteStreamError{ChunksReceived: 5}
 		require.False(t, wrapper.CanRetry(err))
 	})
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/looplj/axonhub/internal/dumper"
 	"github.com/looplj/axonhub/internal/ent"
@@ -163,6 +164,26 @@ func (ts *InboundPersistentStream) Close() error {
 			log.Debug(ctx, "Stream has valid complete response without terminal event, treating as completed")
 			ts.state.StreamCompleted = true
 		}
+	}
+
+	// If the stream ended without a terminal event and without a valid complete response,
+	// treat this as an IncompleteStreamError so the pipeline can failover to the next channel.
+	if !ts.state.StreamCompleted && streamErr == nil && ctxErr == nil {
+		log.Warn(ctx, "Stream ended without terminal event and no valid complete response",
+			log.Int("chunks_received", len(ts.responseChunks)))
+
+		incompleteErr := &llm.IncompleteStreamError{ChunksReceived: len(ts.responseChunks)}
+
+		if ts.request != nil {
+			persistCtx := context.WithoutCancel(ctx)
+			if err := ts.requestService.UpdateRequestStatusFromError(persistCtx, ts.request.ID, incompleteErr); err != nil {
+				log.Warn(persistCtx, "Failed to update request status from error", log.Cause(err))
+			}
+		}
+
+		_ = ts.stream.Close()
+
+		return fmt.Errorf("incomplete stream: %w", incompleteErr)
 	}
 
 	// Check if context was canceled (client disconnected before [DONE]).

@@ -191,11 +191,11 @@ func TestIsRetryableError(t *testing.T) {
 			expected: false,
 		},
 		{
-			name: "429 Too Many Requests is retryable",
+			name: "429 Too Many Requests is not retryable (failover immediately)",
 			err: &httpclient.Error{
 				StatusCode: http.StatusTooManyRequests,
 			},
-			expected: true,
+			expected: false,
 		},
 		{
 			name: "400 Bad Request is not retryable",

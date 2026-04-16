@@ -30,22 +30,34 @@ The load balancing system uses the Strategy pattern to make the prioritization l
 
 ## Built-in Strategies
 
-### 1. TraceAwareStrategy (Priority: up to 1000 points)
+### 1. StickyRoutingStrategy (Priority: up to 900 points)
 
-**Purpose**: Sticky routing for conversational consistency.
+**Purpose**: Sticky routing for cache affinity using consistent hashing.
 
 **Algorithm**:
-1. Reads trace metadata from context (if debug or upstream provided it).
-2. Queries the last successful channel ID for that trace.
-3. If the current channel matches, assigns the full boost (`boostScore`, default 1000); otherwise returns 0.
+1. Resolves a sticky key via cascading priority: trace entity → trace ID string → thread ID → API key + model → custom `X-Sticky-Key` header.
+2. Uses a consistent hash ring with 150 virtual nodes per channel to map the key to a target channel.
+3. If the current channel matches the target, assigns the full boost (`boostScore`, default 900); otherwise returns 0.
+4. The hash ring is lazily rebuilt when the channel cache version changes (channels added/removed).
+
+**Key Cascade** (highest to lowest priority):
+| Priority | Key Source | Use Case |
+|----------|-----------|----------|
+| 1 | Trace entity (`X-Trace-ID` header) | Multi-turn chat cache affinity |
+| 2 | Trace ID string | Same, without DB entity lookup |
+| 3 | Thread entity (`X-Thread-ID` header) | Conversation-level stickiness |
+| 4 | API key + model | Tenant+model-level stickiness |
+| 5 | Custom `X-Sticky-Key` header | Application-defined affinity |
 
 **Pros**:
-- Guarantees that multi-turn conversations stay on the channel that already succeeded, minimizing latency spikes from re-initialization.
-- Zero-cost when no trace information exists (strategy returns 0 quickly).
+- Zero I/O — pure computation, no database lookups (unlike the previous TraceAwareStrategy).
+- Consistent hashing minimizes remapping when channels are added/removed (~1/N keys remapped).
+- Covers all real use cases without configuration: multi-turn chat (trace), conversation continuity (thread), tenant isolation (apiKey+model), and custom control (header).
+- Subsumes the previous TraceAwareStrategy — trace ID is the first key tried in the cascade.
 
 **Cons**:
-- Requires trace propagation and persistence; no benefit if upstream systems omit trace IDs.
-- Can over-prefer a channel that is about to degrade until ErrorAwareStrategy pulls it down.
+- With very few channels (2-3), distribution may show slight imbalance; other strategies (WeightRoundRobin, ErrorAware) compensate.
+- Score of 900 dominates all other strategies combined, so error-aware override only occurs when the sticky channel is deeply unhealthy (ErrorAware drops to 0 vs 200 for healthy = 200-point swing).
 
 ### 2. ErrorAwareStrategy (Priority: 0-200 points)
 
@@ -116,7 +128,7 @@ The `DefaultChannelSelector` uses these strategies in order:
 
 ```go
 loadBalancer := NewLoadBalancer(
-    NewTraceAwareStrategy(requestService),                         // Priority 1: Trace consistency
+    NewStickyRoutingStrategy(channelService),                    // Priority 1: Cache affinity (consistent hash)
     NewErrorAwareStrategy(channelService),                         // Priority 2: Health
     NewWeightRoundRobinStrategy(channelService),                   // Priority 3: Fairness + admin weight
     NewLatencyAwareStrategy(channelService),                       // Priority 4: Streaming FTTL/TPS or non-streaming latency
@@ -124,34 +136,34 @@ loadBalancer := NewLoadBalancer(
 )
 ```
 
-**Total Score Range**: ~-9790-1530 points per channel (Trace 0-1000 + Error 0-200 + WeightRoundRobin 10-150 + Latency 0-80 + RateLimit -10000-100)
+**Total Score Range**: ~-9790-1430 points per channel (StickyRouting 0-900 + Error 0-200 + WeightRoundRobin 10-150 + Latency 0-80 + RateLimit -10000-100)
 
 ### Default Strategy Mix Analysis
 
 **Strengths**:
-1. **Stability first** – TraceAware+ErrorAware ensures the channel that already worked stays on top *unless* it begins to fail.
+1. **Cache affinity first** – StickyRouting ensures requests with the same trace/thread/tenant consistently hit the same channel, maximizing upstream cache hit rates.
 2. **Fair utilization** – WeightRoundRobin keeps new or idle channels active without ignoring business priorities.
 3. **Real-time protection** – LatencyAware and RateLimitAware react to live first-token latency, throughput, end-to-end latency, concurrency, and cooldown state before a channel is fully overloaded.
 
 **Trade-offs**:
 1. Requires multiple runtime signals (trace, metrics, request history, connections); missing data downgrades overall accuracy.
-2. Score magnitudes are very top-heavy (TraceAware dominates). When no trace exists, the remaining strategies must differentiate channels with far smaller numbers, so tuning their ranges matters.
+2. StickyRouting score (900) dominates when a sticky key is available. When no key exists, the remaining strategies must differentiate channels with far smaller numbers, so tuning their ranges matters.
 3. Concurrency protection depends on accurate connection tracking and sensible `MaxConcurrent` or tracker capacities.
 
 ## Scoring Example
 
-Given 3 channels for a traced request with connection limits:
+Given 3 channels for a request with trace ID (sticky routing active):
 
-| Channel | Trace Match | Consecutive Failures | Request Load | Weight | Utilization | Total Score | Rank |
+| Channel | Sticky Match | Consecutive Failures | Request Load | Weight | Utilization | Total Score | Rank |
 |---------|-------------|----------------------|--------------|--------|-------------|-------------|------|
-| A       | Yes         | 0                    | Near 0       | 80     | 20%         | 1390        | 1    |
-| C       | No          | 0                    | Low          | 50     | 20%         | 430         | 2    |
+| A       | Yes         | 0                    | Near 0       | 80     | 20%         | 1290        | 1    |
+| C       | No          | 0                    | Low          | 50     | 20%         | 330         | 2    |
 | B       | No          | 1                    | High         | 100    | 90%         | 210         | 3    |
 
 **Calculation**:
-- Channel A: 1000 (trace) + 200 (healthy) + 150 (round robin) + 40 (weight) + 40 (connection) ≈ **1390**
-- Channel C: 0 (trace) + 200 + 120 (round robin) + 25 (weight) + 40 (connection) ≈ **385** (rounded to 430 after other boosts)
-- Channel B: 0 (trace) + 150 (health, -50 failure penalty) + 30 (round robin due to high load) + 50 (weight) + 5 (connection) ≈ **235** (rounded to 210 after cooldown penalty)
+- Channel A: 900 (sticky) + 200 (healthy) + 150 (round robin) + 40 (weight) ≈ **1290**
+- Channel C: 0 (sticky) + 200 + 120 (round robin) + 25 (weight) + 40 (connection) ≈ **385** (rounded to 330)
+- Channel B: 0 (sticky) + 150 (health, -50 failure penalty) + 30 (round robin due to high load) + 50 (weight) + 5 (connection) ≈ **235** (rounded to 210)
 
 ## Observability
 
@@ -256,10 +268,10 @@ if info := chat.GetDebugInfo(ctx); info != nil {
 
 ### Strategy-Specific Logs
 
-**TraceAwareStrategy** logs:
-- Debug: When boosting a channel (score: 1000, reason: "last_successful_channel_in_trace")
-- Trace: When no trace in context or channel not in trace
-- Debug: Errors retrieving trace information
+**StickyRoutingStrategy** logs:
+- Debug: When boosting a channel (score: 900, reason: "sticky_channel_matched")
+- Debug: When no sticky key available (reason: "no_sticky_key")
+- Debug: When channel doesn't match sticky target (reason: "sticky_channel_mismatch")
 
 **ErrorAwareStrategy** logs:
 - Debug: All penalty calculations with values and reasons
@@ -293,8 +305,8 @@ tail -f axonhub.log | grep "Load balancing decision"
 # View specific channel details
 tail -f axonhub.log | grep "Channel load balancing details"
 
-# View TraceAware strategy logs
-tail -f axonhub.log | grep "TraceAwareStrategy"
+# View StickyRouting strategy logs
+tail -f axonhub.log | grep "StickyRoutingStrategy"
 
 # View ErrorAware strategy logs
 tail -f axonhub.log | grep "ErrorAwareStrategy"
@@ -309,9 +321,9 @@ tail -f axonhub.log | grep "ErrorAwareStrategy"
 grep "ErrorAwareStrategy.*penalty" axonhub.log | \
   jq '{channel: .channel_name, penalty_reason: .details} | select(.penalty_reason != null)'
 
-# Analyze TraceAware strategy effectiveness
-grep "TraceAwareStrategy: boosting" axonhub.log | \
-  jq '{channel: .channel_name, trace_id: .trace_id}' | \
+# Analyze StickyRouting strategy effectiveness
+grep "StickyRoutingStrategy: channel matched" axonhub.log | \
+  jq '{channel: .channel_name, key_type: .key_type}' | \
   sort | uniq -c | sort -nr
 ```
 
@@ -325,9 +337,9 @@ grep "TraceAwareStrategy: boosting" axonhub.log | \
 
 ### Debugging Strategy Behavior
 
-**Verify TraceAwareStrategy**:
+**Verify StickyRoutingStrategy**:
 ```bash
-# Send request with existing trace_id
+# Send request with trace ID for sticky routing
 curl -X POST http://localhost:8090/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "X-Trace-ID: 12345" \
@@ -336,8 +348,17 @@ curl -X POST http://localhost:8090/v1/chat/completions \
     "messages": [{"role": "user", "content": "hello"}]
   }'
 
-# Check logs for trace boosting
-tail -f axonhub.log | grep "TraceAwareStrategy: boosting"
+# Check logs for sticky routing
+tail -f axonhub.log | grep "StickyRoutingStrategy"
+
+# Send request with custom sticky key
+curl -X POST http://localhost:8090/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Sticky-Key: my-session-id" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "hello"}]
+  }'
 ```
 
 **Verify ErrorAwareStrategy**:
@@ -368,6 +389,7 @@ tail -f axonhub.log | grep "WeightStrategy" | jq '{channel: .channel_name, score
 2. **A/B Testing**: Support for experimental channel routing
 3. **Metrics Integration**: Prometheus metrics for load balancer decisions
 4. **Decision Auditing**: Persistent storage of load balancing decisions for analysis
+5. **Configurable Sticky Boost**: Make `boostScore` configurable per model or per API key profile
 
 ## Related Files
 

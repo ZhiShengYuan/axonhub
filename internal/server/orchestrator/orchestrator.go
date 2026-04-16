@@ -38,7 +38,7 @@ func NewChatCompletionOrchestrator(
 	rateLimitStrategy := NewRateLimitAwareStrategy(rateLimitTracker, connectionTracker)
 
 	adaptiveLoadBalancer := NewLoadBalancer(systemService, channelService,
-		NewTraceAwareStrategy(requestService),
+		NewStickyRoutingStrategy(channelService),
 		NewErrorAwareStrategy(channelService),
 		NewWeightRoundRobinStrategy(channelService),
 		NewLatencyAwareStrategy(channelService),

@@ -125,6 +125,24 @@ func GetChannelAPIKey(ctx context.Context) (string, bool) {
 	return "", false
 }
 
+// WithStickyKey stores the sticky key in the context.
+func WithStickyKey(ctx context.Context, stickyKey string) context.Context {
+	container := getContainer(ctx)
+	container.StickyKey = &stickyKey
+
+	return withContainer(ctx, container)
+}
+
+// GetStickyKey retrieves the sticky key from the context.
+func GetStickyKey(ctx context.Context) (string, bool) {
+	container := getContainer(ctx)
+	if container.StickyKey != nil {
+		return *container.StickyKey, true
+	}
+
+	return "", false
+}
+
 // WithProjectID stores the project ID in the context.
 func WithProjectID(ctx context.Context, projectID int) context.Context {
 	container := getContainer(ctx)

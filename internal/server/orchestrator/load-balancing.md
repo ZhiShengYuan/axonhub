@@ -46,8 +46,9 @@ The load balancing system uses the Strategy pattern to make the prioritization l
 | 1 | Trace entity (`X-Trace-ID` header) | Multi-turn chat cache affinity |
 | 2 | Trace ID string | Same, without DB entity lookup |
 | 3 | Thread entity (`X-Thread-ID` header) | Conversation-level stickiness |
-| 4 | API key + model | Tenant+model-level stickiness |
-| 5 | Custom `X-Sticky-Key` header | Application-defined affinity |
+| 4 | Custom `X-Sticky-Key` header | Application-defined affinity |
+
+**Important**: API key + model is intentionally **not** used as a sticky key. Tenant-level stickiness would force all independent requests with the same API key and model to one upstream, killing parallel throughput. Only conversation-level identifiers (trace/thread) get sticky routing for cache affinity; independent requests are distributed by other strategies (WeightRoundRobin, ErrorAware, LatencyAware) for maximum throughput.
 
 **Pros**:
 - Zero I/O — pure computation, no database lookups (unlike the previous TraceAwareStrategy).

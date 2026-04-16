@@ -128,29 +128,25 @@ func NewStickyRoutingStrategy(channelProvider StickyChannelProvider) *StickyRout
 // 1. Trace ID (multi-turn chat cache affinity - highest priority)
 // 2. Trace ID string (from X-Trace-ID header, without DB entity)
 // 3. Thread ID (conversation-level stickiness)
-// 4. API key + model (tenant+model-level stickiness)
-// 5. Custom sticky key (from X-Sticky-Key header)
+// 4. Custom sticky key (from X-Sticky-Key header)
+//
+// Note: API key + model is intentionally NOT used as a sticky key.
+// Tenant-level stickiness would force all requests with the same API key
+// and model to one upstream, killing parallel throughput for independent
+// conversations. Only conversation-level identifiers (trace/thread) get
+// sticky routing for cache affinity; everything else is distributed by
+// other strategies (WeightRoundRobin, ErrorAware, LatencyAware) for
+// maximum throughput.
 func (s *StickyRoutingStrategy) resolveStickyKey(ctx context.Context, model string) string {
-	// 1. Trace ID (multi-turn chat cache affinity - highest priority)
 	if trace, ok := contexts.GetTrace(ctx); ok && trace != nil && trace.TraceID != "" {
 		return "trace:" + trace.TraceID
 	}
-	// 2. Trace ID string (from X-Trace-ID header, without DB entity)
 	if traceID, ok := contexts.GetTraceID(ctx); ok && traceID != "" {
 		return "trace:" + traceID
 	}
-	// 3. Thread ID (conversation-level stickiness)
 	if thread, ok := contexts.GetThread(ctx); ok && thread != nil && thread.ThreadID != "" {
 		return "thread:" + thread.ThreadID
 	}
-	// 4. API key + model (tenant+model-level stickiness)
-	if apiKey, ok := contexts.GetAPIKey(ctx); ok && apiKey != nil && apiKey.Key != "" {
-		if model != "" {
-			return "tenant:" + apiKey.Key + ":" + model
-		}
-		return "tenant:" + apiKey.Key
-	}
-	// 5. Custom sticky key (from X-Sticky-Key header)
 	if stickyKey, ok := contexts.GetStickyKey(ctx); ok && stickyKey != "" {
 		return "custom:" + stickyKey
 	}
@@ -209,15 +205,12 @@ func (s *StickyRoutingStrategy) ScoreWithDebug(ctx context.Context, channel *biz
 		}
 	}
 
-	// Determine key type for logging
 	var keyType string
 	switch {
 	case len(key) > 6 && key[:6] == "trace:":
 		keyType = "trace"
 	case len(key) > 7 && key[:7] == "thread:":
 		keyType = "thread"
-	case len(key) > 7 && key[:7] == "tenant:":
-		keyType = "tenant"
 	case len(key) > 7 && key[:7] == "custom:":
 		keyType = "custom"
 	default:

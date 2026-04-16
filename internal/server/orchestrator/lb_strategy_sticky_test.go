@@ -210,7 +210,7 @@ func TestStickyRoutingStrategy_ThreadKey(t *testing.T) {
 	assert.Equal(t, defaultStickyBoostScore, score1+score2, "Exactly one channel should get the boost score")
 }
 
-func TestStickyRoutingStrategy_TenantKey(t *testing.T) {
+func TestStickyRoutingStrategy_TenantKeyNotSticky(t *testing.T) {
 	ctx := context.Background()
 
 	mockProvider := &mockStickyChannelProvider{
@@ -226,12 +226,9 @@ func TestStickyRoutingStrategy_TenantKey(t *testing.T) {
 	ctx = contextWithRequestedModel(ctx, "gpt-4")
 
 	channel1 := &biz.Channel{Channel: &ent.Channel{ID: 1, Name: "ch1"}}
-	channel2 := &biz.Channel{Channel: &ent.Channel{ID: 2, Name: "ch2"}}
 
-	score1 := strategy.Score(ctx, channel1)
-	score2 := strategy.Score(ctx, channel2)
-
-	assert.Equal(t, defaultStickyBoostScore, score1+score2, "Exactly one channel should get the boost score")
+	score := strategy.Score(ctx, channel1)
+	assert.Equal(t, 0.0, score, "API key + model should NOT create stickiness (kills parallel throughput)")
 }
 
 func TestStickyRoutingStrategy_CustomStickyKey(t *testing.T) {
@@ -270,7 +267,6 @@ func TestStickyRoutingStrategy_KeyCascadePriority(t *testing.T) {
 
 	ctx = contexts.WithTrace(ctx, &ent.Trace{ID: 1, TraceID: "trace-priority"})
 	ctx = contexts.WithThread(ctx, &ent.Thread{ID: 1, ThreadID: "thread-priority"})
-	ctx = contexts.WithAPIKey(ctx, &ent.APIKey{Key: "sk-priority"})
 	ctx = contexts.WithStickyKey(ctx, "custom-priority")
 	ctx = contextWithRequestedModel(ctx, "gpt-4")
 
@@ -278,6 +274,26 @@ func TestStickyRoutingStrategy_KeyCascadePriority(t *testing.T) {
 
 	key := strategy.resolveStickyKey(ctx, "gpt-4")
 	assert.Equal(t, "trace:trace-priority", key, "Trace key should take priority in cascade")
+}
+
+func TestStickyRoutingStrategy_ThreadOverCustomKey(t *testing.T) {
+	ctx := context.Background()
+
+	mockProvider := &mockStickyChannelProvider{
+		channels: []*biz.Channel{
+			{Channel: &ent.Channel{ID: 1, Name: "ch1"}},
+			{Channel: &ent.Channel{ID: 2, Name: "ch2"}},
+		},
+		cacheVersion: 1,
+	}
+
+	ctx = contexts.WithThread(ctx, &ent.Thread{ID: 1, ThreadID: "thread-priority"})
+	ctx = contexts.WithStickyKey(ctx, "custom-priority")
+
+	strategy := NewStickyRoutingStrategy(mockProvider)
+
+	key := strategy.resolveStickyKey(ctx, "gpt-4")
+	assert.Equal(t, "thread:thread-priority", key, "Thread key should take priority over custom key")
 }
 
 func TestStickyRoutingStrategy_RingRebuildOnCacheVersionChange(t *testing.T) {

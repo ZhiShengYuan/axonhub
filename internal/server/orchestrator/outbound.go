@@ -182,7 +182,7 @@ func (ts *OutboundPersistentStream) Close() error {
 			errToReport = ctxErr
 		}
 		if errToReport == nil {
-			errToReport = errors.New("stream ended without terminal event or completed response")
+			errToReport = &llm.IncompleteStreamError{ChunksReceived: len(ts.responseChunks)}
 		}
 
 		if ts.requestExec != nil {
@@ -199,7 +199,7 @@ func (ts *OutboundPersistentStream) Close() error {
 		persistCtx, cancel := xcontext.DetachWithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
-		errToReport := errors.New("stream ended without terminal event or completed response")
+		errToReport := &llm.IncompleteStreamError{ChunksReceived: len(ts.responseChunks)}
 		if ts.requestExec != nil {
 			if err := ts.RequestService.UpdateRequestExecutionStatusFromError(persistCtx, ts.requestExec.ID, errToReport); err != nil {
 				log.Warn(persistCtx, "Failed to update request execution status from error", log.Cause(err))
@@ -527,6 +527,15 @@ func (p *PersistentOutboundTransformer) CanRetry(err error) bool {
 	// 429 without Retry-After header, allow same-channel retry (might be transient rate limit)
 	if httpclient.IsRateLimitErr(err) {
 		log.Debug(context.Background(), "429 without Retry-After, allowing same-channel retry",
+			log.Int("channel_id", p.state.CurrentCandidate.Channel.ID),
+		)
+
+		return true
+	}
+
+	// Incomplete stream error: allow retry (stream ended without proper terminal event)
+	if llm.IsIncompleteStreamError(err) {
+		log.Debug(context.Background(), "incomplete stream error, allowing retry",
 			log.Int("channel_id", p.state.CurrentCandidate.Channel.ID),
 		)
 

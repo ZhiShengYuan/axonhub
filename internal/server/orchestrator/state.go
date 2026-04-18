@@ -31,6 +31,12 @@ type PersistenceState struct {
 	RawRequest    *httpclient.Request
 	LlmRequest    *llm.Request
 
+	// RequestedModelRaw is the original model string from the user's request.
+	// This is captured at OnInboundLlmRequest before any mapping/transformation,
+	// ensuring metrics are labeled by the model the user requested, not the
+	// actual model that was ultimately used.
+	RequestedModelRaw string
+
 	// Persistence state
 	Request     *ent.Request
 	RequestExec *ent.RequestExecution

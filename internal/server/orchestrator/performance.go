@@ -7,6 +7,7 @@ import (
 
 	"github.com/looplj/axonhub/internal/contexts"
 	"github.com/looplj/axonhub/internal/log"
+	"github.com/looplj/axonhub/internal/metrics"
 	"github.com/looplj/axonhub/internal/server/biz"
 	"github.com/looplj/axonhub/llm"
 	"github.com/looplj/axonhub/llm/httpclient"
@@ -37,6 +38,10 @@ func (m *performanceRecording) OnInboundLlmRequest(ctx context.Context, request 
 	if m.outbound.state.Perf == nil {
 		m.outbound.state.Perf = &biz.PerformanceRecord{}
 	}
+
+	// Capture the raw requested model before any mapping/transformation.
+	// This ensures metrics are labeled by what the user requested, not the actual model.
+	m.outbound.state.RequestedModelRaw = request.Model
 
 	if request.Stream != nil {
 		m.outbound.state.Perf.Stream = *request.Stream
@@ -101,6 +106,22 @@ func (m *performanceRecording) OnOutboundLlmResponse(ctx context.Context, respon
 	m.outbound.state.Perf.MarkSuccess()
 	m.outbound.state.ChannelService.AsyncRecordPerformance(ctx, m.outbound.state.Perf)
 
+	channel := m.outbound.GetCurrentChannel()
+	if channel != nil {
+		metrics.RecordLLMRequestAsync(ctx, &metrics.RequestMetricsData{
+			RequestedModel:   m.outbound.state.RequestedModelRaw,
+			ChannelID:        channel.ID,
+			ChannelName:      channel.Name,
+			Stream:           m.outbound.state.Perf.Stream,
+			Success:          true,
+			Canceled:         false,
+			CompletionTokens: m.outbound.state.Perf.CompletionTokens,
+			StartTime:       m.outbound.state.Perf.StartTime,
+			FirstTokenTime:  m.outbound.state.Perf.FirstTokenTime,
+			EndTime:         m.outbound.state.Perf.EndTime,
+		})
+	}
+
 	return response, nil
 }
 
@@ -117,7 +138,6 @@ func (m *performanceRecording) OnOutboundLlmStream(ctx context.Context, stream s
 }
 
 func (m *performanceRecording) OnOutboundRawError(ctx context.Context, err error) {
-	// Record performance metrics for failed requests
 	if m.outbound.state.Perf == nil {
 		return
 	}
@@ -131,6 +151,22 @@ func (m *performanceRecording) OnOutboundRawError(ctx context.Context, err error
 	}
 
 	m.outbound.state.ChannelService.AsyncRecordPerformance(ctx, perf)
+
+	channel := m.outbound.GetCurrentChannel()
+	if channel != nil {
+		metrics.RecordLLMRequestAsync(ctx, &metrics.RequestMetricsData{
+			RequestedModel:   m.outbound.state.RequestedModelRaw,
+			ChannelID:        channel.ID,
+			ChannelName:      channel.Name,
+			Stream:           perf.Stream,
+			Success:          false,
+			Canceled:         perf.Canceled,
+			CompletionTokens: perf.CompletionTokens,
+			StartTime:       perf.StartTime,
+			FirstTokenTime:  perf.FirstTokenTime,
+			EndTime:         perf.EndTime,
+		})
+	}
 }
 
 // recordPerformanceStream records performance metrics for a stream of responses.
@@ -144,6 +180,7 @@ type recordPerformanceStream struct {
 	firstTokenSet     bool
 	reasoningStartSet bool
 	reasoningEndSet   bool
+	metricsRecorded   bool
 }
 
 func (s *recordPerformanceStream) Current() *llm.Response {
@@ -174,10 +211,27 @@ func (s *recordPerformanceStream) Current() *llm.Response {
 		}
 	}
 
-	if tokenCount := event.Usage.GetCompletionTokens(); tokenCount != nil && *tokenCount > 0 {
+	if tokenCount := event.Usage.GetCompletionTokens(); tokenCount != nil && *tokenCount > 0 && !s.metricsRecorded {
 		s.state.Perf.CompletionTokens = *tokenCount
 		s.state.Perf.MarkSuccess()
 		s.state.ChannelService.AsyncRecordPerformance(s.ctx, s.state.Perf)
+
+		channel := s.state.CurrentCandidate.Channel
+		if channel != nil {
+			metrics.RecordLLMRequestAsync(s.ctx, &metrics.RequestMetricsData{
+				RequestedModel:   s.state.RequestedModelRaw,
+				ChannelID:        channel.ID,
+				ChannelName:      channel.Name,
+				Stream:           s.state.Perf.Stream,
+				Success:          true,
+				Canceled:         false,
+				CompletionTokens: s.state.Perf.CompletionTokens,
+				StartTime:       s.state.Perf.StartTime,
+				FirstTokenTime:  s.state.Perf.FirstTokenTime,
+				EndTime:         s.state.Perf.EndTime,
+			})
+			s.metricsRecorded = true
+		}
 	}
 
 	return event
@@ -188,6 +242,23 @@ func (s *recordPerformanceStream) Next() bool {
 }
 
 func (s *recordPerformanceStream) Close() error {
+	if !s.metricsRecorded && s.firstTokenSet && s.state.Perf != nil {
+		channel := s.state.CurrentCandidate.Channel
+		if channel != nil {
+			metrics.RecordLLMRequestAsync(s.ctx, &metrics.RequestMetricsData{
+				RequestedModel:   s.state.RequestedModelRaw,
+				ChannelID:        channel.ID,
+				ChannelName:      channel.Name,
+				Stream:           s.state.Perf.Stream,
+				Success:          s.state.Perf.Success,
+				Canceled:         s.state.Perf.Canceled,
+				CompletionTokens: s.state.Perf.CompletionTokens,
+				StartTime:       s.state.Perf.StartTime,
+				FirstTokenTime:  s.state.Perf.FirstTokenTime,
+				EndTime:         s.state.Perf.EndTime,
+			})
+		}
+	}
 	return s.stream.Close()
 }
 

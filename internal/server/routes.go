@@ -1,12 +1,16 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/fx"
 
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/ent/request"
+	"github.com/looplj/axonhub/internal/metrics"
 	"github.com/looplj/axonhub/internal/server/api"
 	"github.com/looplj/axonhub/internal/server/biz"
 	"github.com/looplj/axonhub/internal/server/gql"
@@ -45,7 +49,7 @@ type Services struct {
 	AuthService   *biz.AuthService
 }
 
-func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services Services) {
+func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services Services, metricsConfig metrics.Config) {
 	// Serve static frontend files
 	server.NoRoute(static.Handler())
 
@@ -75,6 +79,22 @@ func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services
 		publicGroup.GET("/favicon", handlers.System.GetFavicon)
 		// Health check endpoint - no authentication required
 		publicGroup.GET("/health", handlers.System.Health)
+
+		// Prometheus metrics endpoint - optional basic auth if credentials configured
+		if metricsConfig.BasicAuth.Username != "" && metricsConfig.BasicAuth.Password != "" {
+			authHandler := func(c *gin.Context) {
+				u, p, ok := c.Request.BasicAuth()
+				if !ok || u != metricsConfig.BasicAuth.Username || p != metricsConfig.BasicAuth.Password {
+					c.Header("WWW-Authenticate", `Basic realm="metrics"`)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+					return
+				}
+				c.Next()
+			}
+			publicGroup.GET("/metrics", authHandler, gin.WrapH(promhttp.Handler()))
+		} else {
+			publicGroup.GET("/metrics", gin.WrapH(promhttp.Handler()))
+		}
 	}
 
 	unSecureAdminGroup := server.Group("/admin", middleware.WithTimeout(server.Config.RequestTimeout))

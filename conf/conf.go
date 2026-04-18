@@ -149,6 +149,7 @@ func setDefaults(v *viper.Viper) {
 
 	v.SetDefault("server.debug", false)
 	v.SetDefault("server.disable_ssl_verify", false)
+	v.SetDefault("server.trusted_proxies", []string{})
 
 	// CORS defaults
 	v.SetDefault("server.cors.enabled", false)

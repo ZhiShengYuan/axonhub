@@ -19,6 +19,12 @@ type Config struct {
 	// LLMRequestTimeout is the maximum duration for processing a request to LLM.
 	LLMRequestTimeout time.Duration `conf:"llm_request_timeout" yaml:"llm_request_timeout" json:"llm_request_timeout"`
 
+	// TrustedProxies is a list of IP addresses or CIDR ranges trusted to proxy client requests.
+	// When set, the server will trust X-Forwarded-For and X-Real-IP headers from these proxies.
+	// Examples: ["127.0.0.1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+	// Leave empty to not trust any proxies (default, recommended for direct connections).
+	TrustedProxies []string `conf:"trusted_proxies" yaml:"trusted_proxies" json:"trusted_proxies"`
+
 	Trace     tracing.Config `conf:"trace" yaml:"trace" json:"trace"`
 	Dashboard Dashboard      `conf:"dashboard" yaml:"dashboard" json:"dashboard"`
 

@@ -62,7 +62,45 @@ var (
 		},
 		[]string{"requested_model", "channel_id", "channel_name"},
 	)
+
+	modelRPS = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "axonhub_model_rps",
+			Help: "Current requests per second in the sliding window per requested model",
+		},
+		[]string{"requested_model"},
+	)
+
+	modelTPS = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "axonhub_model_tps",
+			Help: "Current tokens per second in the sliding window per requested model",
+		},
+		[]string{"requested_model"},
+	)
+
+	channelRPS = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "axonhub_channel_rps",
+			Help: "Current requests per second in the sliding window per channel",
+		},
+		[]string{"channel_id", "channel_name"},
+	)
+
+	channelTPS = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "axonhub_channel_tps",
+			Help: "Current tokens per second in the sliding window per channel",
+		},
+		[]string{"channel_id", "channel_name"},
+	)
 )
+
+var llmRateAggregator = NewRateAggregator(RateAggregatorConfig{})
+
+func init() {
+	go startRateGaugeUpdater(context.Background(), 10*time.Second)
+}
 
 type RequestMetricsData struct {
 	RequestedModel   string
@@ -142,10 +180,46 @@ func RecordLLMRequest(data *RequestMetricsData) {
 			llmOutputTPS.WithLabelValues(data.RequestedModel, channelID, data.ChannelName).Observe(tps)
 		}
 	}
+
+	llmRateAggregator.Record(
+		data.RequestedModel,
+		data.ChannelID,
+		data.ChannelName,
+		data.CompletionTokens,
+		data.EndTime,
+	)
 }
 
 func RecordLLMRequestAsync(ctx context.Context, data *RequestMetricsData) {
 	go func() {
 		RecordLLMRequest(data)
 	}()
+}
+
+func startRateGaugeUpdater(ctx context.Context, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case now := <-ticker.C:
+			updateRateGauges(now)
+		}
+	}
+}
+
+func updateRateGauges(now time.Time) {
+	models, channels := llmRateAggregator.Snapshot(now)
+
+	for _, modelRate := range models {
+		modelRPS.WithLabelValues(modelRate.RequestedModel).Set(modelRate.RPS)
+		modelTPS.WithLabelValues(modelRate.RequestedModel).Set(modelRate.TPS)
+	}
+
+	for _, channelRate := range channels {
+		channelRPS.WithLabelValues(channelRate.ChannelID, channelRate.ChannelName).Set(channelRate.RPS)
+		channelTPS.WithLabelValues(channelRate.ChannelID, channelRate.ChannelName).Set(channelRate.TPS)
+	}
 }

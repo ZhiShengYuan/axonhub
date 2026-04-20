@@ -258,6 +258,18 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
   const [patternError, setPatternError] = useState<string | null>(null);
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
+  const [mcpUpstreamAPIKey, setMcpUpstreamAPIKey] = useState<string>(() => initialRow?.credentials?.mcp?.upstreamAPIKey || '');
+  const [mcpUpstreamBearerToken, setMcpUpstreamBearerToken] = useState<string>(() => initialRow?.credentials?.mcp?.upstreamBearerToken || '');
+  const [mcpNamespaceMappings, setMcpNamespaceMappings] = useState<{ from: string; to: string; type: string }[]>(() => {
+    return initialRow?.settings?.mcp?.namespaceMappings || [];
+  });
+  const [mcpSessionIdleTimeout, setMcpSessionIdleTimeout] = useState<number | null>(() => {
+    return initialRow?.settings?.mcp?.sessionIdleTimeoutSeconds ?? null;
+  });
+  const [mcpCollisionPolicy, setMcpCollisionPolicy] = useState<string>(() => {
+    return initialRow?.settings?.mcp?.collisionPolicy || 'alias_wins';
+  });
+
   // Debounced search values for better performance
   const debouncedFetchedModelsSearch = useDebounce(fetchedModelsSearch, 300);
   const debouncedSupportedModelsSearch = useDebounce(supportedModelsSearch, 300);
@@ -900,8 +912,20 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
       }
 
       if (isEdit && currentRow) {
+        const mcpSettings = selectedType === 'mcp' ? {
+          namespaceMappings: mcpNamespaceMappings.length > 0 ? mcpNamespaceMappings : null,
+          sessionIdleTimeoutSeconds: mcpSessionIdleTimeout,
+          collisionPolicy: mcpCollisionPolicy,
+        } : undefined;
+
+        const mcpCredentials = selectedType === 'mcp' ? {
+          upstreamAPIKey: mcpUpstreamAPIKey || null,
+          upstreamBearerToken: mcpUpstreamBearerToken || null,
+        } : undefined;
+
         const nextSettings = mergeChannelSettingsForUpdate(values.settings, {
           passThroughUserAgent,
+          ...(mcpSettings && { mcp: mcpSettings }),
         });
 
         const updateInput = {
@@ -921,9 +945,15 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
           values.credentials.gcp.projectID.trim() !== '' &&
           values.credentials?.gcp?.jsonData &&
           values.credentials.gcp.jsonData.trim() !== '';
+        const hasMCPCredentials = selectedType === 'mcp' && (mcpUpstreamAPIKey.trim() !== '' || mcpUpstreamBearerToken.trim() !== '');
 
-        if (!hasApiKey && !hasApiKeys && !hasGcpCredentials) {
+        if (!hasApiKey && !hasApiKeys && !hasGcpCredentials && !hasMCPCredentials) {
           delete updateInput.credentials;
+        } else if (hasMCPCredentials) {
+          updateInput.credentials = {
+            ...updateInput.credentials,
+            mcp: mcpCredentials,
+          };
         }
 
         await updateChannel.mutateAsync({
@@ -940,15 +970,36 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
           }),
         };
 
+        const mcpSettings = derivedChannelType === 'mcp' ? {
+          namespaceMappings: mcpNamespaceMappings.length > 0 ? mcpNamespaceMappings : null,
+          sessionIdleTimeoutSeconds: mcpSessionIdleTimeout,
+          collisionPolicy: mcpCollisionPolicy,
+        } : undefined;
+
+        const mcpCredentials = derivedChannelType === 'mcp' ? {
+          upstreamAPIKey: mcpUpstreamAPIKey || null,
+          upstreamBearerToken: mcpUpstreamBearerToken || null,
+        } : undefined;
+
         const nextSettings = mergeChannelSettingsForUpdate(values.settings, {
           proxy: proxyConfig,
           passThroughUserAgent,
+          ...(mcpSettings && { mcp: mcpSettings }),
         });
 
-        await createChannel.mutateAsync({
+        const createData = {
           ...(dataWithModels as z.infer<typeof createChannelInputSchema>),
           settings: nextSettings,
-        } as z.infer<typeof createChannelInputSchema>);
+        } as z.infer<typeof createChannelInputSchema>;
+
+        if (mcpCredentials && (mcpUpstreamAPIKey.trim() !== '' || mcpUpstreamBearerToken.trim() !== '')) {
+          createData.credentials = {
+            ...createData.credentials,
+            mcp: mcpCredentials,
+          };
+        }
+
+        await createChannel.mutateAsync(createData);
 
         // Auto-save proxy preset (preserve existing name if available)
         if (proxyType === ProxyType.URL && proxyUrl) {
@@ -1349,6 +1400,11 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
             setProxyUsername(initialRow?.settings?.proxy?.username || '');
             setProxyPassword(initialRow?.settings?.proxy?.password || '');
             setPassThroughUserAgent(initialRow?.settings?.passThroughUserAgent ?? null);
+            setMcpUpstreamAPIKey(initialRow?.credentials?.mcp?.upstreamAPIKey || '');
+            setMcpUpstreamBearerToken(initialRow?.credentials?.mcp?.upstreamBearerToken || '');
+            setMcpNamespaceMappings(initialRow?.settings?.mcp?.namespaceMappings || []);
+            setMcpSessionIdleTimeout(initialRow?.settings?.mcp?.sessionIdleTimeoutSeconds ?? null);
+            setMcpCollisionPolicy(initialRow?.settings?.mcp?.collisionPolicy || 'alias_wins');
             // Reset provider and API format state
             if (initialRow) {
               setSelectedProvider(getProviderFromChannelType(initialRow.type) || 'openai');
@@ -1792,7 +1848,8 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
 
                       {(!(isCodexType || isClaudeCodeType || isCopilotType) || authMode === 'third-party') &&
                         selectedProvider !== 'antigravity' &&
-                        selectedType !== 'anthropic_gcp' && (
+                        selectedType !== 'anthropic_gcp' &&
+                        selectedType !== 'mcp' && (
                           <FormField
                             control={form.control}
                             name='credentials.apiKeys'
@@ -1925,6 +1982,151 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
                             )}
                           />
                         )}
+
+                      {selectedType === 'mcp' && (
+                        <>
+                          <div className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                            <FormLabel className='pt-2 font-medium md:col-span-2 md:text-right'>
+                              {t('channels.dialogs.fields.mcp.upstreamCredentials')}
+                            </FormLabel>
+                            <div className='space-y-3 md:col-span-6'>
+                              <div className='space-y-1'>
+                                <FormLabel className='text-sm font-normal'>{t('channels.dialogs.fields.mcp.upstreamAPIKey')}</FormLabel>
+                                <Input
+                                  type='password'
+                                  placeholder={t('channels.dialogs.fields.mcp.upstreamAPIKeyPlaceholder')}
+                                  value={mcpUpstreamAPIKey}
+                                  onChange={(e) => setMcpUpstreamAPIKey(e.target.value)}
+                                  autoComplete='new-password'
+                                  data-form-type='other'
+                                />
+                              </div>
+                              <div className='space-y-1'>
+                                <FormLabel className='text-sm font-normal'>{t('channels.dialogs.fields.mcp.upstreamBearerToken')}</FormLabel>
+                                <Input
+                                  type='password'
+                                  placeholder={t('channels.dialogs.fields.mcp.upstreamBearerTokenPlaceholder')}
+                                  value={mcpUpstreamBearerToken}
+                                  onChange={(e) => setMcpUpstreamBearerToken(e.target.value)}
+                                  autoComplete='new-password'
+                                  data-form-type='other'
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                            <FormLabel className='pt-2 font-medium md:col-span-2 md:text-right'>
+                              {t('channels.dialogs.fields.mcp.namespaceMappings')}
+                            </FormLabel>
+                            <div className='space-y-2 md:col-span-6'>
+                              {mcpNamespaceMappings.map((mapping, index) => (
+                                <div key={index} className='flex items-center gap-2'>
+                                  <Input
+                                    placeholder={t('channels.dialogs.fields.mcp.namespaceFrom')}
+                                    value={mapping.from}
+                                    onChange={(e) => {
+                                      const updated = [...mcpNamespaceMappings];
+                                      updated[index].from = e.target.value;
+                                      setMcpNamespaceMappings(updated);
+                                    }}
+                                    className='flex-1'
+                                  />
+                                  <Input
+                                    placeholder={t('channels.dialogs.fields.mcp.namespaceTo')}
+                                    value={mapping.to}
+                                    onChange={(e) => {
+                                      const updated = [...mcpNamespaceMappings];
+                                      updated[index].to = e.target.value;
+                                      setMcpNamespaceMappings(updated);
+                                    }}
+                                    className='flex-1'
+                                  />
+                                  <Select
+                                    value={mapping.type}
+                                    onValueChange={(value) => {
+                                      const updated = [...mcpNamespaceMappings];
+                                      updated[index].type = value;
+                                      setMcpNamespaceMappings(updated);
+                                    }}
+                                  >
+                                    <SelectTrigger className='w-32'>
+                                      <SelectValue placeholder={t('channels.dialogs.fields.mcp.namespaceType')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value='tool'>{t('channels.dialogs.fields.mcp.namespaceTypeTool')}</SelectItem>
+                                      <SelectItem value='resource'>{t('channels.dialogs.fields.mcp.namespaceTypeResource')}</SelectItem>
+                                      <SelectItem value='prompt'>{t('channels.dialogs.fields.mcp.namespaceTypePrompt')}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <Button
+                                    type='button'
+                                    variant='ghost'
+                                    size='sm'
+                                    className='h-8 w-8 p-0 text-destructive'
+                                    onClick={() => {
+                                      const updated = mcpNamespaceMappings.filter((_, i) => i !== index);
+                                      setMcpNamespaceMappings(updated);
+                                    }}
+                                  >
+                                    <Trash2 className='h-4 w-4' />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                type='button'
+                                variant='outline'
+                                size='sm'
+                                onClick={() => {
+                                  setMcpNamespaceMappings([...mcpNamespaceMappings, { from: '', to: '', type: 'tool' }]);
+                                }}
+                              >
+                                <Plus className='mr-1 h-4 w-4' />
+                                {t('channels.dialogs.buttons.addNamespaceMapping')}
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                            <FormLabel className='pt-2 font-medium md:col-span-2 md:text-right'>
+                              {t('channels.dialogs.fields.mcp.sessionIdleTimeout')}
+                            </FormLabel>
+                            <div className='space-y-1 md:col-span-6'>
+                              <div className='flex items-center gap-2'>
+                                <Input
+                                  type='number'
+                                  placeholder={t('channels.dialogs.fields.mcp.sessionIdleTimeoutPlaceholder')}
+                                  value={mcpSessionIdleTimeout ?? ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMcpSessionIdleTimeout(val ? parseInt(val, 10) : null);
+                                  }}
+                                  className='w-32'
+                                />
+                                <span className='text-sm text-muted-foreground'>{t('channels.dialogs.fields.mcp.seconds')}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                            <FormLabel className='pt-2 font-medium md:col-span-2 md:text-right'>
+                              {t('channels.dialogs.fields.mcp.collisionPolicy')}
+                            </FormLabel>
+                            <div className='space-y-1 md:col-span-6'>
+                              <Select value={mcpCollisionPolicy} onValueChange={setMcpCollisionPolicy}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value='alias_wins'>{t('channels.dialogs.fields.mcp.collisionPolicyAliasWins')}</SelectItem>
+                                  <SelectItem value='auto_prefix'>{t('channels.dialogs.fields.mcp.collisionPolicyAutoPrefix')}</SelectItem>
+                                  <SelectItem value='reject'>{t('channels.dialogs.fields.mcp.collisionPolicyReject')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       <FormField
                         control={form.control}

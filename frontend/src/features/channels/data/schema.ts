@@ -65,6 +65,7 @@ export const channelTypeSchema = z.enum([
   'cerebras',
   'nanogpt',
   'nanogpt_responses',
+  'mcp',
   'fireworks',
 ]);
 export type ChannelType = z.infer<typeof channelTypeSchema>;
@@ -151,6 +152,29 @@ export const channelRateLimitSchema = z.object({
 });
 export type ChannelRateLimit = z.infer<typeof channelRateLimitSchema>;
 
+// MCP Namespace Mapping
+export const mcpNamespaceMappingSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  type: z.string(),
+});
+export type MCPNamespaceMapping = z.infer<typeof mcpNamespaceMappingSchema>;
+
+// MCP Settings
+export const mcpSettingsSchema = z.object({
+  namespaceMappings: z.array(mcpNamespaceMappingSchema).nullable(),
+  sessionIdleTimeoutSeconds: z.number().int().optional().nullable(),
+  collisionPolicy: z.string().optional().nullable(),
+});
+export type MCPSettings = z.infer<typeof mcpSettingsSchema>;
+
+// MCP Credentials
+export const mcpCredentialsSchema = z.object({
+  upstreamAPIKey: z.string().optional().nullable(),
+  upstreamBearerToken: z.string().optional().nullable(),
+});
+export type MCPCredentials = z.infer<typeof mcpCredentialsSchema>;
+
 // Channel Settings
 export const channelSettingsSchema = z.object({
   extraModelPrefix: z.string().optional(),
@@ -164,6 +188,7 @@ export const channelSettingsSchema = z.object({
   transformOptions: transformOptionsSchema.optional(),
   passThroughUserAgent: z.boolean().optional().nullable(),
   rateLimit: channelRateLimitSchema.optional().nullable(),
+  mcp: mcpSettingsSchema.optional().nullable(),
 });
 
 export type ChannelSettings = z.infer<typeof channelSettingsSchema>;
@@ -200,6 +225,7 @@ export const channelCredentialsSchema = z.object({
     })
     .optional()
     .nullable(),
+  mcp: mcpCredentialsSchema.optional().nullable(),
 });
 export type ChannelCredentials = z.infer<typeof channelCredentialsSchema>;
 
@@ -390,6 +416,7 @@ export const createChannelInputSchema = z
           jsonData: z.string().optional(),
         })
         .optional(),
+      mcp: mcpCredentialsSchema.optional(),
     }),
   })
   .superRefine((data, ctx) => {
@@ -476,6 +503,7 @@ export const updateChannelInputSchema = z
             jsonData: z.string().optional(),
           })
           .optional(),
+        mcp: mcpCredentialsSchema.optional(),
       })
       .optional(),
     orderingWeight: z.number().optional(),

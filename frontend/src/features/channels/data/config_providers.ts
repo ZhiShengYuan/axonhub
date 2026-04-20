@@ -29,6 +29,7 @@ import {
   Fireworks
 } from '@lobehub/icons';
 import { NanoGPTIcon } from '../components/nanogpt-icon';
+import { MCPIcon } from '../components/mcp-icon';
 import { CHANNEL_CONFIGS } from './config_channels';
 import { ApiFormat, ChannelType } from './schema';
 
@@ -230,6 +231,12 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     icon: Fireworks,
     color: 'bg-orange-100 text-orange-800 border-orange-200',
     channelTypes: ['fireworks'],
+  },
+  mcp: {
+    provider: 'mcp',
+    icon: MCPIcon,
+    color: 'bg-purple-100 text-purple-800 border-purple-200',
+    channelTypes: ['mcp'],
   },
 };
 

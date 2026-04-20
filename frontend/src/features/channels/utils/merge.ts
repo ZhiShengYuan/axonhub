@@ -108,6 +108,7 @@ export function mergeChannelSettingsForUpdate(
     transformOptions: pick('transformOptions', existing?.transformOptions ?? undefined),
     passThroughUserAgent: pick('passThroughUserAgent', existing?.passThroughUserAgent ?? null),
     rateLimit: pick('rateLimit', existing?.rateLimit ?? null),
+    mcp: pick('mcp', existing?.mcp ?? null),
   };
 }
 

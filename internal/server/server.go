@@ -11,6 +11,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/looplj/axonhub/internal/log"
+	"github.com/looplj/axonhub/internal/mcp"
 	"github.com/looplj/axonhub/internal/server/api"
 	"github.com/looplj/axonhub/internal/server/backup"
 	"github.com/looplj/axonhub/internal/server/biz"
@@ -99,11 +100,12 @@ func Run(opts ...fx.Option) {
 			fx.NopLogger,
 			fx.Provide(constructors...),
 			dependencies.Module,
-			biz.Module,
-			orchestrator.Module,
-			backup.Module,
-			video_storage.Module,
-			api.Module,
+		biz.Module,
+		orchestrator.Module,
+		backup.Module,
+		video_storage.Module,
+		mcp.Module,
+		api.Module,
 			fx.Invoke(func(cfg log.Config) {
 				log.SetGlobalConfig(cfg)
 				tracing.SetupLogger(log.GetGlobalLogger())

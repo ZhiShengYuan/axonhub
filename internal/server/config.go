@@ -58,7 +58,8 @@ type CORS struct {
 }
 
 type API struct {
-	Auth APIAuth `conf:"auth" yaml:"auth" json:"auth"`
+	Auth    APIAuth `conf:"auth" yaml:"auth" json:"auth"`
+	Subpath string  `conf:"subpath" yaml:"subpath" json:"subpath"`
 }
 
 type APIAuth struct {

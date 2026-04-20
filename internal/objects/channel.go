@@ -23,6 +23,14 @@ type ModelMapping struct {
 	To string `json:"to"`
 }
 
+// MCPNamespaceMapping defines a mapping for MCP server namespaces.
+// It maps a "from" namespace to a "to" namespace for a specific type (tool/resource/prompt).
+type MCPNamespaceMapping struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+	Type string `json:"type"` // "tool", "resource", or "prompt"
+}
+
 type HeaderEntry struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -137,6 +145,9 @@ type ChannelSettings struct {
 	// RateLimit configures the upstream rate limit for the channel.
 	// When configured, the load balancer will skip channels that have exceeded their rate limits.
 	RateLimit *ChannelRateLimit `json:"rateLimit,omitempty"`
+
+	// MCP contains MCP-specific settings for MCP channel type.
+	MCP *MCPSettings `json:"mcp,omitempty"`
 }
 
 type ChannelRateLimit struct {
@@ -171,6 +182,9 @@ type ChannelCredentials struct {
 
 	// GCP is the GCP credentials for the channel.
 	GCP *GCPCredential `json:"gcp,omitempty"`
+
+	// MCP is the MCP credentials for the channel.
+	MCP *MCPCredentials `json:"mcp,omitempty"`
 }
 
 // GetAllAPIKeys returns all API keys for the channel, combining APIKey and APIKeys fields.
@@ -268,6 +282,17 @@ type GCPCredentialsJSON struct {
 	AuthProviderX509CertURL string `json:"authProviderX509CertURL" validate:"required"`
 	ClientX509CertURL       string `json:"clientX509CertURL" validate:"required"`
 	UniverseDomain          string `json:"universeDomain" validate:"required"`
+}
+
+type MCPSettings struct {
+	NamespaceMappings      []MCPNamespaceMapping `json:"namespaceMappings"`
+	SessionIdleTimeoutSeconds int               `json:"sessionIdleTimeoutSeconds"`
+	CollisionPolicy       string                `json:"collisionPolicy"`
+}
+
+type MCPCredentials struct {
+	UpstreamAPIKey      string `json:"upstreamAPIKey,omitempty"`
+	UpstreamBearerToken string `json:"upstreamBearerToken,omitempty"`
 }
 
 type CapabilityPolicy string

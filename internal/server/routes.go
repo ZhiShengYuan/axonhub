@@ -39,6 +39,7 @@ type Handlers struct {
 	Copilot        *api.CopilotHandlers
 	RequestContent *api.RequestContentHandlers
 	RequestPreview *api.RequestPreviewHandlers
+	MCP            *api.MCPHandler
 }
 
 type Services struct {
@@ -160,81 +161,85 @@ func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services
 		openAPIGroup.POST("/webhook/echo", handlers.System.WebhookEcho)
 	}
 
-	apiGroup := server.Group("/",
-		middleware.WithTimeout(server.Config.LLMRequestTimeout),
-		middleware.WithAPIKeyConfig(services.AuthService, nil),
-		middleware.WithSource(request.SourceAPI),
-		middleware.WithThread(server.Config.Trace, services.ThreadService),
-		middleware.WithTrace(server.Config.Trace, services.TraceService),
-	)
+	registerAPIRoutes := func(prefix string, engine *gin.Engine) {
+		apiGroup := engine.Group(prefix,
+			middleware.WithTimeout(server.Config.LLMRequestTimeout),
+			middleware.WithAPIKeyConfig(services.AuthService, nil),
+			middleware.WithSource(request.SourceAPI),
+			middleware.WithThread(server.Config.Trace, services.ThreadService),
+			middleware.WithTrace(server.Config.Trace, services.TraceService),
+		)
 
-	{
-		openaiGroup := apiGroup.Group("/v1")
-		openaiGroup.POST("/chat/completions", handlers.OpenAI.ChatCompletion)
-		openaiGroup.POST("/responses/compact", handlers.OpenAI.CompactResponse)
-		openaiGroup.POST("/responses", handlers.OpenAI.CreateResponse)
-		openaiGroup.GET("/models", handlers.OpenAI.ListModels)
-		openaiGroup.GET("/models/*model", handlers.OpenAI.RetrieveModel)
-		openaiGroup.POST("/embeddings", handlers.OpenAI.CreateEmbedding)
-		openaiGroup.POST("/images/generations", handlers.OpenAI.CreateImage)
-		openaiGroup.POST("/images/edits", handlers.OpenAI.CreateImageEdit)
-		openaiGroup.POST("/videos", handlers.OpenAI.CreateVideo)
-		openaiGroup.GET("/videos/:id", handlers.OpenAI.GetVideo)
-		openaiGroup.DELETE("/videos/:id", handlers.OpenAI.DeleteVideo)
-		// DO NOT SUPPORT IMAGE VARIATION
-		// openaiGroup.POST("/images/variations", handlers.OpenAI.CreateImageVariation)
-
-		// OpenAI-compatible Anthropic endpoint
-		openaiGroup.POST("/messages", handlers.Anthropic.CreateMessage)
-
-		// Compatible with OpenAI API
-		openaiGroup.POST("/rerank", handlers.Jina.Rerank)
-	}
-
-	{
-		jinaGroup := apiGroup.Group("/jina/v1")
-		jinaGroup.POST("/embeddings", handlers.Jina.CreateEmbedding)
-		jinaGroup.POST("/rerank", handlers.Jina.Rerank)
-	}
-
-	{
-		anthropicGroup := apiGroup.Group("/anthropic/v1")
-		anthropicGroup.POST("/messages", handlers.Anthropic.CreateMessage)
-		anthropicGroup.GET("/models", handlers.Anthropic.ListModels)
-	}
-
-	{
-		doubaoGroup := apiGroup.Group("/doubao/v3")
-		doubaoGroup.POST("/contents/generations/tasks", handlers.Doubao.CreateTask)
-		doubaoGroup.GET("/contents/generations/tasks/:id", handlers.Doubao.GetTask)
-		doubaoGroup.DELETE("/contents/generations/tasks/:id", handlers.Doubao.DeleteTask)
-	}
-
-	{
-		registerGeminiRoutes := func(group *gin.RouterGroup) {
-			group.POST("/models/*action", handlers.Gemini.GenerateContent)
-			group.GET("/models", handlers.Gemini.ListModels)
+		{
+			openaiGroup := apiGroup.Group("/v1")
+			openaiGroup.POST("/chat/completions", handlers.OpenAI.ChatCompletion)
+			openaiGroup.POST("/responses/compact", handlers.OpenAI.CompactResponse)
+			openaiGroup.POST("/responses", handlers.OpenAI.CreateResponse)
+			openaiGroup.GET("/models", handlers.OpenAI.ListModels)
+			openaiGroup.GET("/models/*model", handlers.OpenAI.RetrieveModel)
+			openaiGroup.POST("/embeddings", handlers.OpenAI.CreateEmbedding)
+			openaiGroup.POST("/images/generations", handlers.OpenAI.CreateImage)
+			openaiGroup.POST("/images/edits", handlers.OpenAI.CreateImageEdit)
+			openaiGroup.POST("/videos", handlers.OpenAI.CreateVideo)
+			openaiGroup.GET("/videos/:id", handlers.OpenAI.GetVideo)
+			openaiGroup.DELETE("/videos/:id", handlers.OpenAI.DeleteVideo)
+			openaiGroup.POST("/messages", handlers.Anthropic.CreateMessage)
+			openaiGroup.POST("/rerank", handlers.Jina.Rerank)
 		}
 
-		geminiGroup := server.Group("/gemini/:gemini-api-version",
-			middleware.WithTimeout(server.Config.LLMRequestTimeout),
-			middleware.WithGeminiKeyAuth(services.AuthService),
-			middleware.WithSource(request.SourceAPI),
-			middleware.WithThread(server.Config.Trace, services.ThreadService),
-			middleware.WithTrace(server.Config.Trace, services.TraceService),
-		)
+		{
+			jinaGroup := apiGroup.Group("/jina/v1")
+			jinaGroup.POST("/embeddings", handlers.Jina.CreateEmbedding)
+			jinaGroup.POST("/rerank", handlers.Jina.Rerank)
+		}
 
-		registerGeminiRoutes(geminiGroup)
+		{
+			anthropicGroup := apiGroup.Group("/anthropic/v1")
+			anthropicGroup.POST("/messages", handlers.Anthropic.CreateMessage)
+			anthropicGroup.GET("/models", handlers.Anthropic.ListModels)
+		}
 
-		// Alias for Gemini API
-		geminiAliasGroup := server.Group("/v1beta",
-			middleware.WithTimeout(server.Config.LLMRequestTimeout),
-			middleware.WithGeminiKeyAuth(services.AuthService),
-			middleware.WithSource(request.SourceAPI),
-			middleware.WithThread(server.Config.Trace, services.ThreadService),
-			middleware.WithTrace(server.Config.Trace, services.TraceService),
-		)
+		{
+			doubaoGroup := apiGroup.Group("/doubao/v3")
+			doubaoGroup.POST("/contents/generations/tasks", handlers.Doubao.CreateTask)
+			doubaoGroup.GET("/contents/generations/tasks/:id", handlers.Doubao.GetTask)
+			doubaoGroup.DELETE("/contents/generations/tasks/:id", handlers.Doubao.DeleteTask)
+		}
 
-		registerGeminiRoutes(geminiAliasGroup)
+		{
+			registerGeminiRoutes := func(group *gin.RouterGroup) {
+				group.POST("/models/*action", handlers.Gemini.GenerateContent)
+				group.GET("/models", handlers.Gemini.ListModels)
+			}
+
+			geminiGroup := engine.Group(prefix+"/gemini/:gemini-api-version",
+				middleware.WithTimeout(server.Config.LLMRequestTimeout),
+				middleware.WithGeminiKeyAuth(services.AuthService),
+				middleware.WithSource(request.SourceAPI),
+				middleware.WithThread(server.Config.Trace, services.ThreadService),
+				middleware.WithTrace(server.Config.Trace, services.TraceService),
+			)
+			registerGeminiRoutes(geminiGroup)
+
+			geminiAliasGroup := engine.Group(prefix+"/v1beta",
+				middleware.WithTimeout(server.Config.LLMRequestTimeout),
+				middleware.WithGeminiKeyAuth(services.AuthService),
+				middleware.WithSource(request.SourceAPI),
+				middleware.WithThread(server.Config.Trace, services.ThreadService),
+				middleware.WithTrace(server.Config.Trace, services.TraceService),
+			)
+			registerGeminiRoutes(geminiAliasGroup)
+		}
 	}
+
+	registerAPIRoutes("", server.Engine)
+	if server.Config.API.Subpath != "" {
+		registerAPIRoutes(server.Config.API.Subpath, server.Engine)
+	}
+
+	mcpGroup := server.Group("/mcp",
+		middleware.WithTimeout(server.Config.LLMRequestTimeout),
+		middleware.WithAPIKeyConfig(services.AuthService, nil),
+	)
+	mcpGroup.Any("", handlers.MCP.HandleMCP)
 }

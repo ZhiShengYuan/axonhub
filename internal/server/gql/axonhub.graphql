@@ -85,6 +85,7 @@ type ChannelSettings {
   bodyOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
   passThroughUserAgent: Boolean
   rateLimit: ChannelRateLimit
+  mcp: MCPSettings
 }
 
 enum CapabilityPolicy {
@@ -106,6 +107,18 @@ input ModelMappingInput {
   to: String!
 }
 
+type MCPNamespaceMapping {
+  from: String!
+  to: String!
+  type: String!
+}
+
+input MCPNamespaceMappingInput {
+  from: String!
+  to: String!
+  type: String!
+}
+
 input ChannelSettingsInput {
   extraModelPrefix: String
   modelMappings: [ModelMappingInput!]
@@ -118,6 +131,7 @@ input ChannelSettingsInput {
   bodyOverrideOperations: [OverrideOperationInput!]
   passThroughUserAgent: Boolean
   rateLimit: ChannelRateLimitInput
+  mcp: MCPSettingsInput
 }
 
 input ChannelRateLimitInput {
@@ -132,11 +146,24 @@ type ChannelRateLimit {
   maxConcurrent: Int
 }
 
+type MCPSettings {
+  namespaceMappings: [MCPNamespaceMapping!]
+  sessionIdleTimeoutSeconds: Int!
+  collisionPolicy: String!
+}
+
+input MCPSettingsInput {
+  namespaceMappings: [MCPNamespaceMappingInput!]
+  sessionIdleTimeoutSeconds: Int
+  collisionPolicy: String
+}
+
 type ChannelCredentials {
   apiKey: String
   apiKeys: [String!]
   gcp: GCPCredential
   oauth: OAuthCredentials
+  mcp: MCPCredentials
 }
 
 type DisabledAPIKey {
@@ -161,11 +188,17 @@ type GCPCredential {
   jsonData: String!
 }
 
+type MCPCredentials {
+  upstreamAPIKey: String
+  upstreamBearerToken: String
+}
+
 input ChannelCredentialsInput {
   apiKey: String
   apiKeys: [String!]
   gcp: GCPCredentialInput
   oauth: OAuthCredentialsInput
+  mcp: MCPCredentialsInput
 }
 
 input OAuthCredentialsInput {
@@ -181,6 +214,11 @@ input GCPCredentialInput {
   region: String!
   projectID: String!
   jsonData: String!
+}
+
+input MCPCredentialsInput {
+  upstreamAPIKey: String
+  upstreamBearerToken: String
 }
 
 input SignInInput {

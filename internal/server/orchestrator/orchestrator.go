@@ -134,6 +134,10 @@ func (processor *ChatCompletionOrchestrator) WithProxy(proxy *httpclient.ProxyCo
 type ChatCompletionResult struct {
 	ChatCompletion       *httpclient.Response
 	ChatCompletionStream streams.Stream[*httpclient.StreamEvent]
+	// FailoverCallback is called by the API handler after stream consumption.
+	// Returns a new ChatCompletionResult with a fresh stream from the next candidate,
+	// or nil if no more candidates are available.
+	FailoverCallback func(err error, committed bool) *ChatCompletionResult
 }
 
 func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, request *httpclient.Request) (ChatCompletionResult, error) {
@@ -281,9 +285,36 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 
 	// Return result based on stream type
 	if result.Stream {
+		failoverCallback := func(err error, committed bool) *ChatCompletionResult {
+			if committed {
+				return nil
+			}
+
+			ctx := context.Background()
+			state.CurrentCandidateIndex++
+			state.RequestExec = nil
+
+			pipe := processor.PipelineFactory.Pipeline(
+				inbound,
+				outbound,
+				pipeline.WithMiddlewares(middlewares...),
+			)
+
+			nextResult, nextErr := pipe.Process(ctx, request)
+			if nextErr != nil {
+				return nil
+			}
+
+			return &ChatCompletionResult{
+				ChatCompletion:       nil,
+				ChatCompletionStream: nextResult.EventStream,
+			}
+		}
+
 		return ChatCompletionResult{
 			ChatCompletion:       nil,
 			ChatCompletionStream: result.EventStream,
+			FailoverCallback:     failoverCallback,
 		}, nil
 	}
 

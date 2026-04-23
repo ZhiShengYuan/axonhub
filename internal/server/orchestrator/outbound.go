@@ -533,13 +533,15 @@ func (p *PersistentOutboundTransformer) CanRetry(err error) bool {
 		return true
 	}
 
-	// Incomplete stream error: allow retry (stream ended without proper terminal event)
+	// Incomplete stream error: same-channel retry is NOT allowed.
+	// The stream ended without a proper terminal event. Cross-candidate failover
+	// remains available (via NextChannel/HasMoreChannels) until first downstream commit.
 	if llm.IsIncompleteStreamError(err) {
-		log.Debug(context.Background(), "incomplete stream error, allowing retry",
+		log.Debug(context.Background(), "incomplete stream error, blocking same-channel retry",
 			log.Int("channel_id", p.state.CurrentCandidate.Channel.ID),
 		)
 
-		return true
+		return false
 	}
 
 	// if there are more models available in the current candidate, try the next model.

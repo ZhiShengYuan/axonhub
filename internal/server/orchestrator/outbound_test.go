@@ -826,3 +826,70 @@ func TestPersistentOutboundTransformer_CanRetry_429_WithMultipleModels(t *testin
 		require.False(t, outbound.CanRetry(httpErr))
 	})
 }
+
+func TestPersistentOutboundTransformer_CanRetry_IncompleteStreamError(t *testing.T) {
+	channel := &biz.Channel{
+		Channel: &ent.Channel{
+			ID:   1,
+			Name: "test-channel",
+		},
+		Outbound: &mockTransformer{},
+	}
+
+	t.Run("IncompleteStreamError should block same-channel retry", func(t *testing.T) {
+		outbound := &PersistentOutboundTransformer{
+			wrapped: &mockTransformer{},
+			state: &PersistenceState{
+				CurrentCandidate: &ChannelModelsCandidate{
+					Channel: channel,
+					Models: []biz.ChannelModelEntry{
+						{RequestModel: "gpt-4", ActualModel: "gpt-4"},
+						{RequestModel: "gpt-3.5-turbo", ActualModel: "gpt-3.5-turbo"},
+					},
+				},
+				CurrentModelIndex: 0,
+			},
+		}
+
+		incompleteErr := &llm.IncompleteStreamError{ChunksReceived: 5}
+
+		// Same-channel retry should be blocked
+		require.False(t, outbound.CanRetry(incompleteErr))
+	})
+
+	t.Run("IncompleteStreamError should still allow cross-candidate failover", func(t *testing.T) {
+		outbound := &PersistentOutboundTransformer{
+			wrapped: &mockTransformer{},
+			state: &PersistenceState{
+				CurrentCandidate: &ChannelModelsCandidate{
+					Channel: channel,
+					Models: []biz.ChannelModelEntry{
+						{RequestModel: "gpt-4", ActualModel: "gpt-4"},
+					},
+				},
+				CurrentCandidateIndex: 0,
+				ChannelModelsCandidates: []*ChannelModelsCandidate{
+					{
+						Channel: channel,
+						Models:  []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}},
+					},
+					{
+						Channel: &biz.Channel{
+							Channel: &ent.Channel{ID: 2, Name: "test-channel-2"},
+							Outbound: &mockTransformer{},
+						},
+						Models: []biz.ChannelModelEntry{{RequestModel: "claude-3", ActualModel: "claude-3"}},
+					},
+				},
+				CurrentModelIndex: 0,
+			},
+		}
+
+		incompleteErr := &llm.IncompleteStreamError{ChunksReceived: 3}
+
+		// Same-channel retry blocked
+		require.False(t, outbound.CanRetry(incompleteErr))
+		// But cross-candidate failover should still be available
+		require.True(t, outbound.HasMoreChannels())
+	})
+}

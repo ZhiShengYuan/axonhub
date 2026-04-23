@@ -18,7 +18,10 @@ import (
 )
 
 // StreamWriter is a function type for writing stream events to the response.
-type StreamWriter func(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent])
+// Returns (error, committed) where committed indicates whether any data was sent
+// to the client before the function returned. If committed is false and error is
+// non-nil, the orchestrator can attempt failover to the next candidate.
+type StreamWriter func(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool)
 
 type ChatCompletionHandlers struct {
 	ChatCompletionOrchestrator *orchestrator.ChatCompletionOrchestrator
@@ -28,7 +31,10 @@ type ChatCompletionHandlers struct {
 func NewChatCompletionHandlers(orchestrator *orchestrator.ChatCompletionOrchestrator) *ChatCompletionHandlers {
 	return &ChatCompletionHandlers{
 		ChatCompletionOrchestrator: orchestrator,
-		StreamWriter:               WriteSSEStream,
+		StreamWriter: func(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool) {
+			err, committed := WriteSSEStream(c, stream)
+			return err, committed
+		},
 	}
 }
 
@@ -36,7 +42,7 @@ func NewChatCompletionHandlers(orchestrator *orchestrator.ChatCompletionOrchestr
 func (handlers *ChatCompletionHandlers) WithStreamWriter(writer StreamWriter) *ChatCompletionHandlers {
 	return &ChatCompletionHandlers{
 		ChatCompletionOrchestrator: handlers.ChatCompletionOrchestrator,
-		StreamWriter:               writer,
+		StreamWriter:              writer,
 	}
 }
 
@@ -99,20 +105,99 @@ func (handlers *ChatCompletionHandlers) ChatCompletion(c *gin.Context) {
 			streamWriter = WriteSSEStream
 		}
 
-		streamWriter(c, result.ChatCompletionStream)
+		streamErr, committed := streamWriter(c, result.ChatCompletionStream)
+		if streamErr != nil && !committed {
+			if result.FailoverCallback != nil {
+				if nextResult := result.FailoverCallback(streamErr, committed); nextResult != nil {
+					_ = result.ChatCompletionStream.Close()
+
+					if nextResult.ChatCompletionStream != nil {
+						defer func() {
+							_ = nextResult.ChatCompletionStream.Close()
+						}()
+						nextErr, nextCommitted := streamWriter(c, nextResult.ChatCompletionStream)
+						if nextErr != nil && !nextCommitted {
+							c.SSEvent("error", FormatStreamError(ctx, nextErr))
+							c.Writer.Flush()
+						}
+						return
+					}
+				}
+			}
+			c.SSEvent("error", FormatStreamError(ctx, streamErr))
+			c.Writer.Flush()
+		}
 	}
 }
 
 // StreamErrorFormatter formats a stream error into a JSON-serializable object for SSE error events.
 type StreamErrorFormatter func(ctx context.Context, err error) any
 
+// WriteSSEStreamDirect writes stream events as SSE without buffering.
+// This is used for request preview which requires immediate output.
+func WriteSSEStreamDirect(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool) {
+	ctx := c.Request.Context()
+
+	c.Header("Content-Type", sse.ContentType)
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Writer.Flush()
+
+	committed := false
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err(), committed
+		default:
+			if stream.Next() {
+				cur := stream.Current()
+				c.SSEvent(cur.Type, cur.Data)
+				c.Writer.Flush()
+				committed = true
+			} else {
+				if stream.Err() != nil {
+					c.SSEvent("error", FormatStreamError(ctx, stream.Err()))
+					c.Writer.Flush()
+					return stream.Err(), committed
+				}
+				return nil, committed
+			}
+		}
+	}
+}
+
 // WriteSSEStream writes stream events as Server-Sent Events (SSE) with default error formatting.
-func WriteSSEStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) {
-	WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+// Returns (streamErr, committed) where committed indicates whether any data was sent to the client.
+func WriteSSEStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool) {
+	return WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+}
+
+// streamBufferWrapper wraps a StreamBuffer to control release behavior.
+type streamBufferWrapper struct {
+	sb *StreamBuffer
+}
+
+func (w *streamBufferWrapper) Append(event *httpclient.StreamEvent) bool {
+	return w.sb.Append(event)
+}
+
+func (w *streamBufferWrapper) Committed() bool {
+	return w.sb.Committed()
+}
+
+func (w *streamBufferWrapper) SetUpstreamDone() {
+	w.sb.SetUpstreamDone()
+}
+
+func (w *streamBufferWrapper) SuppressRelease() {
+	w.sb.SuppressRelease()
 }
 
 // WriteSSEStreamWithErrorFormatter writes stream events as SSE with a custom error formatter.
-func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent], formatErr StreamErrorFormatter) {
+// Returns (streamErr, committed) where committed indicates whether any data was sent to the client
+// before the function returned. If committed is false and streamErr is non-nil, the orchestrator
+// can attempt failover to the next candidate.
+func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent], formatErr StreamErrorFormatter) (error, bool) {
 	ctx := c.Request.Context()
 	clientDisconnected := false
 
@@ -126,35 +211,49 @@ func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*htt
 		}
 	}()
 
-	// Set SSE headers
 	c.Header("Content-Type", sse.ContentType)
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 	c.Writer.Flush()
 
+	var sbw streamBufferWrapper
+	sbw.sb = NewStreamBuffer(StreamBufferOptions{
+		Writer: func(event *httpclient.StreamEvent) {
+			c.SSEvent(event.Type, event.Data)
+			c.Writer.Flush()
+		},
+		MaxChunks:     DefaultMaxChunks,
+		Timeout:       DefaultTimeout,
+		OverflowLimit: DefaultOverflowLimit,
+	})
+	defer sbw.sb.Close()
+
+	var streamErr error
 	for {
 		select {
 		case <-ctx.Done():
 			clientDisconnected = true
-
 			log.Warn(ctx, "Context done, stopping stream")
-
-			return
+			return ctx.Err(), sbw.Committed()
 		default:
 			if stream.Next() {
 				cur := stream.Current()
-				c.SSEvent(cur.Type, cur.Data)
 				log.Debug(ctx, "write stream event", log.Any("event", cur))
-				c.Writer.Flush()
+				sbw.Append(cur)
 			} else {
-				if stream.Err() != nil {
-					log.Error(ctx, "Error in stream", log.Cause(stream.Err()))
-					c.SSEvent("error", formatErr(ctx, stream.Err()))
+				streamErr = stream.Err()
+				if streamErr != nil {
+					if !sbw.Committed() {
+						sbw.SuppressRelease()
+					} else {
+						c.SSEvent("error", formatErr(ctx, streamErr))
+						c.Writer.Flush()
+					}
+				} else {
+					sbw.SetUpstreamDone()
 				}
 
-				c.Writer.Flush()
-
-				return
+				return streamErr, sbw.Committed()
 			}
 		}
 	}

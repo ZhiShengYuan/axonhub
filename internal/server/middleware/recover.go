@@ -1,5 +1,8 @@
 package middleware
 
+// RequestRuntimePanicRecovery: This middleware handles panics that occur during request
+// processing (HTTP middleware layer). It is explicitly OUT of startup scope — startup
+// failures are handled by the fx lifecycle and server.Run() in main.go.
 import (
 	"bytes"
 	"errors"

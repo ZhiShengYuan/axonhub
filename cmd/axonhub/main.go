@@ -10,7 +10,6 @@ import (
 	"github.com/andreazorzetto/yh/highlight"
 	"github.com/hokaccha/go-prettyjson"
 	"go.uber.org/fx"
-	"go.uber.org/fx/fxevent"
 	"gopkg.in/yaml.v3"
 
 	sdk "go.opentelemetry.io/otel/sdk/metric"
@@ -50,19 +49,19 @@ func showBuildInfo() {
 	fmt.Println(build.GetBuildInfo())
 }
 
-type logger struct{}
-
-func (l *logger) LogEvent(event fxevent.Event) {
-	log.Debug(context.Background(), "fx event", log.Any("event", event))
-}
-
+// StartupFailureContract: any error during config/bootstrap/server-bind must emit a
+// stdio-visible log before exit. Request/runtime panic handling is out of scope.
 func startServer() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "axonhub: fatal startup error: %v\n", r)
+			os.Exit(1)
+		}
+	}()
+
 	server.Run(
 		fx.StartTimeout(60*time.Second),
 		fx.StopTimeout(30*time.Second),
-		fx.WithLogger(func() fxevent.Logger {
-			return &logger{}
-		}),
 		fx.Provide(conf.Load),
 		fx.Provide(metrics.NewProvider),
 		fx.Invoke(func(lc fx.Lifecycle, server *server.Server, provider *sdk.MeterProvider, ent *ent.Client, requestSvc *biz.RequestService) {

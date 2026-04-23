@@ -21,7 +21,7 @@ import (
 	_ "github.com/looplj/axonhub/internal/pkg/sqlite"
 )
 
-func NewEntClient(cfg Config) *ent.Client {
+func NewEntClient(cfg Config) (*ent.Client, error) {
 	var opts []ent.Option
 	if cfg.Debug {
 		opts = append(opts, ent.Debug())
@@ -37,26 +37,26 @@ func NewEntClient(cfg Config) *ent.Client {
 	case "postgres", "pgx", "postgresdb", "pg", "postgresql":
 		sqlDB, err = sql.Open("pgx", cfg.DSN)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("open postgres database: %w", err)
 		}
 
 		dbDialect = dialect.Postgres
 	case "sqlite3", "sqlite":
 		sqlDB, err = sql.Open("sqlite3", cfg.DSN)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("open sqlite database: %w", err)
 		}
 
 		dbDialect = dialect.SQLite
 	case "mysql", "tidb":
 		sqlDB, err = sql.Open("mysql", cfg.DSN)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("open mysql database: %w", err)
 		}
 
 		dbDialect = dialect.MySQL
 	default:
-		panic(fmt.Errorf("invalid dialect: %s", cfg.Dialect))
+		return nil, fmt.Errorf("invalid database dialect: %s", cfg.Dialect)
 	}
 
 	drv := entsql.OpenDB(dbDialect, sqlDB)
@@ -72,7 +72,7 @@ func NewEntClient(cfg Config) *ent.Client {
 		schema.WithHooks(schemahook.V0_3_0),
 	)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create database schema: %w", err)
 	}
 
 	// Run data migrations using the Migrator framework
@@ -80,8 +80,8 @@ func NewEntClient(cfg Config) *ent.Client {
 
 	migrator := datamigrate.NewMigrator(client)
 	if err := migrator.Run(ctx); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("run data migrations: %w", err)
 	}
 
-	return client
+	return client, nil
 }

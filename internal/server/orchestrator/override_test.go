@@ -1939,3 +1939,145 @@ func TestApplyUserAgentPassThrough_NoChannel(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, processedRequest)
 }
+
+// TestApplyUserAgentPassThrough_UserAgentOverride tests that UserAgent override takes precedence.
+func TestApplyUserAgentPassThrough_UserAgentOverride(t *testing.T) {
+	tests := []struct {
+		name             string
+		userAgent        *string // Channel-level UserAgent override
+		passThroughUA    *bool   // Channel-level PassThroughUserAgent setting
+		globalUAEnabled  bool    // System-level setting
+		clientUA         string  // Client's original User-Agent
+		wantUAHeader     string  // Expected User-Agent in outbound request
+	}{
+		{
+			name:          "useragent_override_wins_over_pass_through",
+			userAgent:     strPtr("CustomAgent/1.0"),
+			passThroughUA: new(true),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "CustomAgent/1.0",
+		},
+		{
+			name:          "useragent_override_wins_over_disabled_pass_through",
+			userAgent:     strPtr("OverrideAgent/2.0"),
+			passThroughUA: new(false),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "OverrideAgent/2.0",
+		},
+		{
+			name:          "useragent_override_wins_over_global_pass_through",
+			userAgent:     strPtr("ChannelAgent/3.0"),
+			passThroughUA: nil, // inherits global
+			globalUAEnabled: true,
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "ChannelAgent/3.0",
+		},
+		{
+			name:          "useragent_nil_falls_through_to_pass_through",
+			userAgent:     nil,
+			passThroughUA: new(true),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "Client/1.0",
+		},
+		{
+			name:          "useragent_nil_falls_through_to_disabled",
+			userAgent:     nil,
+			passThroughUA: new(false),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "axonhub/1.0",
+		},
+		{
+			name:          "useragent_nil_falls_through_to_global_enabled",
+			userAgent:     nil,
+			passThroughUA: nil,
+			globalUAEnabled: true,
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "Client/1.0",
+		},
+		{
+			name:          "useragent_nil_falls_through_to_global_disabled",
+			userAgent:     nil,
+			passThroughUA: nil,
+			globalUAEnabled: false,
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "axonhub/1.0",
+		},
+		{
+			name:          "useragent_empty_string_normalized_to_nil",
+			userAgent:     strPtr(""),
+			passThroughUA: new(true),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "Client/1.0",
+		},
+		{
+			name:          "useragent_empty_string_with_disabled_pass_through",
+			userAgent:     strPtr(""),
+			passThroughUA: new(false),
+			clientUA:      "Client/1.0",
+			wantUAHeader:  "axonhub/1.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, client := setupTest(t)
+
+			systemService := newTestSystemService(client)
+
+			// Set global User-Agent pass-through setting
+			err := systemService.SetUserAgentPassThrough(ctx, tt.globalUAEnabled)
+			require.NoError(t, err)
+
+			channelSettings := &objects.ChannelSettings{
+				UserAgent: tt.userAgent,
+			}
+			if tt.passThroughUA != nil {
+				channelSettings.PassThroughUserAgent = tt.passThroughUA
+			}
+
+			channel := &biz.Channel{
+				Channel: &ent.Channel{
+					ID:       1,
+					Name:     "test-channel",
+					Settings: channelSettings,
+				},
+				Outbound: &mockTransformer{},
+			}
+
+			rawHeaders := make(http.Header)
+			if tt.clientUA != "" {
+				rawHeaders.Set("User-Agent", tt.clientUA)
+			}
+
+			llmRequest := &llm.Request{
+				Model: "gpt-4",
+				RawRequest: &httpclient.Request{
+					Headers: rawHeaders,
+				},
+			}
+
+			outbound := &PersistentOutboundTransformer{
+				wrapped: &mockTransformer{},
+				state: &PersistenceState{
+					CurrentCandidate: &ChannelModelsCandidate{Channel: channel},
+					LlmRequest:       llmRequest,
+				},
+			}
+
+			middleware := applyUserAgentPassThrough(outbound, systemService)
+
+			rawRequest := &httpclient.Request{
+				Headers: make(http.Header),
+			}
+			processedRequest, err := middleware.OnOutboundRawRequest(ctx, rawRequest)
+
+			require.NoError(t, err)
+			require.NotNil(t, processedRequest)
+			require.Equal(t, tt.wantUAHeader, processedRequest.Headers.Get("User-Agent"))
+		})
+	}
+}
+
+func strPtr(s string) *string {
+	return &s
+}

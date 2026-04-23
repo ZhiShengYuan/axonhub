@@ -303,6 +303,15 @@ func applyUserAgentPassThrough(outbound *PersistentOutboundTransformer, systemSe
 			return request, nil
 		}
 
+		// Precedence: explicit channel UserAgent override > pass-through > default
+		if channel.Settings != nil && channel.Settings.UserAgent != nil && *channel.Settings.UserAgent != "" {
+			if request.Headers == nil {
+				request.Headers = make(http.Header)
+			}
+			request.Headers.Set("User-Agent", *channel.Settings.UserAgent)
+			return request, nil
+		}
+
 		var passThroughEnabled bool
 		if channel.Settings != nil && channel.Settings.PassThroughUserAgent != nil {
 			passThroughEnabled = *channel.Settings.PassThroughUserAgent

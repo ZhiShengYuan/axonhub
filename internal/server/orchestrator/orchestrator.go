@@ -269,7 +269,10 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 			}
 		}
 
-		// Update the main request status based on error
+		// Pipeline error (before streaming started): This is the pre-stream error path where
+		// pipeline.Process() itself failed. This can happen when all candidates are exhausted
+		// at the connection/auth level, or when the request is invalid before streaming starts.
+		// In this case, we mark the parent request as failed since no streaming occurred.
 		if request := outbound.GetRequest(); request != nil {
 			if updateErr := processor.RequestService.UpdateRequestStatusFromError(
 				persistCtx,
@@ -302,6 +305,20 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 
 			nextResult, nextErr := pipe.Process(ctx, request)
 			if nextErr != nil {
+				// All failover candidates exhausted. Mark the parent request as failed
+				// since we have no more channels to try. This ensures the request
+				// doesn't stay stuck in 'processing' state forever.
+				if request := outbound.GetRequest(); request != nil {
+					persistCtx, cancel := xcontext.DetachWithTimeout(ctx, time.Second*10)
+					defer cancel()
+					if updateErr := processor.RequestService.UpdateRequestStatusFromError(
+						persistCtx,
+						request.ID,
+						nextErr,
+					); updateErr != nil {
+						log.Warn(persistCtx, "Failed to update request status from error in failover", log.Cause(updateErr))
+					}
+				}
 				return nil
 			}
 

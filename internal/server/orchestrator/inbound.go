@@ -136,15 +136,15 @@ func (ts *InboundPersistentStream) Close() error {
 		return ts.stream.Close()
 	}
 
-	// If there's an explicit stream error (not just context cancellation), treat as failure
-	// regardless of what chunks we have. Stream errors indicate the upstream response
-	// was incomplete or corrupted.
+	// If there's an explicit stream error (not just context cancellation), treat as failure.
+	// We mark the EXECUTION as failed but NOT the parent request - the caller (FailoverCallback)
+	// will decide whether to retry. If failover is possible, the parent request should remain
+	// processing until all candidates are exhausted.
 	if streamErr != nil && !errors.Is(streamErr, context.Canceled) && !errors.Is(streamErr, context.DeadlineExceeded) {
-		if ts.request != nil {
+		if ts.requestExec != nil {
 			persistCtx := context.WithoutCancel(ctx)
-
-			if err := ts.requestService.UpdateRequestStatusFromError(persistCtx, ts.request.ID, streamErr); err != nil {
-				log.Warn(persistCtx, "Failed to update request status from error", log.Cause(err))
+			if err := ts.requestService.UpdateRequestExecutionStatusFromError(persistCtx, ts.requestExec.ID, streamErr); err != nil {
+				log.Warn(persistCtx, "Failed to update request execution status from error", log.Cause(err))
 			}
 		}
 
@@ -168,16 +168,19 @@ func (ts *InboundPersistentStream) Close() error {
 
 	// If the stream ended without a terminal event and without a valid complete response,
 	// treat this as an IncompleteStreamError so the pipeline can failover to the next channel.
+	// We mark the EXECUTION as failed but NOT the parent request - the caller (FailoverCallback)
+	// will decide whether to retry. If failover is possible, the parent request should remain
+	// processing until all candidates are exhausted.
 	if !ts.state.StreamCompleted && streamErr == nil && ctxErr == nil {
 		log.Warn(ctx, "Stream ended without terminal event and no valid complete response",
 			log.Int("chunks_received", len(ts.responseChunks)))
 
 		incompleteErr := &llm.IncompleteStreamError{ChunksReceived: len(ts.responseChunks)}
 
-		if ts.request != nil {
+		if ts.requestExec != nil {
 			persistCtx := context.WithoutCancel(ctx)
-			if err := ts.requestService.UpdateRequestStatusFromError(persistCtx, ts.request.ID, incompleteErr); err != nil {
-				log.Warn(persistCtx, "Failed to update request status from error", log.Cause(err))
+			if err := ts.requestService.UpdateRequestExecutionStatusFromError(persistCtx, ts.requestExec.ID, incompleteErr); err != nil {
+				log.Warn(persistCtx, "Failed to update request execution status from error", log.Cause(err))
 			}
 		}
 
@@ -197,6 +200,9 @@ func (ts *InboundPersistentStream) Close() error {
 				errToReport = streamErr
 			}
 
+			// Client disconnected (context canceled): When the client disconnects before the stream
+			// completes with a terminal event, we mark the parent request as canceled.
+			// This is correct because the user explicitly cancelled and we should not retry.
 			if err := ts.requestService.UpdateRequestStatusFromError(persistCtx, ts.request.ID, errToReport); err != nil {
 				log.Warn(persistCtx, "Failed to update request status from error", log.Cause(err))
 			}

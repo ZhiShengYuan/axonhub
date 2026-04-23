@@ -132,7 +132,8 @@ func TestChatCompletionOrchestrator_Process_Streaming(t *testing.T) {
 }
 
 // TestChatCompletionOrchestrator_Process_StreamingError tests that mid-stream errors
-// properly mark both request and request execution as failed.
+// properly mark request execution as failed while keeping parent request as processing
+// (failover may still be possible via FailoverCallback).
 func TestChatCompletionOrchestrator_Process_StreamingError(t *testing.T) {
 	ctx := context.Background()
 	ctx = authz.WithTestBypass(ctx)
@@ -217,7 +218,7 @@ func TestChatCompletionOrchestrator_Process_StreamingError(t *testing.T) {
 	require.Len(t, requests, 1)
 
 	dbRequest := requests[0]
-	assert.Equal(t, request.StatusFailed, dbRequest.Status, "request should be marked as failed on stream error")
+	assert.Equal(t, request.StatusProcessing, dbRequest.Status, "request should stay processing on stream error - failover via FailoverCallback may still be possible")
 
 	// Verify request execution was created and marked as failed
 	executions, err := client.RequestExecution.Query().All(ctx)

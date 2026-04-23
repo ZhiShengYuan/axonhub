@@ -256,6 +256,40 @@ type InitializeSystemPayload struct {
 	Token   *string   `json:"token,omitempty"`
 }
 
+type MCPCredentials struct {
+	UpstreamAPIKey      *string `json:"upstreamAPIKey,omitempty"`
+	UpstreamBearerToken *string `json:"upstreamBearerToken,omitempty"`
+}
+
+type MCPCredentialsInput struct {
+	UpstreamAPIKey      *string `json:"upstreamAPIKey,omitempty"`
+	UpstreamBearerToken *string `json:"upstreamBearerToken,omitempty"`
+}
+
+type MCPNamespaceMapping struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+	Type string `json:"type"`
+}
+
+type MCPNamespaceMappingInput struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+	Type string `json:"type"`
+}
+
+type MCPSettings struct {
+	NamespaceMappings         []*MCPNamespaceMapping `json:"namespaceMappings,omitempty"`
+	SessionIdleTimeoutSeconds int                    `json:"sessionIdleTimeoutSeconds"`
+	CollisionPolicy           string                 `json:"collisionPolicy"`
+}
+
+type MCPSettingsInput struct {
+	NamespaceMappings         []*MCPNamespaceMappingInput `json:"namespaceMappings,omitempty"`
+	SessionIdleTimeoutSeconds *int                        `json:"sessionIdleTimeoutSeconds,omitempty"`
+	CollisionPolicy           *string                     `json:"collisionPolicy,omitempty"`
+}
+
 // Performance statistics for a specific model on a given date
 type ModelPerformanceStat struct {
 	Date         string   `json:"date"`

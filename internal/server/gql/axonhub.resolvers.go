@@ -70,6 +70,11 @@ func (r *channelResolver) DisabledAPIKeys(ctx context.Context, obj *ent.Channel)
 	return lo.ToSlicePtr(obj.DisabledAPIKeys), nil
 }
 
+// Mcp is the resolver for the mcp field.
+func (r *channelCredentialsResolver) Mcp(ctx context.Context, obj *objects.ChannelCredentials) (*MCPCredentials, error) {
+	panic(fmt.Errorf("not implemented: Mcp - mcp"))
+}
+
 // HeaderOverrideOperations is the resolver for the headerOverrideOperations field.
 func (r *channelSettingsResolver) HeaderOverrideOperations(ctx context.Context, obj *objects.ChannelSettings) ([]*objects.OverrideOperation, error) {
 	if obj == nil {
@@ -104,6 +109,11 @@ func (r *channelSettingsResolver) BodyOverrideOperations(ctx context.Context, ob
 	}
 
 	return lo.ToSlicePtr(ops), nil
+}
+
+// Mcp is the resolver for the mcp field.
+func (r *channelSettingsResolver) Mcp(ctx context.Context, obj *objects.ChannelSettings) (*MCPSettings, error) {
+	panic(fmt.Errorf("not implemented: Mcp - mcp"))
 }
 
 // CreateChannel is the resolver for the createChannel field.
@@ -749,6 +759,21 @@ func (r *traceResolver) UsageMetadata(ctx context.Context, obj *ent.Trace) (*biz
 	return r.traceService.UsageMetadata(ctx, obj.ID)
 }
 
+// Mcp is the resolver for the mcp field.
+func (r *channelCredentialsInputResolver) Mcp(ctx context.Context, obj *objects.ChannelCredentials, data *MCPCredentialsInput) error {
+	panic(fmt.Errorf("not implemented: Mcp - mcp"))
+}
+
+// Mcp is the resolver for the mcp field.
+func (r *channelSettingsInputResolver) Mcp(ctx context.Context, obj *objects.ChannelSettings, data *MCPSettingsInput) error {
+	panic(fmt.Errorf("not implemented: Mcp - mcp"))
+}
+
+// ChannelCredentials returns ChannelCredentialsResolver implementation.
+func (r *Resolver) ChannelCredentials() ChannelCredentialsResolver {
+	return &channelCredentialsResolver{r}
+}
+
 // ChannelSettings returns ChannelSettingsResolver implementation.
 func (r *Resolver) ChannelSettings() ChannelSettingsResolver { return &channelSettingsResolver{r} }
 
@@ -758,6 +783,19 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Segment returns SegmentResolver implementation.
 func (r *Resolver) Segment() SegmentResolver { return &segmentResolver{r} }
 
+// ChannelCredentialsInput returns ChannelCredentialsInputResolver implementation.
+func (r *Resolver) ChannelCredentialsInput() ChannelCredentialsInputResolver {
+	return &channelCredentialsInputResolver{r}
+}
+
+// ChannelSettingsInput returns ChannelSettingsInputResolver implementation.
+func (r *Resolver) ChannelSettingsInput() ChannelSettingsInputResolver {
+	return &channelSettingsInputResolver{r}
+}
+
+type channelCredentialsResolver struct{ *Resolver }
 type channelSettingsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type segmentResolver struct{ *Resolver }
+type channelCredentialsInputResolver struct{ *Resolver }
+type channelSettingsInputResolver struct{ *Resolver }

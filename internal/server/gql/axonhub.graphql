@@ -84,6 +84,7 @@ type ChannelSettings {
   headerOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
   bodyOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
   passThroughUserAgent: Boolean
+  userAgent: String
   rateLimit: ChannelRateLimit
   mcp: MCPSettings
 }
@@ -130,6 +131,7 @@ input ChannelSettingsInput {
   headerOverrideOperations: [OverrideOperationInput!]
   bodyOverrideOperations: [OverrideOperationInput!]
   passThroughUserAgent: Boolean
+  userAgent: String
   rateLimit: ChannelRateLimitInput
   mcp: MCPSettingsInput
 }

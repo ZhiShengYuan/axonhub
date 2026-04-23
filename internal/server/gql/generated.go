@@ -64,6 +64,7 @@ type Config struct {
 type ResolverRoot interface {
 	APIKey() APIKeyResolver
 	Channel() ChannelResolver
+	ChannelCredentials() ChannelCredentialsResolver
 	ChannelModelPrice() ChannelModelPriceResolver
 	ChannelModelPriceVersion() ChannelModelPriceVersionResolver
 	ChannelOverrideTemplate() ChannelOverrideTemplateResolver
@@ -89,6 +90,8 @@ type ResolverRoot interface {
 	User() UserResolver
 	UserProject() UserProjectResolver
 	UserRole() UserRoleResolver
+	ChannelCredentialsInput() ChannelCredentialsInputResolver
+	ChannelSettingsInput() ChannelSettingsInputResolver
 }
 
 type DirectiveRoot struct {
@@ -297,6 +300,7 @@ type ComplexityRoot struct {
 		APIKey  func(childComplexity int) int
 		APIKeys func(childComplexity int) int
 		GCP     func(childComplexity int) int
+		Mcp     func(childComplexity int) int
 		OAuth   func(childComplexity int) int
 	}
 
@@ -454,11 +458,13 @@ type ComplexityRoot struct {
 		HeaderOverrideOperations func(childComplexity int) int
 		HideMappedModels         func(childComplexity int) int
 		HideOriginalModels       func(childComplexity int) int
+		Mcp                      func(childComplexity int) int
 		ModelMappings            func(childComplexity int) int
 		PassThroughUserAgent     func(childComplexity int) int
 		Proxy                    func(childComplexity int) int
 		RateLimit                func(childComplexity int) int
 		TransformOptions         func(childComplexity int) int
+		UserAgent                func(childComplexity int) int
 	}
 
 	ChannelSuccessRate struct {
@@ -652,6 +658,23 @@ type ComplexityRoot struct {
 		Success func(childComplexity int) int
 		Token   func(childComplexity int) int
 		User    func(childComplexity int) int
+	}
+
+	MCPCredentials struct {
+		UpstreamAPIKey      func(childComplexity int) int
+		UpstreamBearerToken func(childComplexity int) int
+	}
+
+	MCPNamespaceMapping struct {
+		From func(childComplexity int) int
+		To   func(childComplexity int) int
+		Type func(childComplexity int) int
+	}
+
+	MCPSettings struct {
+		CollisionPolicy           func(childComplexity int) int
+		NamespaceMappings         func(childComplexity int) int
+		SessionIdleTimeoutSeconds func(childComplexity int) int
 	}
 
 	Model struct {
@@ -1807,6 +1830,9 @@ type ChannelResolver interface {
 	Credentials(ctx context.Context, obj *ent.Channel) (*objects.ChannelCredentials, error)
 	DisabledAPIKeys(ctx context.Context, obj *ent.Channel) ([]*objects.DisabledAPIKey, error)
 }
+type ChannelCredentialsResolver interface {
+	Mcp(ctx context.Context, obj *objects.ChannelCredentials) (*MCPCredentials, error)
+}
 type ChannelModelPriceResolver interface {
 	ID(ctx context.Context, obj *ent.ChannelModelPrice) (*objects.GUID, error)
 
@@ -1836,6 +1862,8 @@ type ChannelProbeDataResolver interface {
 type ChannelSettingsResolver interface {
 	HeaderOverrideOperations(ctx context.Context, obj *objects.ChannelSettings) ([]*objects.OverrideOperation, error)
 	BodyOverrideOperations(ctx context.Context, obj *objects.ChannelSettings) ([]*objects.OverrideOperation, error)
+
+	Mcp(ctx context.Context, obj *objects.ChannelSettings) (*MCPSettings, error)
 }
 type DataStorageResolver interface {
 	ID(ctx context.Context, obj *ent.DataStorage) (*objects.GUID, error)
@@ -2117,6 +2145,13 @@ type UserRoleResolver interface {
 	ID(ctx context.Context, obj *ent.UserRole) (*objects.GUID, error)
 	UserID(ctx context.Context, obj *ent.UserRole) (*objects.GUID, error)
 	RoleID(ctx context.Context, obj *ent.UserRole) (*objects.GUID, error)
+}
+
+type ChannelCredentialsInputResolver interface {
+	Mcp(ctx context.Context, obj *objects.ChannelCredentials, data *MCPCredentialsInput) error
+}
+type ChannelSettingsInputResolver interface {
+	Mcp(ctx context.Context, obj *objects.ChannelSettings, data *MCPSettingsInput) error
 }
 
 type executableSchema struct {
@@ -2922,6 +2957,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ChannelCredentials.GCP(childComplexity), true
+	case "ChannelCredentials.mcp":
+		if e.complexity.ChannelCredentials.Mcp == nil {
+			break
+		}
+
+		return e.complexity.ChannelCredentials.Mcp(childComplexity), true
 	case "ChannelCredentials.oauth":
 		if e.complexity.ChannelCredentials.OAuth == nil {
 			break
@@ -3490,6 +3531,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ChannelSettings.HideOriginalModels(childComplexity), true
+	case "ChannelSettings.mcp":
+		if e.complexity.ChannelSettings.Mcp == nil {
+			break
+		}
+
+		return e.complexity.ChannelSettings.Mcp(childComplexity), true
 	case "ChannelSettings.modelMappings":
 		if e.complexity.ChannelSettings.ModelMappings == nil {
 			break
@@ -3520,6 +3567,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ChannelSettings.TransformOptions(childComplexity), true
+	case "ChannelSettings.userAgent":
+		if e.complexity.ChannelSettings.UserAgent == nil {
+			break
+		}
+
+		return e.complexity.ChannelSettings.UserAgent(childComplexity), true
 
 	case "ChannelSuccessRate.channelId":
 		if e.complexity.ChannelSuccessRate.ChannelID == nil {
@@ -4195,6 +4248,57 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.InitializeSystemPayload.User(childComplexity), true
+
+	case "MCPCredentials.upstreamAPIKey":
+		if e.complexity.MCPCredentials.UpstreamAPIKey == nil {
+			break
+		}
+
+		return e.complexity.MCPCredentials.UpstreamAPIKey(childComplexity), true
+	case "MCPCredentials.upstreamBearerToken":
+		if e.complexity.MCPCredentials.UpstreamBearerToken == nil {
+			break
+		}
+
+		return e.complexity.MCPCredentials.UpstreamBearerToken(childComplexity), true
+
+	case "MCPNamespaceMapping.from":
+		if e.complexity.MCPNamespaceMapping.From == nil {
+			break
+		}
+
+		return e.complexity.MCPNamespaceMapping.From(childComplexity), true
+	case "MCPNamespaceMapping.to":
+		if e.complexity.MCPNamespaceMapping.To == nil {
+			break
+		}
+
+		return e.complexity.MCPNamespaceMapping.To(childComplexity), true
+	case "MCPNamespaceMapping.type":
+		if e.complexity.MCPNamespaceMapping.Type == nil {
+			break
+		}
+
+		return e.complexity.MCPNamespaceMapping.Type(childComplexity), true
+
+	case "MCPSettings.collisionPolicy":
+		if e.complexity.MCPSettings.CollisionPolicy == nil {
+			break
+		}
+
+		return e.complexity.MCPSettings.CollisionPolicy(childComplexity), true
+	case "MCPSettings.namespaceMappings":
+		if e.complexity.MCPSettings.NamespaceMappings == nil {
+			break
+		}
+
+		return e.complexity.MCPSettings.NamespaceMappings(childComplexity), true
+	case "MCPSettings.sessionIdleTimeoutSeconds":
+		if e.complexity.MCPSettings.SessionIdleTimeoutSeconds == nil {
+			break
+		}
+
+		return e.complexity.MCPSettings.SessionIdleTimeoutSeconds(childComplexity), true
 
 	case "Model.associatedChannelCount":
 		if e.complexity.Model.AssociatedChannelCount == nil {
@@ -9652,6 +9756,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGetChannelProbeDataInput,
 		ec.unmarshalInputHeaderEntryInput,
 		ec.unmarshalInputInitializeSystemInput,
+		ec.unmarshalInputMCPCredentialsInput,
+		ec.unmarshalInputMCPNamespaceMappingInput,
+		ec.unmarshalInputMCPSettingsInput,
 		ec.unmarshalInputModelAssociationInput,
 		ec.unmarshalInputModelAssociationWhenInput,
 		ec.unmarshalInputModelCardCostInput,
@@ -16247,8 +16354,12 @@ func (ec *executionContext) fieldContext_Channel_settings(_ context.Context, fie
 				return ec.fieldContext_ChannelSettings_bodyOverrideOperations(ctx, field)
 			case "passThroughUserAgent":
 				return ec.fieldContext_ChannelSettings_passThroughUserAgent(ctx, field)
+			case "userAgent":
+				return ec.fieldContext_ChannelSettings_userAgent(ctx, field)
 			case "rateLimit":
 				return ec.fieldContext_ChannelSettings_rateLimit(ctx, field)
+			case "mcp":
+				return ec.fieldContext_ChannelSettings_mcp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ChannelSettings", field.Name)
 		},
@@ -16708,6 +16819,8 @@ func (ec *executionContext) fieldContext_Channel_credentials(_ context.Context, 
 				return ec.fieldContext_ChannelCredentials_gcp(ctx, field)
 			case "oauth":
 				return ec.fieldContext_ChannelCredentials_oauth(ctx, field)
+			case "mcp":
+				return ec.fieldContext_ChannelCredentials_mcp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ChannelCredentials", field.Name)
 		},
@@ -16990,6 +17103,41 @@ func (ec *executionContext) fieldContext_ChannelCredentials_oauth(_ context.Cont
 				return ec.fieldContext_OAuthCredentials_scopes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OAuthCredentials", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ChannelCredentials_mcp(ctx context.Context, field graphql.CollectedField, obj *objects.ChannelCredentials) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ChannelCredentials_mcp,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.ChannelCredentials().Mcp(ctx, obj)
+		},
+		nil,
+		ec.marshalOMCPCredentials2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPCredentials,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ChannelCredentials_mcp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChannelCredentials",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "upstreamAPIKey":
+				return ec.fieldContext_MCPCredentials_upstreamAPIKey(ctx, field)
+			case "upstreamBearerToken":
+				return ec.fieldContext_MCPCredentials_upstreamBearerToken(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MCPCredentials", field.Name)
 		},
 	}
 	return fc, nil
@@ -20195,6 +20343,35 @@ func (ec *executionContext) fieldContext_ChannelSettings_passThroughUserAgent(_ 
 	return fc, nil
 }
 
+func (ec *executionContext) _ChannelSettings_userAgent(ctx context.Context, field graphql.CollectedField, obj *objects.ChannelSettings) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ChannelSettings_userAgent,
+		func(ctx context.Context) (any, error) {
+			return obj.UserAgent, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ChannelSettings_userAgent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChannelSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ChannelSettings_rateLimit(ctx context.Context, field graphql.CollectedField, obj *objects.ChannelSettings) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -20227,6 +20404,43 @@ func (ec *executionContext) fieldContext_ChannelSettings_rateLimit(_ context.Con
 				return ec.fieldContext_ChannelRateLimit_maxConcurrent(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ChannelRateLimit", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ChannelSettings_mcp(ctx context.Context, field graphql.CollectedField, obj *objects.ChannelSettings) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ChannelSettings_mcp,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.ChannelSettings().Mcp(ctx, obj)
+		},
+		nil,
+		ec.marshalOMCPSettings2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPSettings,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ChannelSettings_mcp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChannelSettings",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "namespaceMappings":
+				return ec.fieldContext_MCPSettings_namespaceMappings(ctx, field)
+			case "sessionIdleTimeoutSeconds":
+				return ec.fieldContext_MCPSettings_sessionIdleTimeoutSeconds(ctx, field)
+			case "collisionPolicy":
+				return ec.fieldContext_MCPSettings_collisionPolicy(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MCPSettings", field.Name)
 		},
 	}
 	return fc, nil
@@ -23486,6 +23700,246 @@ func (ec *executionContext) _InitializeSystemPayload_token(ctx context.Context, 
 func (ec *executionContext) fieldContext_InitializeSystemPayload_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "InitializeSystemPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPCredentials_upstreamAPIKey(ctx context.Context, field graphql.CollectedField, obj *MCPCredentials) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPCredentials_upstreamAPIKey,
+		func(ctx context.Context) (any, error) {
+			return obj.UpstreamAPIKey, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPCredentials_upstreamAPIKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPCredentials",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPCredentials_upstreamBearerToken(ctx context.Context, field graphql.CollectedField, obj *MCPCredentials) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPCredentials_upstreamBearerToken,
+		func(ctx context.Context) (any, error) {
+			return obj.UpstreamBearerToken, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPCredentials_upstreamBearerToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPCredentials",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPNamespaceMapping_from(ctx context.Context, field graphql.CollectedField, obj *MCPNamespaceMapping) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPNamespaceMapping_from,
+		func(ctx context.Context) (any, error) {
+			return obj.From, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPNamespaceMapping_from(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPNamespaceMapping",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPNamespaceMapping_to(ctx context.Context, field graphql.CollectedField, obj *MCPNamespaceMapping) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPNamespaceMapping_to,
+		func(ctx context.Context) (any, error) {
+			return obj.To, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPNamespaceMapping_to(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPNamespaceMapping",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPNamespaceMapping_type(ctx context.Context, field graphql.CollectedField, obj *MCPNamespaceMapping) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPNamespaceMapping_type,
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPNamespaceMapping_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPNamespaceMapping",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPSettings_namespaceMappings(ctx context.Context, field graphql.CollectedField, obj *MCPSettings) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPSettings_namespaceMappings,
+		func(ctx context.Context) (any, error) {
+			return obj.NamespaceMappings, nil
+		},
+		nil,
+		ec.marshalOMCPNamespaceMapping2ᚕᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPSettings_namespaceMappings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "from":
+				return ec.fieldContext_MCPNamespaceMapping_from(ctx, field)
+			case "to":
+				return ec.fieldContext_MCPNamespaceMapping_to(ctx, field)
+			case "type":
+				return ec.fieldContext_MCPNamespaceMapping_type(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MCPNamespaceMapping", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPSettings_sessionIdleTimeoutSeconds(ctx context.Context, field graphql.CollectedField, obj *MCPSettings) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPSettings_sessionIdleTimeoutSeconds,
+		func(ctx context.Context) (any, error) {
+			return obj.SessionIdleTimeoutSeconds, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPSettings_sessionIdleTimeoutSeconds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCPSettings_collisionPolicy(ctx context.Context, field graphql.CollectedField, obj *MCPSettings) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_MCPSettings_collisionPolicy,
+		func(ctx context.Context) (any, error) {
+			return obj.CollisionPolicy, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_MCPSettings_collisionPolicy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCPSettings",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -54025,7 +54479,7 @@ func (ec *executionContext) unmarshalInputChannelCredentialsInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"apiKey", "apiKeys", "gcp", "oauth"}
+	fieldsInOrder := [...]string{"apiKey", "apiKeys", "gcp", "oauth", "mcp"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -54060,6 +54514,15 @@ func (ec *executionContext) unmarshalInputChannelCredentialsInput(ctx context.Co
 				return it, err
 			}
 			it.OAuth = data
+		case "mcp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mcp"))
+			data, err := ec.unmarshalOMCPCredentialsInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPCredentialsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.ChannelCredentialsInput().Mcp(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -56680,7 +57143,7 @@ func (ec *executionContext) unmarshalInputChannelSettingsInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"extraModelPrefix", "modelMappings", "autoTrimedModelPrefixes", "hideOriginalModels", "hideMappedModels", "proxy", "transformOptions", "headerOverrideOperations", "bodyOverrideOperations", "passThroughUserAgent", "rateLimit"}
+	fieldsInOrder := [...]string{"extraModelPrefix", "modelMappings", "autoTrimedModelPrefixes", "hideOriginalModels", "hideMappedModels", "proxy", "transformOptions", "headerOverrideOperations", "bodyOverrideOperations", "passThroughUserAgent", "userAgent", "rateLimit", "mcp"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -56757,6 +57220,13 @@ func (ec *executionContext) unmarshalInputChannelSettingsInput(ctx context.Conte
 				return it, err
 			}
 			it.PassThroughUserAgent = data
+		case "userAgent":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userAgent"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserAgent = data
 		case "rateLimit":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rateLimit"))
 			data, err := ec.unmarshalOChannelRateLimitInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋobjectsᚐChannelRateLimit(ctx, v)
@@ -56764,6 +57234,15 @@ func (ec *executionContext) unmarshalInputChannelSettingsInput(ctx context.Conte
 				return it, err
 			}
 			it.RateLimit = data
+		case "mcp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mcp"))
+			data, err := ec.unmarshalOMCPSettingsInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPSettingsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.ChannelSettingsInput().Mcp(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -60350,6 +60829,122 @@ func (ec *executionContext) unmarshalInputInitializeSystemInput(ctx context.Cont
 				return it, err
 			}
 			it.BrandName = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMCPCredentialsInput(ctx context.Context, obj any) (MCPCredentialsInput, error) {
+	var it MCPCredentialsInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"upstreamAPIKey", "upstreamBearerToken"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "upstreamAPIKey":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("upstreamAPIKey"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpstreamAPIKey = data
+		case "upstreamBearerToken":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("upstreamBearerToken"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpstreamBearerToken = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMCPNamespaceMappingInput(ctx context.Context, obj any) (MCPNamespaceMappingInput, error) {
+	var it MCPNamespaceMappingInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"from", "to", "type"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "from":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.From = data
+		case "to":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.To = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMCPSettingsInput(ctx context.Context, obj any) (MCPSettingsInput, error) {
+	var it MCPSettingsInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"namespaceMappings", "sessionIdleTimeoutSeconds", "collisionPolicy"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "namespaceMappings":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("namespaceMappings"))
+			data, err := ec.unmarshalOMCPNamespaceMappingInput2ᚕᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NamespaceMappings = data
+		case "sessionIdleTimeoutSeconds":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionIdleTimeoutSeconds"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SessionIdleTimeoutSeconds = data
+		case "collisionPolicy":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("collisionPolicy"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CollisionPolicy = data
 		}
 	}
 
@@ -77752,6 +78347,39 @@ func (ec *executionContext) _ChannelCredentials(ctx context.Context, sel ast.Sel
 			out.Values[i] = ec._ChannelCredentials_gcp(ctx, field, obj)
 		case "oauth":
 			out.Values[i] = ec._ChannelCredentials_oauth(ctx, field, obj)
+		case "mcp":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelCredentials_mcp(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -79432,8 +80060,43 @@ func (ec *executionContext) _ChannelSettings(ctx context.Context, sel ast.Select
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "passThroughUserAgent":
 			out.Values[i] = ec._ChannelSettings_passThroughUserAgent(ctx, field, obj)
+		case "userAgent":
+			out.Values[i] = ec._ChannelSettings_userAgent(ctx, field, obj)
 		case "rateLimit":
 			out.Values[i] = ec._ChannelSettings_rateLimit(ctx, field, obj)
+		case "mcp":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChannelSettings_mcp(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -80977,6 +81640,139 @@ func (ec *executionContext) _InitializeSystemPayload(ctx context.Context, sel as
 			out.Values[i] = ec._InitializeSystemPayload_user(ctx, field, obj)
 		case "token":
 			out.Values[i] = ec._InitializeSystemPayload_token(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mCPCredentialsImplementors = []string{"MCPCredentials"}
+
+func (ec *executionContext) _MCPCredentials(ctx context.Context, sel ast.SelectionSet, obj *MCPCredentials) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mCPCredentialsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MCPCredentials")
+		case "upstreamAPIKey":
+			out.Values[i] = ec._MCPCredentials_upstreamAPIKey(ctx, field, obj)
+		case "upstreamBearerToken":
+			out.Values[i] = ec._MCPCredentials_upstreamBearerToken(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mCPNamespaceMappingImplementors = []string{"MCPNamespaceMapping"}
+
+func (ec *executionContext) _MCPNamespaceMapping(ctx context.Context, sel ast.SelectionSet, obj *MCPNamespaceMapping) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mCPNamespaceMappingImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MCPNamespaceMapping")
+		case "from":
+			out.Values[i] = ec._MCPNamespaceMapping_from(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "to":
+			out.Values[i] = ec._MCPNamespaceMapping_to(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "type":
+			out.Values[i] = ec._MCPNamespaceMapping_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mCPSettingsImplementors = []string{"MCPSettings"}
+
+func (ec *executionContext) _MCPSettings(ctx context.Context, sel ast.SelectionSet, obj *MCPSettings) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mCPSettingsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MCPSettings")
+		case "namespaceMappings":
+			out.Values[i] = ec._MCPSettings_namespaceMappings(ctx, field, obj)
+		case "sessionIdleTimeoutSeconds":
+			out.Values[i] = ec._MCPSettings_sessionIdleTimeoutSeconds(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "collisionPolicy":
+			out.Values[i] = ec._MCPSettings_collisionPolicy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -95363,6 +96159,21 @@ func (ec *executionContext) marshalNJSONRawMessageInput2githubᚗcomᚋloopljᚋ
 	return v
 }
 
+func (ec *executionContext) marshalNMCPNamespaceMapping2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMapping(ctx context.Context, sel ast.SelectionSet, v *MCPNamespaceMapping) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MCPNamespaceMapping(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMCPNamespaceMappingInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingInput(ctx context.Context, v any) (*MCPNamespaceMappingInput, error) {
+	res, err := ec.unmarshalInputMCPNamespaceMappingInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNMap2map(ctx context.Context, v any) (map[string]any, error) {
 	res, err := graphql.UnmarshalMap(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -101157,6 +101968,101 @@ func (ec *executionContext) marshalOJSONRawMessageInput2ᚕgithubᚗcomᚋlooplj
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOMCPCredentials2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPCredentials(ctx context.Context, sel ast.SelectionSet, v *MCPCredentials) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MCPCredentials(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMCPCredentialsInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPCredentialsInput(ctx context.Context, v any) (*MCPCredentialsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMCPCredentialsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMCPNamespaceMapping2ᚕᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingᚄ(ctx context.Context, sel ast.SelectionSet, v []*MCPNamespaceMapping) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMCPNamespaceMapping2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMapping(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOMCPNamespaceMappingInput2ᚕᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingInputᚄ(ctx context.Context, v any) ([]*MCPNamespaceMappingInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*MCPNamespaceMappingInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNMCPNamespaceMappingInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPNamespaceMappingInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOMCPSettings2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPSettings(ctx context.Context, sel ast.SelectionSet, v *MCPSettings) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MCPSettings(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMCPSettingsInput2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋserverᚋgqlᚐMCPSettingsInput(ctx context.Context, v any) (*MCPSettingsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMCPSettingsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOModel2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚐModel(ctx context.Context, sel ast.SelectionSet, v *ent.Model) graphql.Marshaler {

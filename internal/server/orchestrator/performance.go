@@ -78,6 +78,12 @@ func (m *performanceRecording) OnOutboundRawRequest(ctx context.Context, request
 		perf.APIKey = apiKey
 	}
 
+	// Get IncludeTTFTInSpeed from system general settings
+	if m.outbound.state.ChannelService != nil && m.outbound.state.ChannelService.SystemService != nil {
+		settings := m.outbound.state.ChannelService.SystemService.GeneralSettingsOrDefault(ctx)
+		perf.IncludeTTFTInSpeed = settings.IncludeTTFTInSpeed
+	}
+
 	m.outbound.state.Perf = &perf
 
 	log.Debug(ctx, "Started performance tracking",
@@ -119,6 +125,7 @@ func (m *performanceRecording) OnOutboundLlmResponse(ctx context.Context, respon
 			StartTime:       m.outbound.state.Perf.StartTime,
 			FirstTokenTime:  m.outbound.state.Perf.FirstTokenTime,
 			EndTime:         m.outbound.state.Perf.EndTime,
+			IncludeTTFTInSpeed: m.outbound.state.Perf.IncludeTTFTInSpeed,
 		})
 	}
 
@@ -165,6 +172,7 @@ func (m *performanceRecording) OnOutboundRawError(ctx context.Context, err error
 			StartTime:       perf.StartTime,
 			FirstTokenTime:  perf.FirstTokenTime,
 			EndTime:         perf.EndTime,
+			IncludeTTFTInSpeed: perf.IncludeTTFTInSpeed,
 		})
 	}
 }
@@ -229,6 +237,7 @@ func (s *recordPerformanceStream) Current() *llm.Response {
 				StartTime:       s.state.Perf.StartTime,
 				FirstTokenTime:  s.state.Perf.FirstTokenTime,
 				EndTime:         s.state.Perf.EndTime,
+				IncludeTTFTInSpeed: s.state.Perf.IncludeTTFTInSpeed,
 			})
 			s.metricsRecorded = true
 		}
@@ -256,6 +265,7 @@ func (s *recordPerformanceStream) Close() error {
 				StartTime:       s.state.Perf.StartTime,
 				FirstTokenTime:  s.state.Perf.FirstTokenTime,
 				EndTime:         s.state.Perf.EndTime,
+				IncludeTTFTInSpeed: s.state.Perf.IncludeTTFTInSpeed,
 			})
 		}
 	}

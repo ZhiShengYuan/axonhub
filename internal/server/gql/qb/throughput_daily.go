@@ -80,10 +80,11 @@ func getDateExpression(dialect string, dateExpr string, timezone string, offsetS
 //   - offsetSeconds: timezone offset in seconds
 //   - limit: maximum number of results per day
 //   - mode: which SQL pattern to use (ROW_NUMBER or MAX_ID)
+//   - includeTTFTInSpeed: if true, uses full latency for streaming; if false, subtracts TTFT
 //
 // Returns: SQL query string with placeholders for the since timestamp
-func BuildDailyModelThroughputQuery(dialect string, timezone string, offsetSeconds int, limit int, mode ThroughputQueryMode) string {
-	return buildDailyThroughputQuery(dialect, timezone, offsetSeconds, DailyThroughputByModel, limit, mode)
+func BuildDailyModelThroughputQuery(dialect string, timezone string, offsetSeconds int, limit int, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
+	return buildDailyThroughputQuery(dialect, timezone, offsetSeconds, DailyThroughputByModel, limit, mode, includeTTFTInSpeed)
 }
 
 // BuildDailyChannelThroughputQuery constructs a SQL query for daily channel throughput statistics.
@@ -94,14 +95,15 @@ func BuildDailyModelThroughputQuery(dialect string, timezone string, offsetSecon
 //   - offsetSeconds: timezone offset in seconds
 //   - limit: maximum number of results per day
 //   - mode: which SQL pattern to use (ROW_NUMBER or MAX_ID)
+//   - includeTTFTInSpeed: if true, uses full latency for streaming; if false, subtracts TTFT
 //
 // Returns: SQL query string with placeholders for the since timestamp
-func BuildDailyChannelThroughputQuery(dialect string, timezone string, offsetSeconds int, limit int, mode ThroughputQueryMode) string {
-	return buildDailyThroughputQuery(dialect, timezone, offsetSeconds, DailyThroughputByChannel, limit, mode)
+func BuildDailyChannelThroughputQuery(dialect string, timezone string, offsetSeconds int, limit int, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
+	return buildDailyThroughputQuery(dialect, timezone, offsetSeconds, DailyThroughputByChannel, limit, mode, includeTTFTInSpeed)
 }
 
 // buildDailyThroughputQuery constructs the actual SQL query for daily throughput.
-func buildDailyThroughputQuery(dialect string, timezone string, offsetSeconds int, queryType DailyThroughputQueryType, limit int, mode ThroughputQueryMode) string {
+func buildDailyThroughputQuery(dialect string, timezone string, offsetSeconds int, queryType DailyThroughputQueryType, limit int, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
 	// Validate limit
 	if limit <= 0 {
 		limit = 10 // Default for daily queries
@@ -123,28 +125,35 @@ func buildDailyThroughputQuery(dialect string, timezone string, offsetSeconds in
 	}
 
 	if mode == ThroughputModeMaxID {
-		return buildDailyMaxIDQuery(dateExpr, config, limit, paramPlaceholder)
+		return buildDailyMaxIDQuery(dateExpr, config, limit, paramPlaceholder, includeTTFTInSpeed)
 	}
 
-	return buildDailyRowNumberQuery(dateExpr, config, limit, paramPlaceholder)
+	return buildDailyRowNumberQuery(dateExpr, config, limit, paramPlaceholder, includeTTFTInSpeed)
 }
 
 // throughputCoreSQL returns the shared CASE expression body for throughput calculations.
-// This extracts the common latency calculation logic used by throughputCalculationSQL.
-// Note: Streaming throughput now uses full metrics_latency_ms (including TTFT) as the denominator,
-// matching non-streaming behavior. TTFT is tracked separately via metrics_first_token_latency_ms.
-func throughputCoreSQL(seTable string) string {
-	return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
+// When includeTTFTInSpeed is true, uses full latency; when false, subtracts TTFT for streaming.
+func throughputCoreSQL(seTable string, includeTTFTInSpeed bool) string {
+	if includeTTFTInSpeed {
+		return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
                  THEN CASE WHEN %s.metrics_first_token_latency_ms >= %s.metrics_latency_ms
                       THEN 0
                       ELSE %s.metrics_latency_ms END
                  ELSE %s.metrics_latency_ms END`, seTable, seTable, seTable, seTable, seTable, seTable)
+	}
+	// Default: subtract TTFT from latency for streaming
+	return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
+                 THEN CASE WHEN %s.metrics_first_token_latency_ms >= %s.metrics_latency_ms
+                      THEN %s.metrics_latency_ms
+                      ELSE %s.metrics_latency_ms - %s.metrics_first_token_latency_ms END
+                 ELSE %s.metrics_latency_ms END`,
+		seTable, seTable, seTable, seTable, seTable, seTable, seTable, seTable)
 }
 
 // throughputCalculationSQL returns the SQL for calculating throughput from tokens and latency.
 // This is shared across multiple query builders to ensure consistent throughput calculation.
-func throughputCalculationSQL(seTable string) string {
-	core := throughputCoreSQL(seTable)
+func throughputCalculationSQL(seTable string, includeTTFTInSpeed bool) string {
+	core := throughputCoreSQL(seTable, includeTTFTInSpeed)
 	return fmt.Sprintf(`CASE
         WHEN SUM(%s) > 0
         THEN SUM(ul.completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)) * 1000.0
@@ -155,8 +164,8 @@ func throughputCalculationSQL(seTable string) string {
 
 // buildDailyRowNumberQuery constructs a daily throughput query using ROW_NUMBER().
 // Applies date filtering and per-day limit using ROW_NUMBER() window partitioned by date.
-func buildDailyRowNumberQuery(dateExpr string, config DailyQueryFragmentConfig, limit int, startDatePlaceholder string) string {
-	throughputSQL := throughputCalculationSQL("se")
+func buildDailyRowNumberQuery(dateExpr string, config DailyQueryFragmentConfig, limit int, startDatePlaceholder string, includeTTFTInSpeed bool) string {
+	throughputSQL := throughputCalculationSQL("se", includeTTFTInSpeed)
 	return "WITH successful_execs AS (\n" +
 		"    SELECT\n" +
 		"        request_id,\n" +
@@ -192,8 +201,8 @@ func buildDailyRowNumberQuery(dateExpr string, config DailyQueryFragmentConfig, 
 
 // buildDailyMaxIDQuery constructs a daily throughput query using MAX(id) subquery.
 // Applies date filtering and per-day limit using ROW_NUMBER() window partitioned by date.
-func buildDailyMaxIDQuery(dateExpr string, config DailyQueryFragmentConfig, limit int, startDatePlaceholder string) string {
-	throughputSQL := throughputCalculationSQL("se")
+func buildDailyMaxIDQuery(dateExpr string, config DailyQueryFragmentConfig, limit int, startDatePlaceholder string, includeTTFTInSpeed bool) string {
+	throughputSQL := throughputCalculationSQL("se", includeTTFTInSpeed)
 	return "WITH ranked_execs AS (\n" +
 		"    SELECT\n" +
 		"        " + dateExpr + " as date,\n" +
@@ -235,16 +244,17 @@ func buildDailyMaxIDQuery(dateExpr string, config DailyQueryFragmentConfig, limi
 //   - queryType: DailyThroughputByModel or DailyThroughputByChannel
 //   - placeholder: parameter placeholder ("?" or "$1")
 //   - mode: which SQL pattern to use (ROW_NUMBER or MAX_ID)
+//   - includeTTFTInSpeed: if true, uses full latency for streaming; if false, subtracts TTFT
 //
 // Returns: SQL query string ready for execution
-func BuildDailyPerformanceStatsQuery(dialect string, timezone string, offsetSeconds int, queryType DailyThroughputQueryType, placeholder string, mode ThroughputQueryMode) string {
+func BuildDailyPerformanceStatsQuery(dialect string, timezone string, offsetSeconds int, queryType DailyThroughputQueryType, placeholder string, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
 	config, ok := AllowedDailyQueryConfigs[queryType]
 	if !ok {
 		config = AllowedDailyQueryConfigs[DailyThroughputByModel]
 	}
 
 	dateExpr := getDateExpression(dialect, "se.created_at", timezone, offsetSeconds)
-	throughputSQL := throughputCalculationSQL("se")
+	throughputSQL := throughputCalculationSQL("se", includeTTFTInSpeed)
 
 	// Only add the requests join for model queries (channel_id is already in request_executions)
 	var joinRequests string

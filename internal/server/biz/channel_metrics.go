@@ -506,6 +506,11 @@ type PerformanceRecord struct {
 	// If response status code is 0, it means the request is successful.
 	ResponseStatusCode int
 	CompletionTokens   int64
+
+	// IncludeTTFTInSpeed controls whether TTFT is included in TOK/s calculation.
+	// When false (default), streaming subtracts TTFT from latency.
+	// When true, streaming uses full latency including TTFT.
+	IncludeTTFTInSpeed bool
 }
 
 // Calculate calculates performance metrics from collected data.
@@ -526,9 +531,14 @@ func (m *PerformanceRecord) Calculate() (firstTokenLatencyMs int64, requestLaten
 
 	if m.CompletionTokens > 0 {
 		effectiveLatencyMs := requestLatencyMs
-		// Note: For streaming, we now use full request latency (including TTFT) as the denominator
-		// because some channels emit fake loss/empty requests. TTFT is still tracked separately
-		// in StreamingFirstTokenLatencyEWMA for latency-aware routing.
+
+		// When IncludeTTFTInSpeed is false (default), subtract TTFT from latency for streaming
+		// to get generation-only time. This is the original behavior.
+		// When IncludeTTFTInSpeed is true, use full latency including TTFT.
+		if m.Stream && m.FirstTokenTime != nil && !m.IncludeTTFTInSpeed {
+			effectiveLatencyMs = requestLatencyMs - firstTokenLatencyMs
+			effectiveLatencyMs = ClampLatency(effectiveLatencyMs)
+		}
 
 		tokensPerSecond = float64(m.CompletionTokens) / (float64(effectiveLatencyMs) / 1000.0)
 	}

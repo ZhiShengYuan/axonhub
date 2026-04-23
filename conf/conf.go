@@ -146,6 +146,7 @@ func setDefaults(v *viper.Viper) {
 	// Dashboard defaults
 	v.SetDefault("server.dashboard.all_time_token_stats_soft_ttl", "1h")
 	v.SetDefault("server.dashboard.all_time_token_stats_hard_ttl", "24h")
+	v.SetDefault("server.dashboard.include_ttft_in_speed", false)
 
 	v.SetDefault("server.debug", false)
 	v.SetDefault("server.disable_ssl_verify", false)

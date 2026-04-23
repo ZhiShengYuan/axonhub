@@ -306,7 +306,7 @@ func TestBuildThroughputQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildThroughputQuery(tt.useDollarPlaceholders, tt.queryType, tt.limit, tt.mode)
+			got := BuildThroughputQuery(tt.useDollarPlaceholders, tt.queryType, tt.limit, tt.mode, false)
 
 			for _, want := range tt.wantContains {
 				assert.Contains(t, got, want, "query should contain %q", want)
@@ -340,7 +340,7 @@ func TestBuildThroughputQuery_SQLStructure(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildThroughputQuery(true, ThroughputQueryByChannel, 10, tt.mode)
+			got := BuildThroughputQuery(true, ThroughputQueryByChannel, 10, tt.mode, false)
 
 			if tt.wantCTE {
 				assert.Contains(t, got, "WITH successful_execs AS", "ROW_NUMBER mode should use CTE")
@@ -460,7 +460,7 @@ func TestBuildProbeStatsQuery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildProbeStatsQuery(tt.useDollarPlaceholders, tt.channelIDFilter, tt.mode)
+			got := BuildProbeStatsQuery(tt.useDollarPlaceholders, tt.channelIDFilter, tt.mode, false)
 
 			for _, want := range tt.wantContains {
 				assert.Contains(t, got, want, "query should contain %q", want)
@@ -494,7 +494,7 @@ func TestBuildProbeStatsQuery_SQLStructure(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildProbeStatsQuery(true, "AND se.channel_id = $1", tt.mode)
+			got := BuildProbeStatsQuery(true, "AND se.channel_id = $1", tt.mode, false)
 
 			if tt.wantCTE {
 				assert.Contains(t, got, "WITH latest_execs AS", "ROW_NUMBER mode should use CTE")
@@ -541,7 +541,7 @@ func TestBuildProbeStatsQuery_PlaceholderCount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := BuildProbeStatsQuery(tt.useDollarPlaceholders, tt.channelIDFilter, tt.mode)
+			got := BuildProbeStatsQuery(tt.useDollarPlaceholders, tt.channelIDFilter, tt.mode, false)
 
 			dollarCount := strings.Count(got, "$1") + strings.Count(got, "$2") + strings.Count(got, "$3") + strings.Count(got, "$4")
 			questionCount := strings.Count(got, "?")

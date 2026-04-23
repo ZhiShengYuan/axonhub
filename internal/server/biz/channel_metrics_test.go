@@ -44,7 +44,7 @@ func TestAggregatedMetrics_Clone(t *testing.T) {
 	require.Equal(t, metrics.NonStreamingSampleCount, cloned.NonStreamingSampleCount)
 }
 
-func TestPerformanceRecord_Calculate_StreamingFullLatency(t *testing.T) {
+func TestPerformanceRecord_Calculate_StreamingExcludesTTFT(t *testing.T) {
 	// Test that streaming TPS uses full request latency (including TTFT) as denominator.
 	// This is intentional because some channels emit fake loss/empty requests,
 	// so we measure actual end-to-end throughput rather than inter-token throughput.
@@ -57,14 +57,38 @@ func TestPerformanceRecord_Calculate_StreamingFullLatency(t *testing.T) {
 		Stream:         true,
 		FirstTokenTime: &firstTokenTime,
 		CompletionTokens: 100,
+		IncludeTTFTInSpeed: false, // Default: exclude TTFT from speed calculation
 	}
 
 	firstTokenLatencyMs, requestLatencyMs, tokensPerSecond := perf.Calculate()
 
-	// TPS should be 100 tokens / 2.0 seconds = 50 TPS (full latency, not latency-TTFT)
+	// TPS should be 100 tokens / 1.5 seconds = 66.67 TPS (total latency - TTFT = generation only)
 	require.Equal(t, int64(500), firstTokenLatencyMs, "TTFT should be 500ms")
 	require.Equal(t, int64(2000), requestLatencyMs, "total latency should be 2000ms")
-	require.Equal(t, float64(50), tokensPerSecond, "TPS = 100 tokens / 2.0s = 50 (not 66.67)")
+	require.InDelta(t, 66.67, tokensPerSecond, 0.01, "TPS = 100 tokens / 1.5s = 66.67 (generation only)")
+}
+
+func TestPerformanceRecord_Calculate_StreamingIncludesTTFT(t *testing.T) {
+	// Test that streaming TPS uses full request latency (including TTFT) as denominator
+	// when IncludeTTFTInSpeed is true.
+	now := time.Now()
+	firstTokenTime := now.Add(500 * time.Millisecond) // 500ms TTFT
+	perf := &PerformanceRecord{
+		ChannelID:      1,
+		StartTime:      now,
+		EndTime:        now.Add(2000 * time.Millisecond), // 2000ms total latency
+		Stream:         true,
+		FirstTokenTime: &firstTokenTime,
+		CompletionTokens: 100,
+		IncludeTTFTInSpeed: true, // Include TTFT in speed calculation
+	}
+
+	firstTokenLatencyMs, requestLatencyMs, tokensPerSecond := perf.Calculate()
+
+	// TPS should be 100 tokens / 2.0 seconds = 50 TPS (full latency including TTFT)
+	require.Equal(t, int64(500), firstTokenLatencyMs, "TTFT should be 500ms")
+	require.Equal(t, int64(2000), requestLatencyMs, "total latency should be 2000ms")
+	require.Equal(t, float64(50), tokensPerSecond, "TPS = 100 tokens / 2.0s = 50 (full latency)")
 }
 
 func TestChannelMetrics_RecordSuccess(t *testing.T) {

@@ -74,9 +74,10 @@ var AllowedQueryConfigs = map[ThroughputQueryType]QueryFragmentConfig{
 //   - queryType: determines which SQL pattern (by channel or by model)
 //   - limit: maximum number of results to return
 //   - mode: which SQL pattern to use (ROW_NUMBER or MAX_ID)
+//   - includeTTFTInSpeed: if true, uses full latency for streaming; if false, subtracts TTFT
 //
 // Returns: SQL query string with placeholders for the since timestamp
-func BuildThroughputQuery(useDollarPlaceholders bool, queryType ThroughputQueryType, limit int, mode ThroughputQueryMode) string {
+func BuildThroughputQuery(useDollarPlaceholders bool, queryType ThroughputQueryType, limit int, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
 	// Validate that limit is positive to prevent malformed queries
 	if limit <= 0 {
 		limit = 20 // Default fallback
@@ -96,15 +97,16 @@ func BuildThroughputQuery(useDollarPlaceholders bool, queryType ThroughputQueryT
 	}
 
 	if mode == ThroughputModeMaxID {
-		return buildMaxIDQuery(placeholder, config, limit)
+		return buildMaxIDQuery(placeholder, config, limit, includeTTFTInSpeed)
 	}
 
-	return buildRowNumberQuery(placeholder, config, limit)
+	return buildRowNumberQuery(placeholder, config, limit, includeTTFTInSpeed)
 }
 
 // buildRowNumberQuery constructs a SQL query using ROW_NUMBER() window function.
 // This is the preferred approach for all modern database systems.
-func buildRowNumberQuery(placeholder string, config QueryFragmentConfig, limit int) string {
+func buildRowNumberQuery(placeholder string, config QueryFragmentConfig, limit int, includeTTFTInSpeed bool) string {
+	effectiveLatencyExpr := buildEffectiveLatencySQL("se", includeTTFTInSpeed)
 	return `
 WITH successful_execs AS (
     SELECT
@@ -123,17 +125,9 @@ SELECT
     SUM(se.metrics_latency_ms) as latency_ms,
     COUNT(DISTINCT se.request_id) as request_count,
     CASE
-        WHEN SUM(CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-                 THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                      THEN 0
-                      ELSE se.metrics_latency_ms END
-                 ELSE se.metrics_latency_ms END) > 0
+        WHEN SUM(` + effectiveLatencyExpr + `) > 0
         THEN SUM(ul.completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)) * 1000.0
-             / SUM(CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-                   THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                        THEN 0
-                        ELSE se.metrics_latency_ms END
-                   ELSE se.metrics_latency_ms END)
+             / SUM(` + effectiveLatencyExpr + `)
         ELSE 0
     END as throughput
 FROM successful_execs se
@@ -147,9 +141,10 @@ LIMIT ` + fmt.Sprintf("%d", limit)
 
 // buildMaxIDQuery constructs a SQL query using MAX(id) subquery for SQLite compatibility.
 // This approach works on older SQLite versions that don't support window functions.
-func buildMaxIDQuery(placeholder string, config QueryFragmentConfig, limit int) string {
+func buildMaxIDQuery(placeholder string, config QueryFragmentConfig, limit int, includeTTFTInSpeed bool) string {
 	// For MAX_ID mode, we need to adjust the query to not use the CTE pattern
 	// and instead use a correlated subquery to get the latest execution per request
+	effectiveLatencyExpr := buildEffectiveLatencySQL("se", includeTTFTInSpeed)
 
 	return `
 SELECT
@@ -158,17 +153,9 @@ SELECT
     SUM(se.metrics_latency_ms) as latency_ms,
     COUNT(DISTINCT se.request_id) as request_count,
     CASE
-        WHEN SUM(CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-                 THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                      THEN 0
-                      ELSE se.metrics_latency_ms END
-                 ELSE se.metrics_latency_ms END) > 0
+        WHEN SUM(` + effectiveLatencyExpr + `) > 0
         THEN SUM(ul.completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)) * 1000.0
-             / SUM(CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-                   THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                        THEN 0
-                        ELSE se.metrics_latency_ms END
-                   ELSE se.metrics_latency_ms END)
+             / SUM(` + effectiveLatencyExpr + `)
         ELSE 0
     END as throughput
 FROM request_executions se
@@ -228,6 +215,30 @@ func CalculateConfidenceLevel(requestCount int, median float64) string {
 	return "low"
 }
 
+// buildEffectiveLatencySQL returns the SQL expression for calculating effective latency.
+// When includeTTFTInSpeed is true, it returns full latency for streaming (including TTFT).
+// When false (default), it subtracts TTFT from latency for streaming.
+func buildEffectiveLatencySQL(table string, includeTTFTInSpeed bool) string {
+	if includeTTFTInSpeed {
+		// Use full latency including TTFT
+		return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
+                 THEN CASE WHEN %s.metrics_first_token_latency_ms >= %s.metrics_latency_ms
+                      THEN 0
+                      ELSE %s.metrics_latency_ms END
+                 ELSE %s.metrics_latency_ms END`,
+			table, table, table, table, table, table)
+	}
+	// Use full latency (excluding TTFT - generation only)
+	// For streaming with TTFT: latency - TTFT = generation time
+	// For non-streaming: use full latency
+	return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
+                 THEN CASE WHEN %s.metrics_first_token_latency_ms >= %s.metrics_latency_ms
+                      THEN %s.metrics_latency_ms
+                      ELSE %s.metrics_latency_ms - %s.metrics_first_token_latency_ms END
+                 ELSE %s.metrics_latency_ms END`,
+		table, table, table, table, table, table, table, table)
+}
+
 // BuildProbeStatsQuery builds a specialized query for channel probe statistics.
 // This query returns additional columns needed for probe metrics:
 //   - total_count: total number of executions
@@ -250,12 +261,16 @@ func CalculateConfidenceLevel(requestCount int, median float64) string {
 //
 //   - mode: which SQL pattern to use (ROW_NUMBER or MAX_ID)
 //
+//   - includeTTFTInSpeed: if true, uses full latency for streaming; if false, subtracts TTFT
+//
 // Returns: SQL query string
-func BuildProbeStatsQuery(useDollarPlaceholders bool, channelIDFilter string, mode ThroughputQueryMode) string {
+func BuildProbeStatsQuery(useDollarPlaceholders bool, channelIDFilter string, mode ThroughputQueryMode, includeTTFTInSpeed bool) string {
 	placeholder1, placeholder2 := "?", "?"
 	if useDollarPlaceholders {
 		placeholder1, placeholder2 = "$1", "$2"
 	}
+
+	effectiveLatencyExpr := buildEffectiveLatencySQL("se", includeTTFTInSpeed)
 
 	if mode == ThroughputModeMaxID {
 		return fmt.Sprintf(`
@@ -264,13 +279,7 @@ SELECT
     COUNT(*) as total_count,
     SUM(CASE WHEN se.status = 'completed' THEN 1 ELSE 0 END) as success_count,
     SUM(ul.completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)) as total_tokens,
-    SUM(CASE WHEN se.status = 'completed' THEN
-        CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-             THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                  THEN 0
-                  ELSE se.metrics_latency_ms END
-             ELSE se.metrics_latency_ms END
-        ELSE 0 END) as effective_latency_ms,
+    SUM(CASE WHEN se.status = 'completed' THEN %s ELSE 0 END) as effective_latency_ms,
     SUM(CASE WHEN se.status = 'completed' AND se.stream AND se.metrics_first_token_latency_ms IS NOT NULL THEN se.metrics_first_token_latency_ms ELSE 0 END) as total_first_token_latency,
     COUNT(DISTINCT se.request_id) as request_count,
     SUM(CASE WHEN se.status = 'completed' AND se.stream AND se.metrics_first_token_latency_ms IS NOT NULL THEN 1 ELSE 0 END) as streaming_request_count
@@ -288,7 +297,7 @@ WHERE se.metrics_latency_ms > 0
     )
     %s
 GROUP BY se.channel_id
-ORDER BY se.channel_id`, placeholder1, placeholder2, channelIDFilter)
+ORDER BY se.channel_id`, effectiveLatencyExpr, placeholder1, placeholder2, channelIDFilter)
 	}
 
 	// ROW_NUMBER mode
@@ -310,13 +319,7 @@ SELECT
     COUNT(*) as total_count,
     SUM(CASE WHEN se.status = 'completed' THEN 1 ELSE 0 END) as success_count,
     SUM(ul.completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)) as total_tokens,
-    SUM(CASE WHEN se.status = 'completed' THEN
-        CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL
-             THEN CASE WHEN se.metrics_first_token_latency_ms >= se.metrics_latency_ms
-                  THEN 0
-                  ELSE se.metrics_latency_ms END
-             ELSE se.metrics_latency_ms END
-        ELSE 0 END) as effective_latency_ms,
+    SUM(CASE WHEN se.status = 'completed' THEN %s ELSE 0 END) as effective_latency_ms,
     SUM(CASE WHEN se.status = 'completed' AND se.stream AND se.metrics_first_token_latency_ms IS NOT NULL THEN se.metrics_first_token_latency_ms ELSE 0 END) as total_first_token_latency,
     COUNT(DISTINCT se.request_id) as request_count,
     SUM(CASE WHEN se.status = 'completed' AND se.stream AND se.metrics_first_token_latency_ms IS NOT NULL THEN 1 ELSE 0 END) as streaming_request_count
@@ -325,5 +328,5 @@ JOIN usage_logs ul ON se.request_id = ul.request_id
 WHERE se.rn = 1
     %s
 GROUP BY se.channel_id
-ORDER BY se.channel_id`, placeholder1, placeholder2, channelIDFilter)
+ORDER BY se.channel_id`, effectiveLatencyExpr, placeholder1, placeholder2, channelIDFilter)
 }

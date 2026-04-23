@@ -1040,11 +1040,13 @@ func (r *queryResolver) FastestChannels(ctx context.Context, input FastestChanne
 	// Build query using shared helper function
 	// Fetch more items than needed to allow confidence-based filtering
 	sqlLimit := max(*input.Limit*4, 20)
+	settings := r.systemService.GeneralSettingsOrDefault(ctx)
 	query := qb.BuildThroughputQuery(
 		useDollarPlaceholders,
 		qb.ThroughputQueryByChannel,
 		sqlLimit,
 		queryMode,
+		settings.IncludeTTFTInSpeed,
 	)
 
 	// Use UTC for the time parameter to match the timezone of the created_at column.
@@ -1183,11 +1185,13 @@ func (r *queryResolver) FastestModels(ctx context.Context, input FastestChannels
 		sqlLimit = 20
 	}
 
+	settings := r.systemService.GeneralSettingsOrDefault(ctx)
 	query := qb.BuildThroughputQuery(
 		useDollarPlaceholders,
 		qb.ThroughputQueryByModel,
 		sqlLimit,
 		queryMode,
+		settings.IncludeTTFTInSpeed,
 	)
 
 	if err := ctx.Err(); err != nil {
@@ -1297,6 +1301,8 @@ func (r *queryResolver) ModelPerformanceStats(ctx context.Context) ([]*ModelPerf
 		queryMode = qb.ThroughputModeMaxID
 	}
 
+	settings := r.systemService.GeneralSettingsOrDefault(ctx)
+
 	// Use shared query builder for daily performance stats
 	query := qb.BuildDailyPerformanceStatsQuery(
 		dialectName,
@@ -1305,6 +1311,7 @@ func (r *queryResolver) ModelPerformanceStats(ctx context.Context) ([]*ModelPerf
 		qb.DailyThroughputByModel,
 		placeholder,
 		queryMode,
+		settings.IncludeTTFTInSpeed,
 	)
 
 	if err := ctx.Err(); err != nil {

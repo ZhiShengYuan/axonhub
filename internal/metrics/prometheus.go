@@ -113,6 +113,10 @@ type RequestMetricsData struct {
 	StartTime        time.Time
 	FirstTokenTime   *time.Time
 	EndTime          time.Time
+	// IncludeTTFTInSpeed controls whether TTFT is included in TOK/s calculation.
+	// When false (default), streaming subtracts TTFT from latency.
+	// When true, streaming uses full latency including TTFT.
+	IncludeTTFTInSpeed bool
 }
 
 type requestMetricsRecorder struct {
@@ -165,7 +169,15 @@ func RecordLLMRequest(data *RequestMetricsData) {
 		firstTokenLatency := data.FirstTokenTime.Sub(data.StartTime).Seconds()
 		llmFirstTokenLatencySeconds.WithLabelValues(data.RequestedModel, channelID, data.ChannelName).Observe(firstTokenLatency)
 
-		generationDuration := data.EndTime.Sub(data.StartTime).Seconds()
+		// Calculate generation duration based on config
+		var generationDuration float64
+		if data.IncludeTTFTInSpeed {
+			// Include TTFT: use full end-to-end latency
+			generationDuration = duration
+		} else {
+			// Exclude TTFT: use (end - first token) time
+			generationDuration = data.EndTime.Sub(*data.FirstTokenTime).Seconds()
+		}
 		llmGenerationDurationSeconds.WithLabelValues(data.RequestedModel, channelID, data.ChannelName, streamStr).Observe(generationDuration)
 
 		if generationDuration > 0 && data.CompletionTokens > 0 {

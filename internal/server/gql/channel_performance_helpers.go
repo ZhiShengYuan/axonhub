@@ -218,6 +218,7 @@ func (r *queryResolver) buildChannelPerformanceStatsFromExecutions(ctx context.C
 		queryMode = qb.ThroughputModeMaxID
 	}
 
+	settings := r.systemService.GeneralSettingsOrDefault(ctx)
 	query := qb.BuildDailyPerformanceStatsQuery(
 		dialectName,
 		r.systemService.TimeLocation(ctx).String(),
@@ -225,6 +226,7 @@ func (r *queryResolver) buildChannelPerformanceStatsFromExecutions(ctx context.C
 		qb.DailyThroughputByChannel,
 		placeholder,
 		queryMode,
+		settings.IncludeTTFTInSpeed,
 	)
 
 	if err := ctx.Err(); err != nil {

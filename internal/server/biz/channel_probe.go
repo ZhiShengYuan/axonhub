@@ -181,7 +181,12 @@ func (svc *ChannelProbeService) computeAllChannelProbeStats(
 		queryMode = qb.ThroughputModeMaxID
 	}
 
-	query := qb.BuildProbeStatsQuery(useDollarPlaceholders, channelIDFilter, queryMode)
+	includeTTFTInSpeed := false
+	if svc.SystemService != nil {
+		settings := svc.SystemService.GeneralSettingsOrDefault(ctx)
+		includeTTFTInSpeed = settings.IncludeTTFTInSpeed
+	}
+	query := qb.BuildProbeStatsQuery(useDollarPlaceholders, channelIDFilter, queryMode, includeTTFTInSpeed)
 
 	rows, err := sqlDB.DB().QueryContext(ctx, query, args...)
 	if err != nil {

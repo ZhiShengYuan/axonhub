@@ -45,6 +45,12 @@ type Dashboard struct {
 	// are considered valid. After this, synchronous refresh is required.
 	// Default: 24 hours
 	AllTimeTokenStatsHardTTL time.Duration `conf:"all_time_token_stats_hard_ttl" yaml:"all_time_token_stats_hard_ttl" json:"all_time_token_stats_hard_ttl"`
+
+	// IncludeTTFTInSpeed controls whether TTFT (Time to First Token) is included in
+	// TOK/s (tokens per second) calculations. When false (default), streaming TOK/s
+	// subtracts TTFT from total latency to get generation-only time. When true,
+	// streaming TOK/s uses full end-to-end latency (including TTFT) as the denominator.
+	IncludeTTFTInSpeed bool `conf:"include_ttft_in_speed" yaml:"include_ttft_in_speed" json:"include_ttft_in_speed"`
 }
 
 type CORS struct {

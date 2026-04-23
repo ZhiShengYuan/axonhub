@@ -97,9 +97,13 @@ const (
 
 // SystemGeneralSettings represents general system configuration settings.
 type SystemGeneralSettings struct {
-	// CurrencyCode is the code used for currency display (e.g., USD, RMB).
 	CurrencyCode string `json:"currency_code"`
 	Timezone     string `json:"timezone"`
+	// IncludeTTFTInSpeed controls whether TTFT (Time to First Token) is included in
+	// TOK/s (tokens per second) calculations. When false (default), streaming TOK/s
+	// subtracts TTFT from total latency to get generation-only time. When true,
+	// streaming TOK/s uses full end-to-end latency (including TTFT) as the denominator.
+	IncludeTTFTInSpeed bool `json:"include_ttft_in_speed"`
 }
 
 // VideoStorageSettings represents system settings for persisting generated videos.
@@ -1070,6 +1074,22 @@ func (s *SystemService) GeneralSettings(ctx context.Context) (*SystemGeneralSett
 	}
 
 	return &settings, nil
+}
+
+// GeneralSettingsOrDefault retrieves the general settings or returns the default if not available.
+func (s *SystemService) GeneralSettingsOrDefault(ctx context.Context) *SystemGeneralSettings {
+	settings, err := s.GeneralSettings(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return lo.ToPtr(defaultGeneralSettings)
+		}
+
+		log.Warn(ctx, "failed to get general settings", log.Cause(err))
+
+		return lo.ToPtr(defaultGeneralSettings)
+	}
+
+	return settings
 }
 
 // SetGeneralSettings sets the general settings configuration.

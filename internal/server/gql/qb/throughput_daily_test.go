@@ -306,7 +306,8 @@ func TestBuildDailyThroughputQuery_TokPerSecondCalculation(t *testing.T) {
 				"completion_tokens + COALESCE(ul.completion_reasoning_tokens, 0) + COALESCE(ul.completion_audio_tokens, 0)",
 				"* 1000.0",
 				"metrics_first_token_latency_ms",
-				"metrics_latency_ms - se.metrics_first_token_latency_ms",
+				// Streaming throughput now uses full latency (including TTFT) as denominator
+				"ELSE se.metrics_latency_ms END",
 			},
 		},
 		{
@@ -402,6 +403,8 @@ func TestBuildDailyThroughputQuery_StreamingLatencyHandling(t *testing.T) {
 	assert.Contains(t, got, "se.stream", "should reference stream flag")
 	assert.Contains(t, got, "CASE WHEN se.stream AND se.metrics_first_token_latency_ms IS NOT NULL", "should handle streaming latency")
 
+	// Streaming throughput uses full latency as denominator (including TTFT),
+	// but still checks for invalid TTFT values that exceed total latency
 	streamingLogic := strings.Count(got, "metrics_first_token_latency_ms >= se.metrics_latency_ms")
 	assert.GreaterOrEqual(t, streamingLogic, 2, "should check for invalid first token latency")
 }

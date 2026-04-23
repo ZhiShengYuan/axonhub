@@ -135,10 +135,9 @@ func TestTPSCalculation_RetryScenario(t *testing.T) {
 	totalTokens := ul.CompletionTokens + ul.CompletionReasoningTokens + ul.CompletionAudioTokens
 	assert.Equal(t, int64(100), totalTokens)
 
-	// TPS calculation: 100 tokens / ((3000 - 500) / 1000) = 100 / 2.5 = 40 tokens/s
-	effectiveLatency := *execs[0].MetricsLatencyMs - *execs[0].MetricsFirstTokenLatencyMs
-	tps := float64(totalTokens) / (float64(effectiveLatency) / 1000.0)
-	assert.InDelta(t, 40.0, tps, 0.01)
+	// TPS calculation: 100 tokens / (3000 / 1000) = 100 / 3 = 33.33... tokens/s
+	tps := float64(totalTokens) / (float64(*execs[0].MetricsLatencyMs) / 1000.0)
+	assert.InDelta(t, 33.33, tps, 0.01)
 }
 
 // TestTPSCalculation_AllTokenTypes tests that all token types are included
@@ -213,10 +212,9 @@ func TestTPSCalculation_AllTokenTypes(t *testing.T) {
 	totalTokens := ul.CompletionTokens + ul.CompletionReasoningTokens + ul.CompletionAudioTokens
 	assert.Equal(t, int64(175), totalTokens)
 
-	// TPS: 175 tokens / ((2000 - 400) / 1000) = 175 / 1.6 = 109.375 tokens/s
-	effectiveLatency := int64(2000) - int64(400)
-	tps := float64(totalTokens) / (float64(effectiveLatency) / 1000.0)
-	assert.InDelta(t, 109.375, tps, 0.01)
+	// TPS: 175 tokens / (2000 / 1000) = 175 / 2 = 87.5 tokens/s
+	tps := float64(totalTokens) / (float64(2000) / 1000.0)
+	assert.InDelta(t, 87.5, tps, 0.01)
 }
 
 // TestTPSCalculation_StreamingVsNonStreaming tests streaming vs non-streaming formulas
@@ -317,18 +315,18 @@ func TestTPSCalculation_StreamingVsNonStreaming(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	// Calculate combined TPS
-	// Streaming effective latency: 3000 - 500 = 2500
-	// Non-streaming effective latency: 2000
-	// Total effective latency: 2500 + 2000 = 4500
+	// Calculate combined TPS using full latency (including TTFT) for streaming:
+	// Full latency for streaming = 3000ms (includes TTFT)
+	// Full latency for non-streaming = 2000ms
+	// Total latency: 3000 + 2000 = 5000ms
 	// Total tokens: 100 + 100 = 200
-	// TPS: 200 tokens / (4500 / 1000) = 200 / 4.5 = 44.44 tokens/s
-	streamingLatency := int64(3000) - int64(500)
+	// TPS: 200 tokens / (5000 / 1000) = 200 / 5 = 40 tokens/s
+	streamingLatency := int64(3000)
 	nonStreamingLatency := int64(2000)
-	totalEffectiveLatency := streamingLatency + nonStreamingLatency
+	totalLatency := streamingLatency + nonStreamingLatency
 	totalTokens := int64(200)
-	tps := float64(totalTokens) / (float64(totalEffectiveLatency) / 1000.0)
-	assert.InDelta(t, 44.44, tps, 0.01)
+	tps := float64(totalTokens) / (float64(totalLatency) / 1000.0)
+	assert.InDelta(t, 40.0, tps, 0.01)
 }
 
 // TestTPSCalculation_EdgeCases tests edge cases
@@ -392,8 +390,8 @@ func TestTPSCalculation_EdgeCases(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	// TPS: 50 tokens / ((1000 - 0) / 1000) = 50 tokens/s
-	effectiveLatency := int64(1000) - int64(0)
+	// TPS: 50 tokens / (1000 / 1000) = 50 tokens/s (full latency, TTFT=0 so same as before)
+	effectiveLatency := int64(1000)
 	tps := float64(50) / (float64(effectiveLatency) / 1000.0)
 	assert.InDelta(t, 50.0, tps, 0.01)
 }
@@ -519,9 +517,9 @@ func TestComputeAllChannelProbeStats_Integration(t *testing.T) {
 	assert.Equal(t, 1, channelStats.total)
 	assert.Equal(t, 1, channelStats.success)
 
-	// Verify TPS calculation: 175 tokens / ((3000 - 500) / 1000) = 175 / 2.5 = 70 tokens/s
+	// Verify TPS calculation: 175 tokens / (3000 / 1000) = 175 / 3 = 58.33... tokens/s
 	require.NotNil(t, channelStats.avgTokensPerSecond, "avgTokensPerSecond should not be nil")
-	assert.InDelta(t, 70.0, *channelStats.avgTokensPerSecond, 0.01)
+	assert.InDelta(t, 58.33, *channelStats.avgTokensPerSecond, 0.01)
 
 	// Verify TTFT calculation: 500ms / 1 request = 500ms
 	require.NotNil(t, channelStats.avgTimeToFirstTokenMs, "avgTimeToFirstTokenMs should not be nil")
@@ -623,10 +621,10 @@ func TestComputeAllChannelProbeStats_MultipleRequests(t *testing.T) {
 	assert.Equal(t, 3, channelStats.success)
 
 	// Total tokens: 175 + 100 + 200 = 475
-	// Effective latency: (3000-500) + (2000-400) + 4000 = 2500 + 1600 + 4000 = 8100
-	// TPS: 475 / 8.1 = 58.64 tokens/s
+	// Total latency: 3000 + 2000 + 4000 = 9000
+	// TPS: 475 / 9 = 52.78 tokens/s
 	require.NotNil(t, channelStats.avgTokensPerSecond)
-	assert.InDelta(t, 58.64, *channelStats.avgTokensPerSecond, 0.1)
+	assert.InDelta(t, 52.78, *channelStats.avgTokensPerSecond, 0.1)
 
 	// TTFT: (500 + 400 + 0) / 2 = 450ms (only streaming requests count: 2 out of 3 requests are streaming)
 	require.NotNil(t, channelStats.avgTimeToFirstTokenMs)
@@ -789,23 +787,23 @@ func TestComputeAllChannelProbeStats_MultipleChannels(t *testing.T) {
 	require.NotNil(t, stats)
 	assert.Len(t, stats, 2, "should have stats for both channels")
 
-	// Verify channel 1 stats: 100 tokens / ((2000-400)/1000) = 100 / 1.6 = 62.5 TPS
+	// Verify channel 1 stats: 100 tokens / (2000/1000) = 100 / 2 = 50 TPS
 	require.Contains(t, stats, ch1.ID)
 	stats1 := stats[ch1.ID]
 	assert.Equal(t, 1, stats1.total)
 	assert.Equal(t, 1, stats1.success)
 	require.NotNil(t, stats1.avgTokensPerSecond)
-	assert.InDelta(t, 62.5, *stats1.avgTokensPerSecond, 0.01)
+	assert.InDelta(t, 50.0, *stats1.avgTokensPerSecond, 0.01)
 	require.NotNil(t, stats1.avgTimeToFirstTokenMs)
 	assert.InDelta(t, 400.0, *stats1.avgTimeToFirstTokenMs, 0.01)
 
-	// Verify channel 2 stats: 150 tokens / ((3000-600)/1000) = 150 / 2.4 = 62.5 TPS
+	// Verify channel 2 stats: 150 tokens / (3000/1000) = 150 / 3 = 50 TPS
 	require.Contains(t, stats, ch2.ID)
 	stats2 := stats[ch2.ID]
 	assert.Equal(t, 1, stats2.total)
 	assert.Equal(t, 1, stats2.success)
 	require.NotNil(t, stats2.avgTokensPerSecond)
-	assert.InDelta(t, 62.5, *stats2.avgTokensPerSecond, 0.01)
+	assert.InDelta(t, 50.0, *stats2.avgTokensPerSecond, 0.01)
 	require.NotNil(t, stats2.avgTimeToFirstTokenMs)
 	assert.InDelta(t, 600.0, *stats2.avgTimeToFirstTokenMs, 0.01)
 }
@@ -904,7 +902,7 @@ func TestComputeAllChannelProbeStats_FailedExecutions(t *testing.T) {
 	assert.Equal(t, 1, channelStats.total)
 	assert.Equal(t, 1, channelStats.success)
 
-	// TPS: 100 tokens / ((3000-500)/1000) = 100 / 2.5 = 40 tokens/s
+	// TPS: 100 tokens / (3000/1000) = 100 / 3 = 33.33... tokens/s
 	require.NotNil(t, channelStats.avgTokensPerSecond)
-	assert.InDelta(t, 40.0, *channelStats.avgTokensPerSecond, 0.01)
+	assert.InDelta(t, 33.33, *channelStats.avgTokensPerSecond, 0.01)
 }

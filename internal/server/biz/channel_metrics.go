@@ -526,10 +526,9 @@ func (m *PerformanceRecord) Calculate() (firstTokenLatencyMs int64, requestLaten
 
 	if m.CompletionTokens > 0 {
 		effectiveLatencyMs := requestLatencyMs
-		if m.Stream && m.FirstTokenTime != nil {
-			effectiveLatencyMs = requestLatencyMs - firstTokenLatencyMs
-			effectiveLatencyMs = ClampLatency(effectiveLatencyMs)
-		}
+		// Note: For streaming, we now use full request latency (including TTFT) as the denominator
+		// because some channels emit fake loss/empty requests. TTFT is still tracked separately
+		// in StreamingFirstTokenLatencyEWMA for latency-aware routing.
 
 		tokensPerSecond = float64(m.CompletionTokens) / (float64(effectiveLatencyMs) / 1000.0)
 	}

@@ -131,12 +131,14 @@ func buildDailyThroughputQuery(dialect string, timezone string, offsetSeconds in
 
 // throughputCoreSQL returns the shared CASE expression body for throughput calculations.
 // This extracts the common latency calculation logic used by throughputCalculationSQL.
+// Note: Streaming throughput now uses full metrics_latency_ms (including TTFT) as the denominator,
+// matching non-streaming behavior. TTFT is tracked separately via metrics_first_token_latency_ms.
 func throughputCoreSQL(seTable string) string {
 	return fmt.Sprintf(`CASE WHEN %s.stream AND %s.metrics_first_token_latency_ms IS NOT NULL
                  THEN CASE WHEN %s.metrics_first_token_latency_ms >= %s.metrics_latency_ms
                       THEN 0
-                      ELSE %s.metrics_latency_ms - %s.metrics_first_token_latency_ms END
-                 ELSE %s.metrics_latency_ms END`, seTable, seTable, seTable, seTable, seTable, seTable, seTable)
+                      ELSE %s.metrics_latency_ms END
+                 ELSE %s.metrics_latency_ms END`, seTable, seTable, seTable, seTable, seTable, seTable)
 }
 
 // throughputCalculationSQL returns the SQL for calculating throughput from tokens and latency.

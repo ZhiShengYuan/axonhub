@@ -44,6 +44,29 @@ func TestAggregatedMetrics_Clone(t *testing.T) {
 	require.Equal(t, metrics.NonStreamingSampleCount, cloned.NonStreamingSampleCount)
 }
 
+func TestPerformanceRecord_Calculate_StreamingFullLatency(t *testing.T) {
+	// Test that streaming TPS uses full request latency (including TTFT) as denominator.
+	// This is intentional because some channels emit fake loss/empty requests,
+	// so we measure actual end-to-end throughput rather than inter-token throughput.
+	now := time.Now()
+	firstTokenTime := now.Add(500 * time.Millisecond) // 500ms TTFT
+	perf := &PerformanceRecord{
+		ChannelID:      1,
+		StartTime:      now,
+		EndTime:        now.Add(2000 * time.Millisecond), // 2000ms total latency
+		Stream:         true,
+		FirstTokenTime: &firstTokenTime,
+		CompletionTokens: 100,
+	}
+
+	firstTokenLatencyMs, requestLatencyMs, tokensPerSecond := perf.Calculate()
+
+	// TPS should be 100 tokens / 2.0 seconds = 50 TPS (full latency, not latency-TTFT)
+	require.Equal(t, int64(500), firstTokenLatencyMs, "TTFT should be 500ms")
+	require.Equal(t, int64(2000), requestLatencyMs, "total latency should be 2000ms")
+	require.Equal(t, float64(50), tokensPerSecond, "TPS = 100 tokens / 2.0s = 50 (not 66.67)")
+}
+
 func TestChannelMetrics_RecordSuccess(t *testing.T) {
 	cm := newChannelMetrics(1)
 	now := time.Now()

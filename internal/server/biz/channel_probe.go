@@ -211,8 +211,8 @@ func (svc *ChannelProbeService) computeAllChannelProbeStats(
 			success: r.SuccessCount,
 		}
 
-		// Calculate avg tokens per second using effective latency
-		// For streaming: tokens / ((latency - first_token_latency) / 1000)
+		// Calculate avg tokens per second using total latency (includes TTFT for streaming)
+		// For streaming: tokens / (latency / 1000)
 		// For non-streaming: tokens / (latency / 1000)
 		if r.TotalTokens > 0 && r.EffectiveLatencyMs > 0 {
 			tps := float64(r.TotalTokens) / (float64(r.EffectiveLatencyMs) / 1000.0)

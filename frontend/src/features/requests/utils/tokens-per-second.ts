@@ -5,10 +5,9 @@ import { Request } from '../data/schema';
 
 export type DisplayMode = 'latency' | 'tokensPerSecond';
 
-// Minimum latency value (in milliseconds) used for tokens/second calculations
-// when a cache hit occurs (effective latency is zero or negative).
-// This ensures we display a reasonable tokens/second value instead of infinity.
-const MINIMUM_LATENCY_MS_FOR_CACHE_HITS = 10;
+// Minimum latency value (in milliseconds) used as a general safety floor for tokens/second
+// calculations. Prevents unreasonably high tok/s values when latency is near zero.
+const MINIMUM_LATENCY_MS = 10;
 
 const VALID_DISPLAY_MODES: DisplayMode[] = ['latency', 'tokensPerSecond'];
 
@@ -36,20 +35,9 @@ export function calculateTokensPerSecond(request: Request): string {
     return '-';
   }
 
-  // Calculate effective latency:
-  // For streaming: subtract TTFT (time to first token) to get actual generation time
-  // For non-streaming: use full latency
   let effectiveLatencyMs = request.metricsLatencyMs;
-  if (request.stream && request.metricsFirstTokenLatencyMs != null) {
-    if (request.metricsFirstTokenLatencyMs <= request.metricsLatencyMs) {
-      effectiveLatencyMs = request.metricsLatencyMs - request.metricsFirstTokenLatencyMs;
-    }
-  }
-
-  // For cache hits (TTFT == Latency), effective latency becomes 0 or negative.
-  // Use a fixed minimum to avoid division by zero and show reasonable tokens/second.
-  if (effectiveLatencyMs <= 0) {
-    effectiveLatencyMs = MINIMUM_LATENCY_MS_FOR_CACHE_HITS;
+  if (effectiveLatencyMs < MINIMUM_LATENCY_MS) {
+    effectiveLatencyMs = MINIMUM_LATENCY_MS;
   }
 
   const latencySeconds = effectiveLatencyMs / 1000;

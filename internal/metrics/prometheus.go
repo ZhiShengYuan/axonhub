@@ -48,7 +48,7 @@ var (
 	llmGenerationDurationSeconds = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "axonhub_llm_generation_duration_seconds",
-			Help:    "Token generation duration in seconds (EndTime - FirstTokenTime for streaming, EndTime - StartTime for non-streaming)",
+			Help:    "Request processing duration in seconds (EndTime - StartTime for both streaming and non-streaming)",
 			Buckets: []float64{0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120},
 		},
 		[]string{"requested_model", "channel_id", "channel_name", "stream"},
@@ -57,7 +57,7 @@ var (
 	llmOutputTPS = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "axonhub_llm_output_tps",
-			Help:    "Output tokens per second (completion_tokens / generation_duration)",
+			Help:    "Output tokens per second (completion_tokens / request_duration)",
 			Buckets: []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000},
 		},
 		[]string{"requested_model", "channel_id", "channel_name"},
@@ -165,7 +165,7 @@ func RecordLLMRequest(data *RequestMetricsData) {
 		firstTokenLatency := data.FirstTokenTime.Sub(data.StartTime).Seconds()
 		llmFirstTokenLatencySeconds.WithLabelValues(data.RequestedModel, channelID, data.ChannelName).Observe(firstTokenLatency)
 
-		generationDuration := data.EndTime.Sub(*data.FirstTokenTime).Seconds()
+		generationDuration := data.EndTime.Sub(data.StartTime).Seconds()
 		llmGenerationDurationSeconds.WithLabelValues(data.RequestedModel, channelID, data.ChannelName, streamStr).Observe(generationDuration)
 
 		if generationDuration > 0 && data.CompletionTokens > 0 {

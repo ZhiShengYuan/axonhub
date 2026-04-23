@@ -30,7 +30,7 @@ builds:
       - arm64
 
 release:
-  draft: true
+  draft: false
   extra_files:
     - glob: ./config.schema.json
 

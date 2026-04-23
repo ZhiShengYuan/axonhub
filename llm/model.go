@@ -772,6 +772,17 @@ type ModalityTokenCount struct {
 
 // IncompleteStreamError indicates that a stream ended without a proper terminal event
 // (e.g., [DONE], message_stop, response.completed) and without a valid complete response.
+//
+// Retry Semantics:
+//   - Same-channel retry: FORBIDDEN. IncompleteStreamError indicates a fundamental problem
+//     with the stream that retrying on the same channel will not resolve.
+//   - Cross-candidate failover: ALLOWED. The pipeline's Retryable interface (HasMoreChannels/NextChannel)
+//     is checked AFTER ChannelRetryable.CanRetry returns false, so failover to the next candidate
+//     remains possible until the first downstream SSE commit occurs.
+//
+// This error is returned when an upstream stream terminates without a terminal event and
+// without producing a valid aggregated response. The ChunksReceived field indicates how many
+// chunks were received before the stream ended, which can aid debugging.
 type IncompleteStreamError struct {
 	ChunksReceived int
 }

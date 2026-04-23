@@ -142,6 +142,14 @@ type ChannelSettings struct {
 	// When set to true/false, it overrides the global setting.
 	PassThroughUserAgent *bool `json:"passThroughUserAgent,omitempty"`
 
+	// UserAgent sets a custom User-Agent header value for requests to this channel.
+	// Precedence (highest to lowest):
+	//   1. Custom User-Agent value (if set and non-empty)
+	//   2. Pass-through of inbound User-Agent header (if PassThroughUserAgent is true)
+	//   3. AxonHub/provider default User-Agent (default behavior)
+	// Empty string is treated as not configured (nil).
+	UserAgent *string `json:"userAgent,omitempty"`
+
 	// RateLimit configures the upstream rate limit for the channel.
 	// When configured, the load balancer will skip channels that have exceeded their rate limits.
 	RateLimit *ChannelRateLimit `json:"rateLimit,omitempty"`
@@ -364,4 +372,30 @@ func SerializeOverrideOperations(ops []OverrideOperation) (string, error) {
 	}
 
 	return string(data), nil
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for ChannelSettings.
+// Empty string User-Agent values are normalized to nil to maintain consistent
+// null/empty-string semantics (both mean "not configured").
+func (cs *ChannelSettings) UnmarshalJSON(data []byte) error {
+	type alias ChannelSettings // avoid recursion
+
+	aux := struct {
+		*alias
+		UserAgent *string `json:"userAgent"`
+	}{
+		alias: (*alias)(cs),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	// Normalize empty string to nil
+	if aux.UserAgent != nil && *aux.UserAgent == "" {
+		aux.UserAgent = nil
+	}
+
+	cs.UserAgent = aux.UserAgent
+	return nil
 }

@@ -187,6 +187,7 @@ export const channelSettingsSchema = z.object({
   proxy: proxyConfigSchema.optional().nullable(),
   transformOptions: transformOptionsSchema.optional(),
   passThroughUserAgent: z.boolean().optional().nullable(),
+  userAgent: z.string().optional().nullable(),
   rateLimit: channelRateLimitSchema.optional().nullable(),
   mcp: mcpSettingsSchema.optional().nullable(),
 });

@@ -291,6 +291,9 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
   const [passThroughUserAgent, setPassThroughUserAgent] = useState<boolean | null>(() => {
     return initialRow?.settings?.passThroughUserAgent ?? null;
   });
+  const [userAgent, setUserAgent] = useState<string>(() => {
+    return initialRow?.settings?.userAgent ?? '';
+  });
 
   // Memoized proxy config for OAuth exchange
   const proxyConfig: ProxyConfig | undefined = useMemo(() => {
@@ -925,6 +928,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
 
         const nextSettings = mergeChannelSettingsForUpdate(values.settings, {
           passThroughUserAgent,
+          userAgent: userAgent || null,
           ...(mcpSettings && { mcp: mcpSettings }),
         });
 
@@ -984,6 +988,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
         const nextSettings = mergeChannelSettingsForUpdate(values.settings, {
           proxy: proxyConfig,
           passThroughUserAgent,
+          userAgent: userAgent || null,
           ...(mcpSettings && { mcp: mcpSettings }),
         });
 
@@ -1400,6 +1405,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
             setProxyUsername(initialRow?.settings?.proxy?.username || '');
             setProxyPassword(initialRow?.settings?.proxy?.password || '');
             setPassThroughUserAgent(initialRow?.settings?.passThroughUserAgent ?? null);
+            setUserAgent(initialRow?.settings?.userAgent ?? '');
             setMcpUpstreamAPIKey(initialRow?.credentials?.mcp?.upstreamAPIKey || '');
             setMcpUpstreamBearerToken(initialRow?.credentials?.mcp?.upstreamBearerToken || '');
             setMcpNamespaceMappings(initialRow?.settings?.mcp?.namespaceMappings || []);
@@ -1777,6 +1783,23 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
                               <SelectItem value='disabled'>{t('channels.dialogs.userAgentPassThrough.disabled')}</SelectItem>
                             </SelectContent>
                           </Select>
+                        </div>
+                      </FormItem>
+
+                      <FormItem className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                        <FormLabel className='pt-2 font-medium md:col-span-2'>
+                          {t('channels.dialogs.userAgent.label')}
+                        </FormLabel>
+                        <div className='space-y-1 md:col-span-6'>
+                          <Input
+                            placeholder={t('channels.dialogs.userAgent.placeholder')}
+                            value={userAgent}
+                            onChange={(e) => setUserAgent(e.target.value)}
+                          />
+                          <FormMessage />
+                          <p className='text-xs text-muted-foreground'>
+                            {t('channels.dialogs.userAgent.description')}
+                          </p>
                         </div>
                       </FormItem>
 

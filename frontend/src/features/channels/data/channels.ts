@@ -102,6 +102,7 @@ const CREATE_CHANNEL_MUTATION = `
             replaceDeveloperRoleWithSystem
           }
           passThroughUserAgent
+          userAgent
         }
       orderingWeight
       remark
@@ -149,8 +150,10 @@ const BULK_CREATE_CHANNELS_MUTATION = `
             replaceDeveloperRoleWithSystem
           }
           passThroughUserAgent
+          userAgent
         }
       orderingWeight
+      errorMessage
       remark
     }
   }
@@ -196,6 +199,7 @@ const UPDATE_CHANNEL_MUTATION = `
             replaceDeveloperRoleWithSystem
           }
           passThroughUserAgent
+          userAgent
         }
       orderingWeight
       errorMessage
@@ -314,6 +318,7 @@ const BULK_IMPORT_CHANNELS_MUTATION = `
             replaceDeveloperRoleWithSystem
           }
           passThroughUserAgent
+          userAgent
         }
       }
     }
@@ -486,6 +491,7 @@ const BULK_UPDATE_CHANNEL_ORDERING_MUTATION = `
             replaceDeveloperRoleWithSystem
           }
           passThroughUserAgent
+          userAgent
         }
       }
     }
@@ -604,6 +610,7 @@ const QUERY_CHANNELS_QUERY = `
               replaceDeveloperRoleWithSystem
             }
             passThroughUserAgent
+            userAgent
             rateLimit {
               rpm
               tpm

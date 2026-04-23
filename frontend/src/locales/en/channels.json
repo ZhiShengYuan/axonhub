@@ -617,5 +617,8 @@
   "channels.dialogs.userAgentPassThrough.label": "User-Agent Pass-Through",
   "channels.dialogs.userAgentPassThrough.inherit": "Inherit from system",
   "channels.dialogs.userAgentPassThrough.enabled": "Enabled",
-  "channels.dialogs.userAgentPassThrough.disabled": "Disabled"
+  "channels.dialogs.userAgentPassThrough.disabled": "Disabled",
+  "channels.dialogs.userAgent.label": "Custom User-Agent",
+  "channels.dialogs.userAgent.placeholder": "e.g., MyApp/1.0",
+  "channels.dialogs.userAgent.description": "Explicit override takes precedence over pass-through. Leave empty to use pass-through or system default."
 }

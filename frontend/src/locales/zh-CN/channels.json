@@ -617,5 +617,8 @@
   "channels.dialogs.userAgentPassThrough.label": "User-Agent 穿透",
   "channels.dialogs.userAgentPassThrough.inherit": "继承系统设置",
   "channels.dialogs.userAgentPassThrough.enabled": "已启用",
-  "channels.dialogs.userAgentPassThrough.disabled": "已禁用"
+  "channels.dialogs.userAgentPassThrough.disabled": "已禁用",
+  "channels.dialogs.userAgent.label": "自定义 User-Agent",
+  "channels.dialogs.userAgent.placeholder": "例如 MyApp/1.0",
+  "channels.dialogs.userAgent.description": "显式设置优先于穿透选项。留空则使用穿透设置或系统默认值。"
 }

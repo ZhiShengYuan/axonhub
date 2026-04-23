@@ -56,13 +56,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Check if VERSION files have changes
-          if git diff --cached --quiet VERSION internal/build/VERSION; then
-            echo "No changes to VERSION files"
+          # Check if internal/build/VERSION has changes
+          if git diff --cached --quiet internal/build/VERSION; then
+            echo "No changes to internal/build/VERSION"
           else
             # Commit VERSION files with [skip ci] to avoid triggering other workflows
             git commit -m "chore: update VERSION to ${GITHUB_REF#refs/tags/} [skip ci]"
-            git push origin HEAD:${{ github.event.repository.default_branch }}
+            git push origin HEAD:release/v0.9.x
           fi
 
       - name: Run GoReleaser

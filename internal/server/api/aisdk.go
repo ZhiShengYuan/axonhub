@@ -56,7 +56,7 @@ func (handlers *AiSDKHandlers) ChatCompletion(c *gin.Context) {
 }
 
 // WriteJSONStream writes stream events as plain JSON text stream.
-func WriteJSONStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) {
+func WriteJSONStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool) {
 	ctx := c.Request.Context()
 	clientDisconnected := false
 
@@ -80,7 +80,7 @@ func WriteJSONStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEve
 
 			log.Warn(ctx, "Client disconnected, stop streaming")
 
-			return
+			return ctx.Err(), true
 		default:
 			if stream.Next() {
 				cur := stream.Current()
@@ -91,9 +91,10 @@ func WriteJSONStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEve
 				if err := stream.Err(); err != nil {
 					log.Error(ctx, "Error in stream", log.Cause(err))
 					_, _ = c.Writer.Write([]byte("3:" + `"` + err.Error() + `"` + "\n"))
+					return err, true
 				}
 
-				return
+				return nil, true
 			}
 		}
 	}

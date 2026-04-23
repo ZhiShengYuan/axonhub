@@ -67,7 +67,7 @@ func (handlers *GeminiHandlers) GenerateContent(c *gin.Context) {
 	}
 }
 
-func WriteGeminiStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) {
+func WriteGeminiStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent]) (error, bool) {
 	ctx := c.Request.Context()
 	clientDisconnected := false
 
@@ -90,7 +90,7 @@ func WriteGeminiStream(c *gin.Context, stream streams.Stream[*httpclient.StreamE
 
 			log.Warn(ctx, "Client disconnected, stop streaming")
 
-			return
+			return ctx.Err(), true
 		default:
 			if stream.Next() {
 				cur := stream.Current()
@@ -107,11 +107,13 @@ func WriteGeminiStream(c *gin.Context, stream streams.Stream[*httpclient.StreamE
 			} else {
 				if err := stream.Err(); err != nil {
 					log.Error(ctx, "Error in stream", log.Cause(err))
+					_, _ = c.Writer.Write([]byte("]"))
+					return err, true
 				}
 
 				_, _ = c.Writer.Write([]byte("]"))
 
-				return
+				return nil, true
 			}
 		}
 	}

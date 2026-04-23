@@ -86,7 +86,7 @@ func RequestDetailSSEContract() RequestDetailPreviewContract {
 func NewRequestPreviewHandlers(params RequestPreviewHandlersParams) *RequestPreviewHandlers {
 	return &RequestPreviewHandlers{
 		RequestService: params.RequestService,
-		StreamWriter:   WriteSSEStream,
+		StreamWriter:   WriteSSEStreamDirect,
 	}
 }
 

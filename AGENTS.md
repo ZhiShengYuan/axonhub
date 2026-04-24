@@ -80,3 +80,32 @@ All detailed rules are in `.agent/rules/`:
 | [e2e.md](.agent/rules/e2e.md) | `frontend/tests/**/*.ts` | E2E testing rules |
 | [docs.md](.agent/rules/docs.md) | `docs/**/*.md` | Documentation rules |
 | [workflows/add-channel.md](.agent/rules/workflows/add-channel.md) | Manual | Workflow for adding a new channel |
+
+## Commands
+
+```bash
+# Development
+pnpm dev              # Frontend dev server (port 5173)
+air                   # Backend auto-reload (managed, do not restart)
+
+# Testing
+cd llm && go test ./...              # llm module tests
+go test ./...                        # root module tests
+make test-backend-all                # both modules
+make e2e-test                        # Playwright E2E
+
+# Code generation
+make generate                        # Ent + gqlgen
+make generate-openapi                # OpenAPI GraphQL codegen
+
+# Build
+make build-frontend                  # Vite build → embed in Go binary
+make build-backend                   # Go build with -tags=nomsgpack
+```
+
+## Notes
+
+- Go module replacements: `looplj/gqlgen`, `looplj/go-sse`, `looplj/sse` (see go.mod)
+- Frontend dev proxy forwards `/admin` and `/v1` to `localhost:8090`
+- Multi-arch Docker builds use native arm64 runner (`ubuntu-24.04-arm`)
+- `internal/build/VERSION` is embedded via `//go:embed`; GoReleaser overrides via ldflags

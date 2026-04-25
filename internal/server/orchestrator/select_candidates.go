@@ -99,6 +99,43 @@ func selectCandidates(inbound *PersistentInboundTransformer) pipeline.Middleware
 		// Store candidates directly (no need to extract channels)
 		inbound.state.ChannelModelsCandidates = candidates
 
-		return llmRequest, nil
+	// Select hedge candidates if hedge is enabled and request is streaming
+	hedgeCandidates := selectHedgeCandidatesIfEnabled(ctx, inbound, llmRequest)
+	inbound.state.HedgeCandidates = hedgeCandidates
+
+	// Set hedge protocol if hedge candidates are selected
+	if hedgeCandidates != nil {
+		inbound.state.HedgeProtocol = GetHedgeProtocolFromLlmRequest(llmRequest)
+	}
+
+	return llmRequest, nil
 	})
+}
+
+// selectHedgeCandidatesIfEnabled checks hedge policy and selects hedge candidates if applicable.
+// Returns nil if hedge is disabled, request is non-streaming, or fewer than 2 distinct candidates.
+func selectHedgeCandidatesIfEnabled(ctx context.Context, inbound *PersistentInboundTransformer, llmRequest *llm.Request) *HedgeCandidateSet {
+	// Check if hedge is enabled
+	if inbound.state.HedgePolicy == nil || !inbound.state.HedgePolicy.Enabled {
+		return nil
+	}
+
+	// Check if request is streaming
+	isStreaming := llmRequest.Stream != nil && *llmRequest.Stream
+	if !isStreaming {
+		return nil
+	}
+
+	// Select hedge candidates using load balancer
+	if inbound.state.LoadBalancer == nil {
+		return nil
+	}
+
+	return SelectHedgeCandidates(
+		ctx,
+		inbound.state.ChannelModelsCandidates,
+		inbound.state.LoadBalancer,
+		llmRequest.Model,
+		isStreaming,
+	)
 }

@@ -562,6 +562,97 @@ func matchChannelTagsFilter(allowedTags []string, matchMode objects.ChannelTagsM
 	return objects.MatchChannelTags(allowedTags, matchMode, channelTags)
 }
 
+// HedgeCandidateSet holds the top-2 candidates for hedge dispatch along with remaining fallback candidates.
+// Primary and Secondary are distinct channel-model pairs for parallel hedge execution.
+// Remaining candidates are preserved in load-balanced order for fallback if hedge fails.
+type HedgeCandidateSet struct {
+	Primary   *ChannelModelsCandidate
+	Secondary *ChannelModelsCandidate
+	Remaining []*ChannelModelsCandidate
+}
+
+// SelectHedgeCandidates extracts top-2 distinct candidates for hedge dispatch.
+// Returns nil when hedge is disabled, request is non-streaming, or fewer than 2 distinct candidates exist.
+// Probing mode forces immediate top-2 selection at T=0 without waiting for observation window.
+// The remaining candidates are preserved in order for fallback routing.
+func SelectHedgeCandidates(
+	ctx context.Context,
+	candidates []*ChannelModelsCandidate,
+	loadBalancer *LoadBalancer,
+	model string,
+	stream bool,
+) *HedgeCandidateSet {
+	if loadBalancer == nil {
+		return nil
+	}
+
+	if len(candidates) < 2 {
+		return nil
+	}
+
+	// Use SortWithRest to get both top-k and remaining candidates
+	// This is more efficient than calling Sort twice
+	_, rest := loadBalancer.SortWithRest(ctx, candidates, model, stream)
+	if len(rest) < 2 {
+		// Need at least 2 candidates in rest for primary + secondary
+		// But rest might not contain all candidates if topK > 1
+		// Let's check the full sorted list
+		sorted := loadBalancer.Sort(ctx, candidates, model, stream)
+		return selectHedgeFromSorted(ctx, sorted)
+	}
+
+	// Find top-2 distinct candidates from rest
+	return selectHedgeFromSorted(ctx, rest)
+}
+
+func selectHedgeFromSorted(ctx context.Context, sorted []*ChannelModelsCandidate) *HedgeCandidateSet {
+	if len(sorted) < 2 {
+		return nil
+	}
+
+	// Find top-2 distinct candidates (different channel IDs)
+	var primary, secondary *ChannelModelsCandidate
+	var remaining []*ChannelModelsCandidate
+
+	seenChannels := make(map[int]bool)
+
+	for _, candidate := range sorted {
+		if candidate == nil || candidate.Channel == nil {
+			continue
+		}
+
+		channelID := candidate.Channel.ID
+
+		if primary == nil {
+			primary = candidate
+			seenChannels[channelID] = true
+		} else if secondary == nil {
+			// Ensure secondary is from a different channel than primary
+			if !seenChannels[channelID] {
+				secondary = candidate
+				seenChannels[channelID] = true
+			} else {
+				// Same channel as primary - add to remaining
+				remaining = append(remaining, candidate)
+			}
+		} else {
+			// Already have both primary and secondary
+			remaining = append(remaining, candidate)
+		}
+	}
+
+	// Need at least 2 distinct channels for hedge
+	if primary == nil || secondary == nil {
+		return nil
+	}
+
+	return &HedgeCandidateSet{
+		Primary:   primary,
+		Secondary: secondary,
+		Remaining: remaining,
+	}
+}
+
 // SpecifiedChannelSelector allows selecting specific channels (including disabled ones) for testing.
 type SpecifiedChannelSelector struct {
 	ChannelService *biz.ChannelService

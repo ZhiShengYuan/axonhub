@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"math"
+	"sync"
 
 	"github.com/looplj/axonhub/internal/log"
 	"github.com/looplj/axonhub/internal/server/biz"
@@ -18,20 +19,23 @@ const (
 
 	streamingFirstTokenWeight = 0.7
 	streamingThroughputWeight = 0.3
+
+	hedgeTPSEWMAAlpha = 0.3
 )
 
-// LatencyAwareStrategy prioritizes channels using request-type-specific UX signals.
-// Streaming requests are scored by first-token latency plus output throughput.
-// Non-streaming requests are scored by end-to-end latency.
 type LatencyAwareStrategy struct {
 	metricsProvider ChannelMetricsProvider
 	maxScore        float64
+
+	mu                  sync.RWMutex
+	streamingTPSOverrides map[int]float64
 }
 
 func NewLatencyAwareStrategy(metricsProvider ChannelMetricsProvider) *LatencyAwareStrategy {
 	return &LatencyAwareStrategy{
-		metricsProvider: metricsProvider,
-		maxScore:        defaultLatencyMaxScore,
+		metricsProvider:       metricsProvider,
+		maxScore:              defaultLatencyMaxScore,
+		streamingTPSOverrides: make(map[int]float64),
 	}
 }
 
@@ -44,6 +48,8 @@ func (s *LatencyAwareStrategy) Score(ctx context.Context, channel *biz.Channel) 
 	if err != nil {
 		return s.maxScore / 2
 	}
+
+	metrics = s.applyStreamingTPSOverride(channel.ID, metrics)
 
 	score, _, hasSignal := s.calculateScore(ctx, metrics)
 	if !hasSignal {
@@ -73,6 +79,8 @@ func (s *LatencyAwareStrategy) ScoreWithDebug(ctx context.Context, channel *biz.
 		}
 	}
 
+	metrics = s.applyStreamingTPSOverride(channel.ID, metrics)
+
 	score, details, hasSignal := s.calculateScore(ctx, metrics)
 	if !hasSignal {
 		score = s.maxScore / 2
@@ -93,6 +101,38 @@ func (s *LatencyAwareStrategy) ScoreWithDebug(ctx context.Context, channel *biz.
 		Score:        score,
 		Details:      details,
 	}
+}
+
+func (s *LatencyAwareStrategy) UpdateStreamingTPS(ctx context.Context, channelID int, tps float64) {
+	if tps <= 0 {
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	existingTPS, exists := s.streamingTPSOverrides[channelID]
+	if !exists {
+		s.streamingTPSOverrides[channelID] = tps
+		return
+	}
+
+	newTPS := hedgeTPSEWMAAlpha*tps + (1-hedgeTPSEWMAAlpha)*existingTPS
+	s.streamingTPSOverrides[channelID] = newTPS
+}
+
+func (s *LatencyAwareStrategy) applyStreamingTPSOverride(channelID int, metrics *biz.AggregatedMetrics) *biz.AggregatedMetrics {
+	s.mu.RLock()
+	overrideTPS, exists := s.streamingTPSOverrides[channelID]
+	s.mu.RUnlock()
+
+	if !exists || overrideTPS <= 0 {
+		return metrics
+	}
+
+	cloned := metrics.Clone()
+	cloned.StreamingTokensPerSecondEWMA = overrideTPS
+	return cloned
 }
 
 func (s *LatencyAwareStrategy) calculateScore(ctx context.Context, metrics *biz.AggregatedMetrics) (float64, map[string]any, bool) {

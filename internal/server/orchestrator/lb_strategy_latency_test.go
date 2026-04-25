@@ -136,3 +136,62 @@ func TestLatencyAwareStrategy_ScoreWithDebug_MetricsError(t *testing.T) {
 	assert.Equal(t, defaultLatencyMaxScore/2, score)
 	assert.Contains(t, details.Details, "error")
 }
+
+func TestLatencyAwareStrategy_UpdateStreamingTPS_FirstUpdate(t *testing.T) {
+	ctx := context.Background()
+	mockProvider := &mockMetricsProvider{
+		metrics: make(map[int]*biz.AggregatedMetrics),
+	}
+	strategy := NewLatencyAwareStrategy(mockProvider)
+
+	strategy.UpdateStreamingTPS(ctx, 1, 50.0)
+
+	channel := &biz.Channel{Channel: &ent.Channel{ID: 1, Name: "ch1"}}
+	score := strategy.Score(ctx, channel)
+
+	assert.Greater(t, score, 0.0)
+}
+
+func TestLatencyAwareStrategy_UpdateStreamingTPS_EWMABlending(t *testing.T) {
+	ctx := context.Background()
+	mockProvider := &mockMetricsProvider{
+		metrics: map[int]*biz.AggregatedMetrics{
+			1: {
+				StreamingFirstTokenLatencyEWMA: 300,
+				StreamingTokensPerSecondEWMA:   40,
+				StreamingSampleCount:           10,
+			},
+		},
+	}
+	strategy := NewLatencyAwareStrategy(mockProvider)
+
+	strategy.UpdateStreamingTPS(ctx, 1, 60.0)
+
+	channel := &biz.Channel{Channel: &ent.Channel{ID: 1, Name: "ch1"}}
+	score := strategy.Score(ctx, channel)
+
+	assert.Greater(t, score, 0.0)
+}
+
+func TestLatencyAwareStrategy_HedgeTPSOverridesHistorical(t *testing.T) {
+	ctx := contextWithRequestStream(context.Background(), true)
+	mockProvider := &mockMetricsProvider{
+		metrics: map[int]*biz.AggregatedMetrics{
+			1: {
+				StreamingFirstTokenLatencyEWMA: 300,
+				StreamingTokensPerSecondEWMA:   20,
+				StreamingSampleCount:           10,
+			},
+		},
+	}
+	strategy := NewLatencyAwareStrategy(mockProvider)
+
+	channel := &biz.Channel{Channel: &ent.Channel{ID: 1, Name: "ch1"}}
+	scoreBeforeUpdate := strategy.Score(ctx, channel)
+
+	strategy.UpdateStreamingTPS(ctx, 1, 80.0)
+
+	scoreAfterUpdate := strategy.Score(ctx, channel)
+
+	assert.Greater(t, scoreAfterUpdate, scoreBeforeUpdate)
+}

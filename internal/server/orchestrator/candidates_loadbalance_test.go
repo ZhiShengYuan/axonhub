@@ -562,3 +562,252 @@ func TestLoadBalancedSelector_Select_SingleChannel(t *testing.T) {
 	require.Len(t, result, 1)
 	require.Equal(t, ch.ID, result[0].Channel.ID)
 }
+
+func TestSelectHedgeCandidates_Top2Ordering(t *testing.T) {
+	ctx, client := setupTest(t)
+
+	ch1, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("High Weight Channel").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-1"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(100).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch2, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Medium Weight Channel").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-2"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(50).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch3, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Low Weight Channel").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-3"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(25).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	channelService := newTestChannelServiceForChannels(client)
+	systemService := newTestSystemService(client)
+
+	strategies := []LoadBalanceStrategy{
+		NewWeightRoundRobinStrategy(channelService),
+	}
+	loadBalancer := NewLoadBalancer(systemService, nil, strategies...)
+
+	candidates := []*ChannelModelsCandidate{
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch2}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch3}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+	}
+
+	hedgeSet := SelectHedgeCandidates(ctx, candidates, loadBalancer, "gpt-4", true)
+	require.NotNil(t, hedgeSet, "Should get hedge candidates with 3 channels")
+	require.NotNil(t, hedgeSet.Primary, "Primary should not be nil")
+	require.NotNil(t, hedgeSet.Secondary, "Secondary should not be nil")
+
+	primaryID := hedgeSet.Primary.Channel.ID
+	secondaryID := hedgeSet.Secondary.Channel.ID
+
+	require.NotEqual(t, primaryID, secondaryID, "Primary and secondary should be different channels")
+
+	t.Logf("Primary: %s (id=%d), Secondary: %s (id=%d)",
+		hedgeSet.Primary.Channel.Name, primaryID,
+		hedgeSet.Secondary.Channel.Name, secondaryID)
+}
+
+func TestSelectHedgeCandidates_DuplicateElimination(t *testing.T) {
+	ctx, client := setupTest(t)
+
+	ch1, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 1").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-1"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(100).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch2, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 2").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-2"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(50).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	channelService := newTestChannelServiceForChannels(client)
+	systemService := newTestSystemService(client)
+
+	strategies := []LoadBalanceStrategy{
+		NewWeightRoundRobinStrategy(channelService),
+	}
+	loadBalancer := NewLoadBalancer(systemService, nil, strategies...)
+
+	candidates := []*ChannelModelsCandidate{
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch2}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+	}
+
+	hedgeSet := SelectHedgeCandidates(ctx, candidates, loadBalancer, "gpt-4", true)
+	require.NotNil(t, hedgeSet, "Should get hedge candidates")
+	require.NotNil(t, hedgeSet.Primary, "Primary should not be nil")
+	require.NotNil(t, hedgeSet.Secondary, "Secondary should not be nil")
+	require.NotEqual(t, hedgeSet.Primary.Channel.ID, hedgeSet.Secondary.Channel.ID,
+		"Primary and secondary should be from different channels")
+
+	require.Equal(t, ch1.ID, hedgeSet.Primary.Channel.ID, "Primary should be higher-ranked channel")
+	require.Equal(t, ch2.ID, hedgeSet.Secondary.Channel.ID, "Secondary should be different channel")
+}
+
+func TestSelectHedgeCandidates_SingleCandidatePool(t *testing.T) {
+	ctx, client := setupTest(t)
+
+	ch1, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 1").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-1"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(100).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	systemService := newTestSystemService(client)
+	loadBalancer := NewLoadBalancer(systemService, nil)
+
+	candidates := []*ChannelModelsCandidate{
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+	}
+
+	hedgeSet := SelectHedgeCandidates(ctx, candidates, loadBalancer, "gpt-4", true)
+	require.Nil(t, hedgeSet, "Should return nil with single candidate")
+}
+
+func TestSelectHedgeCandidates_RemainingPreservesOrder(t *testing.T) {
+	ctx, client := setupTest(t)
+
+	ch1, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 1").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-1"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(100).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch2, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 2").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-2"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(50).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch3, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 3").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-3"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(25).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	channelService := newTestChannelServiceForChannels(client)
+	systemService := newTestSystemService(client)
+
+	strategies := []LoadBalanceStrategy{
+		NewWeightRoundRobinStrategy(channelService),
+	}
+	loadBalancer := NewLoadBalancer(systemService, nil, strategies...)
+
+	candidates := []*ChannelModelsCandidate{
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch2}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch3}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+	}
+
+	hedgeSet := SelectHedgeCandidates(ctx, candidates, loadBalancer, "gpt-4", true)
+	require.NotNil(t, hedgeSet, "Should get hedge candidates with 3 channels")
+	require.NotNil(t, hedgeSet.Primary)
+	require.NotNil(t, hedgeSet.Secondary)
+	require.NotNil(t, hedgeSet.Remaining, "Remaining should not be nil")
+
+	require.Len(t, hedgeSet.Remaining, 1, "Should have exactly 1 remaining candidate")
+	require.Equal(t, ch3.ID, hedgeSet.Remaining[0].Channel.ID, "Remaining should be the lowest-ranked channel")
+}
+
+func TestSelectHedgeCandidates_NilLoadBalancer(t *testing.T) {
+	ctx, client := setupTest(t)
+
+	ch1, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 1").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-1"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(100).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	ch2, err := client.Channel.Create().
+		SetType(channel.TypeOpenai).
+		SetName("Channel 2").
+		SetBaseURL("https://api.openai.com/v1").
+		SetCredentials(objects.ChannelCredentials{APIKey: "test-key-2"}).
+		SetSupportedModels([]string{"gpt-4"}).
+		SetDefaultTestModel("gpt-4").
+		SetOrderingWeight(50).
+		SetStatus(channel.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	candidates := []*ChannelModelsCandidate{
+		{Channel: &biz.Channel{Channel: ch1}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+		{Channel: &biz.Channel{Channel: ch2}, Priority: 0, Models: []biz.ChannelModelEntry{{RequestModel: "gpt-4", ActualModel: "gpt-4"}}},
+	}
+
+	hedgeSet := SelectHedgeCandidates(ctx, candidates, nil, "gpt-4", true)
+	require.Nil(t, hedgeSet, "Nil load balancer should return nil")
+}
+
+func boolPtr(b bool) *bool {
+	return &b
+}

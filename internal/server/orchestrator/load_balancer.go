@@ -215,6 +215,85 @@ func (lb *LoadBalancer) sortProduction(ctx context.Context, candidates []*Channe
 	return result
 }
 
+// SortWithRest sorts candidates and returns both top-k and remaining candidates.
+// The returned remaining slice contains candidates NOT in the topK, in their original relative order.
+// This is useful for hedge dispatch where we need top-2 (primary/secondary) plus remaining for fallback.
+func (lb *LoadBalancer) SortWithRest(ctx context.Context, candidates []*ChannelModelsCandidate, model string, stream bool) (topK []*ChannelModelsCandidate, rest []*ChannelModelsCandidate) {
+	if len(candidates) <= 1 {
+		return candidates, nil
+	}
+
+	ctx = contextWithRequestedModel(ctx, model)
+	ctx = contextWithRequestStream(ctx, stream)
+
+	topKInt := lb.calculateTopK(ctx, candidates)
+
+	// Score all candidates
+	scored := lb.scoreCandidates(ctx, candidates)
+
+	// Partial sort to get top K
+	partial.SortFunc(scored, topKInt, func(a, b candidateScore) int {
+		if a.score > b.score {
+			return -1
+		} else if a.score < b.score {
+			return 1
+		}
+
+		if a.candidate != nil && b.candidate != nil && a.candidate.Channel != nil && b.candidate.Channel != nil {
+			if a.candidate.Channel.OrderingWeight > b.candidate.Channel.OrderingWeight {
+				return -1
+			} else if a.candidate.Channel.OrderingWeight < b.candidate.Channel.OrderingWeight {
+				return 1
+			}
+		}
+
+		return 0
+	})
+
+	// Extract top k
+	topKResult := make([]*ChannelModelsCandidate, 0, topKInt)
+	topKSet := make(map[*ChannelModelsCandidate]bool)
+
+	for i := 0; i < topKInt && i < len(scored); i++ {
+		if scored[i].candidate != nil {
+			topKResult = append(topKResult, scored[i].candidate)
+			topKSet[scored[i].candidate] = true
+		}
+	}
+
+	// Extract remaining in their relative order from original scored slice
+	restResult := make([]*ChannelModelsCandidate, 0)
+	for i := range scored {
+		if scored[i].candidate != nil && !topKSet[scored[i].candidate] {
+			restResult = append(restResult, scored[i].candidate)
+		}
+	}
+
+	// Increment selection count for top candidate
+	if len(topKResult) > 0 && topKResult[0] != nil && topKResult[0].Channel != nil && lb.selectionTracker != nil {
+		lb.selectionTracker.IncrementChannelSelection(topKResult[0].Channel.ID)
+	}
+
+	return topKResult, restResult
+}
+
+// scoreCandidates calculates scores for all candidates using configured strategies.
+func (lb *LoadBalancer) scoreCandidates(ctx context.Context, candidates []*ChannelModelsCandidate) []candidateScore {
+	scored := make([]candidateScore, len(candidates))
+	for i, c := range candidates {
+		totalScore := 0.0
+		for _, strategy := range lb.strategies {
+			totalScore += strategy.Score(ctx, c.Channel)
+		}
+
+		scored[i] = candidateScore{
+			candidate: c,
+			score:     totalScore,
+		}
+	}
+	return scored
+}
+
 // sortWithDebug is the debug path with detailed logging.
 // Uses partial sorting to efficiently get only the top k candidates.
 func (lb *LoadBalancer) sortWithDebug(ctx context.Context, candidates []*ChannelModelsCandidate, model string, topK int) []*ChannelModelsCandidate {

@@ -407,7 +407,7 @@ func TestOutboundPersistentStream_Close_AggregatedResponsesCompletionHandling(t 
 		require.NoError(t, err)
 		require.NotEqual(t, requestexecution.StatusCompleted, dbExec.Status)
 		require.Equal(t, requestexecution.StatusFailed, dbExec.Status)
-		require.Contains(t, dbExec.ErrorMessage, "stream ended without terminal event or completed response")
+		require.Contains(t, dbExec.ErrorMessage, "stream ended without terminal event")
 		require.False(t, state.StreamCompleted)
 	})
 

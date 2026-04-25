@@ -461,6 +461,11 @@ func (p *PersistentOutboundTransformer) GetCurrentModelID() string {
 	return p.state.CurrentCandidate.Models[p.state.CurrentModelIndex].ActualModel
 }
 
+// isStreamingRequest returns true if the current request is a streaming request.
+func (p *PersistentOutboundTransformer) isStreamingRequest() bool {
+	return p.state.LlmRequest != nil && p.state.LlmRequest.Stream != nil && *p.state.LlmRequest.Stream
+}
+
 // GetRequestedModel returns the originally requested model ID.
 func (p *PersistentOutboundTransformer) GetRequestedModel() string {
 	return p.state.OriginalModel
@@ -469,6 +474,23 @@ func (p *PersistentOutboundTransformer) GetRequestedModel() string {
 // HasMoreChannels returns true if there are more candidates available for retry.
 // It implements the pipeline.Retryable interface.
 func (p *PersistentOutboundTransformer) HasMoreChannels() bool {
+	// GUARDRAIL: No cross-channel fallback after client-visible data released.
+	// For streaming requests, once data is released to the client (ReleaseEmitted),
+	// we cannot switch channels because the client has already seen partial data.
+	// Attempting to retry on a different channel would result in data corruption
+	// or inconsistency for the client.
+	if p.isStreamingRequest() && !p.state.CanRetryStream() {
+		channelID := 0
+		if p.state.CurrentCandidate != nil && p.state.CurrentCandidate.Channel != nil {
+			channelID = p.state.CurrentCandidate.Channel.ID
+		}
+		log.Debug(context.Background(), "retry blocked: client-visible data already released",
+			log.Int("channel_id", channelID),
+			log.String("release_state", p.state.GetStreamReleaseState().String()),
+		)
+		return false
+	}
+
 	return p.state.CurrentCandidateIndex+1 < len(p.state.ChannelModelsCandidates)
 }
 
@@ -506,6 +528,18 @@ func (p *PersistentOutboundTransformer) NextChannel(ctx context.Context) error {
 // pipeline will ensure the maxSameChannelRetries is not exceeded.
 func (p *PersistentOutboundTransformer) CanRetry(err error) bool {
 	if p.state.CurrentCandidate == nil {
+		return false
+	}
+
+	// GUARDRAIL: No same-channel retry after client-visible data released.
+	// For streaming requests, same-channel retry (e.g., switching to backup model)
+	// is also forbidden after ReleaseEmitted because the client has already seen
+	// partial data. Retrying would corrupt the client's view of the stream.
+	if p.isStreamingRequest() && !p.state.CanRetryStream() {
+		log.Debug(context.Background(), "retry blocked: client-visible data already released",
+			log.Int("channel_id", p.state.CurrentCandidate.Channel.ID),
+			log.String("release_state", p.state.GetStreamReleaseState().String()),
+		)
 		return false
 	}
 

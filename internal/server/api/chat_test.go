@@ -284,3 +284,103 @@ func TestFormatStreamError_LlmResponseError_PassesCodeAndRequestID(t *testing.T)
 	assert.Equal(t, "1311", errorField["code"])
 	assert.Equal(t, "202603112254417d15bd26697445b0", parsed["request_id"])
 }
+
+func TestWriteSSEStreamWithErrorFormatter_OnFirstRelease_CalledExactlyOnce(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	events := []*httpclient.StreamEvent{
+		{Type: "", Data: []byte(`{"id":"1","choices":[{"delta":{"content":"Hi"}}]}`)},
+		{Type: "", Data: []byte(`{"id":"2","choices":[{"delta":{"content":" there"}}]}`)},
+		{Type: "", Data: []byte(`{"id":"3","choices":[{"delta":{"content":"!"}}]}`)},
+	}
+	stream := streams.SliceStream(events)
+
+	callCount := 0
+	onFirstRelease := func() {
+		callCount++
+	}
+
+	setReleaseMarkCallback(c, onFirstRelease)
+	WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+
+	assert.Equal(t, 1, callCount, "onFirstRelease should be called exactly once")
+}
+
+func TestWriteSSEStreamWithErrorFormatter_OnFirstRelease_NotCalledIfNoEvents(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	streamErr := errors.New("stream error")
+	stream := &errorAfterStream{
+		items: []*httpclient.StreamEvent{},
+		err:   streamErr,
+	}
+
+	callCount := 0
+	onFirstRelease := func() {
+		callCount++
+	}
+
+	setReleaseMarkCallback(c, onFirstRelease)
+	WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+
+	assert.Equal(t, 0, callCount, "onFirstRelease should not be called when no events are written")
+}
+
+func TestWriteSSEStreamWithErrorFormatter_OnFirstRelease_NotCalledIfErrorBeforeData(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	streamErr := errors.New("upstream connection reset")
+	stream := &errorAfterStream{
+		items: []*httpclient.StreamEvent{},
+		err:   streamErr,
+	}
+
+	callCount := 0
+	onFirstRelease := func() {
+		callCount++
+	}
+
+	setReleaseMarkCallback(c, onFirstRelease)
+	WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+
+	assert.Equal(t, 0, callCount, "onFirstRelease should not be called when stream errors before first event")
+}
+
+func TestWriteSSEStreamWithErrorFormatter_OnFirstRelease_NilCallbackIsSafe(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	events := []*httpclient.StreamEvent{
+		{Type: "", Data: []byte(`{"id":"1"}`)},
+	}
+	stream := streams.SliceStream(events)
+
+	setReleaseMarkCallback(c, nil)
+	WriteSSEStreamWithErrorFormatter(c, stream, FormatStreamError)
+
+	body := w.Body.String()
+	assert.Contains(t, body, `{"id":"1"}`)
+}
+
+func TestWriteSSEStream_OnFirstRelease_NilCallback(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	events := []*httpclient.StreamEvent{
+		{Type: "", Data: []byte(`{"id":"1"}`)},
+	}
+	stream := streams.SliceStream(events)
+
+	WriteSSEStream(c, stream)
+
+	body := w.Body.String()
+	assert.Contains(t, body, `{"id":"1"}`)
+}

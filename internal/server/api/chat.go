@@ -17,18 +17,35 @@ import (
 	"github.com/looplj/axonhub/llm/streams"
 )
 
+type contextKey string
+
+const releaseMarkCallbackKey contextKey = "releaseMarkCallback"
+
+func setReleaseMarkCallback(c *gin.Context, callback func()) {
+	c.Set(string(releaseMarkCallbackKey), callback)
+}
+
+func getReleaseMarkCallback(c *gin.Context) func() {
+	if val, exists := c.Get(string(releaseMarkCallbackKey)); exists {
+		if callback, ok := val.(func()); ok {
+			return callback
+		}
+	}
+	return nil
+}
+
 // StreamWriter is a function type for writing stream events to the response.
 type StreamWriter func(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent])
 
 type ChatCompletionHandlers struct {
 	ChatCompletionOrchestrator *orchestrator.ChatCompletionOrchestrator
-	StreamWriter               StreamWriter
+	StreamWriter              StreamWriter
 }
 
 func NewChatCompletionHandlers(orchestrator *orchestrator.ChatCompletionOrchestrator) *ChatCompletionHandlers {
 	return &ChatCompletionHandlers{
 		ChatCompletionOrchestrator: orchestrator,
-		StreamWriter:               WriteSSEStream,
+		StreamWriter:              WriteSSEStream,
 	}
 }
 
@@ -36,7 +53,7 @@ func NewChatCompletionHandlers(orchestrator *orchestrator.ChatCompletionOrchestr
 func (handlers *ChatCompletionHandlers) WithStreamWriter(writer StreamWriter) *ChatCompletionHandlers {
 	return &ChatCompletionHandlers{
 		ChatCompletionOrchestrator: handlers.ChatCompletionOrchestrator,
-		StreamWriter:               writer,
+		StreamWriter:              writer,
 	}
 }
 
@@ -94,11 +111,20 @@ func (handlers *ChatCompletionHandlers) ChatCompletion(c *gin.Context) {
 
 		c.Header("Access-Control-Allow-Origin", "*")
 
+		// Check if this is a hedge-eligible streaming request
+		isHedgeEligible := result.HedgeProtocol != orchestrator.HedgeProtocolNone
+
+		if isHedgeEligible {
+			log.Debug(ctx, "Handling hedge-eligible streaming request",
+				log.String("protocol", result.HedgeProtocol.String()))
+		}
+
 		streamWriter := handlers.StreamWriter
 		if streamWriter == nil {
 			streamWriter = WriteSSEStream
 		}
 
+		setReleaseMarkCallback(c, result.ReleaseMarkCallback)
 		streamWriter(c, result.ChatCompletionStream)
 	}
 }
@@ -112,7 +138,13 @@ func WriteSSEStream(c *gin.Context, stream streams.Stream[*httpclient.StreamEven
 }
 
 // WriteSSEStreamWithErrorFormatter writes stream events as SSE with a custom error formatter.
-func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*httpclient.StreamEvent], formatErr StreamErrorFormatter) {
+// The onFirstRelease callback (if set via setReleaseMarkCallback) is called exactly once
+// on the first SSE event write/flush, useful for marking when client-visible data has been released.
+func WriteSSEStreamWithErrorFormatter(
+	c *gin.Context,
+	stream streams.Stream[*httpclient.StreamEvent],
+	formatErr StreamErrorFormatter,
+) {
 	ctx := c.Request.Context()
 	clientDisconnected := false
 
@@ -132,6 +164,9 @@ func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*htt
 	c.Header("Connection", "keep-alive")
 	c.Writer.Flush()
 
+	firstEventWritten := false
+	onFirstRelease := getReleaseMarkCallback(c)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -146,6 +181,12 @@ func WriteSSEStreamWithErrorFormatter(c *gin.Context, stream streams.Stream[*htt
 				c.SSEvent(cur.Type, cur.Data)
 				log.Debug(ctx, "write stream event", log.Any("event", cur))
 				c.Writer.Flush()
+
+				// Call onFirstRelease exactly once on first SSE event write
+				if !firstEventWritten && onFirstRelease != nil {
+					firstEventWritten = true
+					onFirstRelease()
+				}
 			} else {
 				if stream.Err() != nil {
 					log.Error(ctx, "Error in stream", log.Cause(stream.Err()))

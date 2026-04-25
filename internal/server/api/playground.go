@@ -306,6 +306,7 @@ func (handlers *PlaygroundHandlers) ChatCompletion(c *gin.Context) {
 		c.Header("X-Vercel-AI-Data-Stream", "v1")
 		c.Status(http.StatusOK)
 
+		setReleaseMarkCallback(c, result.ReleaseMarkCallback)
 		WriteSSEStream(c, result.ChatCompletionStream)
 	}
 }

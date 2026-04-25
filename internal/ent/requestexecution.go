@@ -62,6 +62,18 @@ type RequestExecution struct {
 	MetricsReasoningDurationMs *int64 `json:"metrics_reasoning_duration_ms,omitempty"`
 	// Request headers
 	RequestHeaders objects.JSONRawMessage `json:"request_headers,omitempty"`
+	// Whether this execution was part of a hedge race
+	HedgeRole requestexecution.HedgeRole `json:"hedge_role,omitempty"`
+	// Outcome for this execution in a hedge race
+	HedgeOutcome requestexecution.HedgeOutcome `json:"hedge_outcome,omitempty"`
+	// Links primary and secondary executions of same hedge race
+	HedgePairID string `json:"hedge_pair_id,omitempty"`
+	// TPS during observation window
+	MetricsObservationWindowTps *float64 `json:"metrics_observation_window_tps,omitempty"`
+	// Unix ms when hedge race started
+	MetricsHedgeStartTime *int64 `json:"metrics_hedge_start_time,omitempty"`
+	// Shadow completion reason: completed, deadline_exceeded, upstream_error, server_shutdown, client_disconnected
+	MetricsShadowCompletionReason string `json:"metrics_shadow_completion_reason,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RequestExecutionQuery when eager-loading is set.
 	Edges        RequestExecutionEdges `json:"edges"`
@@ -125,9 +137,11 @@ func (*RequestExecution) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case requestexecution.FieldStream:
 			values[i] = new(sql.NullBool)
-		case requestexecution.FieldID, requestexecution.FieldProjectID, requestexecution.FieldRequestID, requestexecution.FieldChannelID, requestexecution.FieldDataStorageID, requestexecution.FieldResponseStatusCode, requestexecution.FieldMetricsLatencyMs, requestexecution.FieldMetricsFirstTokenLatencyMs, requestexecution.FieldMetricsReasoningDurationMs:
+		case requestexecution.FieldMetricsObservationWindowTps:
+			values[i] = new(sql.NullFloat64)
+		case requestexecution.FieldID, requestexecution.FieldProjectID, requestexecution.FieldRequestID, requestexecution.FieldChannelID, requestexecution.FieldDataStorageID, requestexecution.FieldResponseStatusCode, requestexecution.FieldMetricsLatencyMs, requestexecution.FieldMetricsFirstTokenLatencyMs, requestexecution.FieldMetricsReasoningDurationMs, requestexecution.FieldMetricsHedgeStartTime:
 			values[i] = new(sql.NullInt64)
-		case requestexecution.FieldExternalID, requestexecution.FieldModelID, requestexecution.FieldFormat, requestexecution.FieldErrorMessage, requestexecution.FieldStatus:
+		case requestexecution.FieldExternalID, requestexecution.FieldModelID, requestexecution.FieldFormat, requestexecution.FieldErrorMessage, requestexecution.FieldStatus, requestexecution.FieldHedgeRole, requestexecution.FieldHedgeOutcome, requestexecution.FieldHedgePairID, requestexecution.FieldMetricsShadowCompletionReason:
 			values[i] = new(sql.NullString)
 		case requestexecution.FieldCreatedAt, requestexecution.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -284,6 +298,44 @@ func (_m *RequestExecution) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field request_headers: %w", err)
 				}
 			}
+		case requestexecution.FieldHedgeRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hedge_role", values[i])
+			} else if value.Valid {
+				_m.HedgeRole = requestexecution.HedgeRole(value.String)
+			}
+		case requestexecution.FieldHedgeOutcome:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hedge_outcome", values[i])
+			} else if value.Valid {
+				_m.HedgeOutcome = requestexecution.HedgeOutcome(value.String)
+			}
+		case requestexecution.FieldHedgePairID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hedge_pair_id", values[i])
+			} else if value.Valid {
+				_m.HedgePairID = value.String
+			}
+		case requestexecution.FieldMetricsObservationWindowTps:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field metrics_observation_window_tps", values[i])
+			} else if value.Valid {
+				_m.MetricsObservationWindowTps = new(float64)
+				*_m.MetricsObservationWindowTps = value.Float64
+			}
+		case requestexecution.FieldMetricsHedgeStartTime:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field metrics_hedge_start_time", values[i])
+			} else if value.Valid {
+				_m.MetricsHedgeStartTime = new(int64)
+				*_m.MetricsHedgeStartTime = value.Int64
+			}
+		case requestexecution.FieldMetricsShadowCompletionReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field metrics_shadow_completion_reason", values[i])
+			} else if value.Valid {
+				_m.MetricsShadowCompletionReason = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -402,6 +454,28 @@ func (_m *RequestExecution) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("request_headers=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RequestHeaders))
+	builder.WriteString(", ")
+	builder.WriteString("hedge_role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HedgeRole))
+	builder.WriteString(", ")
+	builder.WriteString("hedge_outcome=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HedgeOutcome))
+	builder.WriteString(", ")
+	builder.WriteString("hedge_pair_id=")
+	builder.WriteString(_m.HedgePairID)
+	builder.WriteString(", ")
+	if v := _m.MetricsObservationWindowTps; v != nil {
+		builder.WriteString("metrics_observation_window_tps=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.MetricsHedgeStartTime; v != nil {
+		builder.WriteString("metrics_hedge_start_time=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("metrics_shadow_completion_reason=")
+	builder.WriteString(_m.MetricsShadowCompletionReason)
 	builder.WriteByte(')')
 	return builder.String()
 }

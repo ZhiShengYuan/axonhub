@@ -1037,3 +1037,97 @@ func TestSystemService_UserAgentPassThrough_WithCache(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, uaPassThrough3)
 }
+
+func TestSystemService_HedgePolicyOrDefault_ReturnsPRDDefaults(t *testing.T) {
+	cacheConfig := xcache.Config{Mode: xcache.ModeMemory}
+
+	service, client := setupTestSystemService(t, cacheConfig)
+	defer client.Close()
+
+	ctx := context.Background()
+	ctx = ent.NewContext(ctx, client)
+	ctx = authz.WithTestBypass(ctx)
+
+	// When no hedge policy is set, HedgePolicyOrDefault should return PRD defaults
+	policy := service.HedgePolicyOrDefault(ctx)
+
+	require.NotNil(t, policy)
+	require.False(t, policy.Enabled, "Enabled should default to false")
+	require.Equal(t, 12, policy.HedgeTriggerSeconds, "HedgeTriggerSeconds should default to 12")
+	require.Equal(t, 3, policy.ObservationWindowSeconds, "ObservationWindowSeconds should default to 3")
+	require.Equal(t, 5.0, policy.ProbingPercentage, "ProbingPercentage should default to 5.0")
+	require.Equal(t, 30, policy.ShadowHardDeadlineMinutes, "ShadowHardDeadlineMinutes should default to 30")
+	require.False(t, policy.FullShadowTextEnabled, "FullShadowTextEnabled should default to false")
+	require.Equal(t, 0, policy.ShadowTextRetentionDays, "ShadowTextRetentionDays should default to 0")
+}
+
+func TestSystemService_HedgePolicy_JSONRoundTrip(t *testing.T) {
+	cacheConfig := xcache.Config{Mode: xcache.ModeMemory}
+
+	service, client := setupTestSystemService(t, cacheConfig)
+	defer client.Close()
+
+	ctx := context.Background()
+	ctx = ent.NewContext(ctx, client)
+	ctx = authz.WithTestBypass(ctx)
+
+	// Set a custom hedge policy
+	customPolicy := &HedgePolicy{
+		Enabled:                   true,
+		HedgeTriggerSeconds:       20,
+		ObservationWindowSeconds:  5,
+		ProbingPercentage:        10.0,
+		ShadowHardDeadlineMinutes: 60,
+		FullShadowTextEnabled:    true,
+		ShadowTextRetentionDays:  30,
+	}
+
+	err := service.SetHedgePolicy(ctx, customPolicy)
+	require.NoError(t, err)
+
+	// Retrieve and verify
+	retrievedPolicy, err := service.HedgePolicy(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, retrievedPolicy)
+
+	require.Equal(t, customPolicy.Enabled, retrievedPolicy.Enabled)
+	require.Equal(t, customPolicy.HedgeTriggerSeconds, retrievedPolicy.HedgeTriggerSeconds)
+	require.Equal(t, customPolicy.ObservationWindowSeconds, retrievedPolicy.ObservationWindowSeconds)
+	require.Equal(t, customPolicy.ProbingPercentage, retrievedPolicy.ProbingPercentage)
+	require.Equal(t, customPolicy.ShadowHardDeadlineMinutes, retrievedPolicy.ShadowHardDeadlineMinutes)
+	require.Equal(t, customPolicy.FullShadowTextEnabled, retrievedPolicy.FullShadowTextEnabled)
+	require.Equal(t, customPolicy.ShadowTextRetentionDays, retrievedPolicy.ShadowTextRetentionDays)
+}
+
+func TestSystemService_HedgePolicy_OrDefault_WithExistingPolicy(t *testing.T) {
+	cacheConfig := xcache.Config{Mode: xcache.ModeMemory}
+
+	service, client := setupTestSystemService(t, cacheConfig)
+	defer client.Close()
+
+	ctx := context.Background()
+	ctx = ent.NewContext(ctx, client)
+	ctx = authz.WithTestBypass(ctx)
+
+	// Set a partial policy with only some fields
+	partialPolicy := &HedgePolicy{
+		Enabled: true,
+		// Other fields are zero-valued
+	}
+
+	err := service.SetHedgePolicy(ctx, partialPolicy)
+	require.NoError(t, err)
+
+	// HedgePolicyOrDefault should return the stored policy with normalized defaults for zero values
+	policy := service.HedgePolicyOrDefault(ctx)
+
+	require.NotNil(t, policy)
+	require.True(t, policy.Enabled)
+	// Zero values should be normalized to defaults
+	require.Equal(t, 12, policy.HedgeTriggerSeconds)
+	require.Equal(t, 3, policy.ObservationWindowSeconds)
+	require.Equal(t, 5.0, policy.ProbingPercentage)
+	require.Equal(t, 30, policy.ShadowHardDeadlineMinutes)
+	require.False(t, policy.FullShadowTextEnabled)
+	require.Equal(t, 0, policy.ShadowTextRetentionDays)
+}

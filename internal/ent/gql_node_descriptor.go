@@ -1646,7 +1646,7 @@ func (_m *RequestExecution) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     _m.ID,
 		Type:   "RequestExecution",
-		Fields: make([]*Field, 20),
+		Fields: make([]*Field, 26),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -1808,6 +1808,54 @@ func (_m *RequestExecution) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[19] = &Field{
 		Type:  "objects.JSONRawMessage",
 		Name:  "request_headers",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.HedgeRole); err != nil {
+		return nil, err
+	}
+	node.Fields[20] = &Field{
+		Type:  "requestexecution.HedgeRole",
+		Name:  "hedge_role",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.HedgeOutcome); err != nil {
+		return nil, err
+	}
+	node.Fields[21] = &Field{
+		Type:  "requestexecution.HedgeOutcome",
+		Name:  "hedge_outcome",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.HedgePairID); err != nil {
+		return nil, err
+	}
+	node.Fields[22] = &Field{
+		Type:  "string",
+		Name:  "hedge_pair_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.MetricsObservationWindowTps); err != nil {
+		return nil, err
+	}
+	node.Fields[23] = &Field{
+		Type:  "float64",
+		Name:  "metrics_observation_window_tps",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.MetricsHedgeStartTime); err != nil {
+		return nil, err
+	}
+	node.Fields[24] = &Field{
+		Type:  "int64",
+		Name:  "metrics_hedge_start_time",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(_m.MetricsShadowCompletionReason); err != nil {
+		return nil, err
+	}
+	node.Fields[25] = &Field{
+		Type:  "string",
+		Name:  "metrics_shadow_completion_reason",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

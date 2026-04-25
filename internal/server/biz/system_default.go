@@ -64,3 +64,13 @@ var defaultVideoStorageSettings = VideoStorageSettings{
 	ScanIntervalMinutes: 1,
 	ScanLimit:           50,
 }
+
+var defaultHedgePolicy = HedgePolicy{
+	Enabled:                   false,
+	HedgeTriggerSeconds:        12,
+	ObservationWindowSeconds:   3,
+	ProbingPercentage:          5.0,
+	ShadowHardDeadlineMinutes:  30,
+	FullShadowTextEnabled:      false,
+	ShadowTextRetentionDays:    0,
+}

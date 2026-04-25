@@ -94,6 +94,31 @@ var (
 		},
 		[]string{"channel_id", "channel_name"},
 	)
+
+	axonhubHedgeRacesTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "axonhub_hedge_races_total",
+			Help: "Total number of hedge races by winner_channel, loser_channel, and outcome",
+		},
+		[]string{"winner_channel", "loser_channel", "outcome"},
+	)
+
+	axonhubHedgeShadowCompletionsTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "axonhub_hedge_shadow_completions_total",
+			Help: "Total number of hedge shadow completions by channel and completion_reason",
+		},
+		[]string{"channel", "completion_reason"},
+	)
+
+	axonhubHedgeObservationWindowSeconds = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "axonhub_hedge_observation_window_seconds",
+			Help:    "Hedge observation window duration in seconds",
+			Buckets: []float64{0.5, 1, 2, 3, 5, 10},
+		},
+		[]string{},
+	)
 )
 
 var llmRateAggregator = NewRateAggregator(RateAggregatorConfig{})
@@ -222,4 +247,19 @@ func updateRateGauges(now time.Time) {
 		channelRPS.WithLabelValues(channelRate.ChannelID, channelRate.ChannelName).Set(channelRate.RPS)
 		channelTPS.WithLabelValues(channelRate.ChannelID, channelRate.ChannelName).Set(channelRate.TPS)
 	}
+}
+
+func RecordHedgeRaceCompletion(winnerChannelID, loserChannelID int, outcome string) {
+	winnerCh := strconv.Itoa(winnerChannelID)
+	loserCh := strconv.Itoa(loserChannelID)
+	axonhubHedgeRacesTotal.WithLabelValues(winnerCh, loserCh, outcome).Inc()
+}
+
+func RecordShadowCompletion(channelID int, reason string) {
+	ch := strconv.Itoa(channelID)
+	axonhubHedgeShadowCompletionsTotal.WithLabelValues(ch, reason).Inc()
+}
+
+func RecordObservationWindowDuration(duration time.Duration) {
+	axonhubHedgeObservationWindowSeconds.WithLabelValues().Observe(duration.Seconds())
 }

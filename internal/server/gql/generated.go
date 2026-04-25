@@ -1205,30 +1205,36 @@ type ComplexityRoot struct {
 	}
 
 	RequestExecution struct {
-		Channel                    func(childComplexity int) int
-		ChannelID                  func(childComplexity int) int
-		CreatedAt                  func(childComplexity int) int
-		DataStorage                func(childComplexity int) int
-		DataStorageID              func(childComplexity int) int
-		ErrorMessage               func(childComplexity int) int
-		ExternalID                 func(childComplexity int) int
-		Format                     func(childComplexity int) int
-		ID                         func(childComplexity int) int
-		MetricsFirstTokenLatencyMs func(childComplexity int) int
-		MetricsLatencyMs           func(childComplexity int) int
-		MetricsReasoningDurationMs func(childComplexity int) int
-		ModelID                    func(childComplexity int) int
-		ProjectID                  func(childComplexity int) int
-		Request                    func(childComplexity int) int
-		RequestBody                func(childComplexity int) int
-		RequestHeaders             func(childComplexity int) int
-		RequestID                  func(childComplexity int) int
-		ResponseBody               func(childComplexity int) int
-		ResponseChunks             func(childComplexity int) int
-		ResponseStatusCode         func(childComplexity int) int
-		Status                     func(childComplexity int) int
-		Stream                     func(childComplexity int) int
-		UpdatedAt                  func(childComplexity int) int
+		Channel                       func(childComplexity int) int
+		ChannelID                     func(childComplexity int) int
+		CreatedAt                     func(childComplexity int) int
+		DataStorage                   func(childComplexity int) int
+		DataStorageID                 func(childComplexity int) int
+		ErrorMessage                  func(childComplexity int) int
+		ExternalID                    func(childComplexity int) int
+		Format                        func(childComplexity int) int
+		HedgeOutcome                  func(childComplexity int) int
+		HedgePairID                   func(childComplexity int) int
+		HedgeRole                     func(childComplexity int) int
+		ID                            func(childComplexity int) int
+		MetricsFirstTokenLatencyMs    func(childComplexity int) int
+		MetricsHedgeStartTime         func(childComplexity int) int
+		MetricsLatencyMs              func(childComplexity int) int
+		MetricsObservationWindowTps   func(childComplexity int) int
+		MetricsReasoningDurationMs    func(childComplexity int) int
+		MetricsShadowCompletionReason func(childComplexity int) int
+		ModelID                       func(childComplexity int) int
+		ProjectID                     func(childComplexity int) int
+		Request                       func(childComplexity int) int
+		RequestBody                   func(childComplexity int) int
+		RequestHeaders                func(childComplexity int) int
+		RequestID                     func(childComplexity int) int
+		ResponseBody                  func(childComplexity int) int
+		ResponseChunks                func(childComplexity int) int
+		ResponseStatusCode            func(childComplexity int) int
+		Status                        func(childComplexity int) int
+		Stream                        func(childComplexity int) int
+		UpdatedAt                     func(childComplexity int) int
 	}
 
 	RequestExecutionConnection struct {
@@ -7375,6 +7381,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.RequestExecution.Format(childComplexity), true
+	case "RequestExecution.hedgeOutcome":
+		if e.complexity.RequestExecution.HedgeOutcome == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.HedgeOutcome(childComplexity), true
+	case "RequestExecution.hedgePairID":
+		if e.complexity.RequestExecution.HedgePairID == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.HedgePairID(childComplexity), true
+	case "RequestExecution.hedgeRole":
+		if e.complexity.RequestExecution.HedgeRole == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.HedgeRole(childComplexity), true
 	case "RequestExecution.id":
 		if e.complexity.RequestExecution.ID == nil {
 			break
@@ -7387,18 +7411,36 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.RequestExecution.MetricsFirstTokenLatencyMs(childComplexity), true
+	case "RequestExecution.metricsHedgeStartTime":
+		if e.complexity.RequestExecution.MetricsHedgeStartTime == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.MetricsHedgeStartTime(childComplexity), true
 	case "RequestExecution.metricsLatencyMs":
 		if e.complexity.RequestExecution.MetricsLatencyMs == nil {
 			break
 		}
 
 		return e.complexity.RequestExecution.MetricsLatencyMs(childComplexity), true
+	case "RequestExecution.metricsObservationWindowTps":
+		if e.complexity.RequestExecution.MetricsObservationWindowTps == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.MetricsObservationWindowTps(childComplexity), true
 	case "RequestExecution.metricsReasoningDurationMs":
 		if e.complexity.RequestExecution.MetricsReasoningDurationMs == nil {
 			break
 		}
 
 		return e.complexity.RequestExecution.MetricsReasoningDurationMs(childComplexity), true
+	case "RequestExecution.metricsShadowCompletionReason":
+		if e.complexity.RequestExecution.MetricsShadowCompletionReason == nil {
+			break
+		}
+
+		return e.complexity.RequestExecution.MetricsShadowCompletionReason(childComplexity), true
 	case "RequestExecution.modelID":
 		if e.complexity.RequestExecution.ModelID == nil {
 			break
@@ -40039,6 +40081,180 @@ func (ec *executionContext) fieldContext_RequestExecution_requestHeaders(_ conte
 	return fc, nil
 }
 
+func (ec *executionContext) _RequestExecution_hedgeRole(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_hedgeRole,
+		func(ctx context.Context) (any, error) {
+			return obj.HedgeRole, nil
+		},
+		nil,
+		ec.marshalNRequestExecutionHedgeRole2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_hedgeRole(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RequestExecutionHedgeRole does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RequestExecution_hedgeOutcome(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_hedgeOutcome,
+		func(ctx context.Context) (any, error) {
+			return obj.HedgeOutcome, nil
+		},
+		nil,
+		ec.marshalNRequestExecutionHedgeOutcome2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_hedgeOutcome(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RequestExecutionHedgeOutcome does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RequestExecution_hedgePairID(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_hedgePairID,
+		func(ctx context.Context) (any, error) {
+			return obj.HedgePairID, nil
+		},
+		nil,
+		ec.marshalOString2string,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_hedgePairID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RequestExecution_metricsObservationWindowTps(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_metricsObservationWindowTps,
+		func(ctx context.Context) (any, error) {
+			return obj.MetricsObservationWindowTps, nil
+		},
+		nil,
+		ec.marshalOFloat2ᚖfloat64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_metricsObservationWindowTps(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RequestExecution_metricsHedgeStartTime(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_metricsHedgeStartTime,
+		func(ctx context.Context) (any, error) {
+			return obj.MetricsHedgeStartTime, nil
+		},
+		nil,
+		ec.marshalOInt2ᚖint64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_metricsHedgeStartTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RequestExecution_metricsShadowCompletionReason(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_RequestExecution_metricsShadowCompletionReason,
+		func(ctx context.Context) (any, error) {
+			return obj.MetricsShadowCompletionReason, nil
+		},
+		nil,
+		ec.marshalOString2string,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_RequestExecution_metricsShadowCompletionReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RequestExecution",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _RequestExecution_request(ctx context.Context, field graphql.CollectedField, obj *ent.RequestExecution) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -40443,6 +40659,18 @@ func (ec *executionContext) fieldContext_RequestExecutionEdge_node(_ context.Con
 				return ec.fieldContext_RequestExecution_metricsReasoningDurationMs(ctx, field)
 			case "requestHeaders":
 				return ec.fieldContext_RequestExecution_requestHeaders(ctx, field)
+			case "hedgeRole":
+				return ec.fieldContext_RequestExecution_hedgeRole(ctx, field)
+			case "hedgeOutcome":
+				return ec.fieldContext_RequestExecution_hedgeOutcome(ctx, field)
+			case "hedgePairID":
+				return ec.fieldContext_RequestExecution_hedgePairID(ctx, field)
+			case "metricsObservationWindowTps":
+				return ec.fieldContext_RequestExecution_metricsObservationWindowTps(ctx, field)
+			case "metricsHedgeStartTime":
+				return ec.fieldContext_RequestExecution_metricsHedgeStartTime(ctx, field)
+			case "metricsShadowCompletionReason":
+				return ec.fieldContext_RequestExecution_metricsShadowCompletionReason(ctx, field)
 			case "request":
 				return ec.fieldContext_RequestExecution_request(ctx, field)
 			case "channel":
@@ -65053,7 +65281,7 @@ func (ec *executionContext) unmarshalInputRequestExecutionWhereInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "projectID", "projectIDNEQ", "projectIDIn", "projectIDNotIn", "projectIDGT", "projectIDGTE", "projectIDLT", "projectIDLTE", "requestID", "requestIDNEQ", "requestIDIn", "requestIDNotIn", "channelID", "channelIDNEQ", "channelIDIn", "channelIDNotIn", "channelIDIsNil", "channelIDNotNil", "dataStorageID", "dataStorageIDNEQ", "dataStorageIDIn", "dataStorageIDNotIn", "dataStorageIDIsNil", "dataStorageIDNotNil", "externalID", "externalIDNEQ", "externalIDIn", "externalIDNotIn", "externalIDGT", "externalIDGTE", "externalIDLT", "externalIDLTE", "externalIDContains", "externalIDHasPrefix", "externalIDHasSuffix", "externalIDIsNil", "externalIDNotNil", "externalIDEqualFold", "externalIDContainsFold", "modelID", "modelIDNEQ", "modelIDIn", "modelIDNotIn", "modelIDGT", "modelIDGTE", "modelIDLT", "modelIDLTE", "modelIDContains", "modelIDHasPrefix", "modelIDHasSuffix", "modelIDEqualFold", "modelIDContainsFold", "format", "formatNEQ", "formatIn", "formatNotIn", "formatGT", "formatGTE", "formatLT", "formatLTE", "formatContains", "formatHasPrefix", "formatHasSuffix", "formatEqualFold", "formatContainsFold", "errorMessage", "errorMessageNEQ", "errorMessageIn", "errorMessageNotIn", "errorMessageGT", "errorMessageGTE", "errorMessageLT", "errorMessageLTE", "errorMessageContains", "errorMessageHasPrefix", "errorMessageHasSuffix", "errorMessageIsNil", "errorMessageNotNil", "errorMessageEqualFold", "errorMessageContainsFold", "responseStatusCode", "responseStatusCodeNEQ", "responseStatusCodeIn", "responseStatusCodeNotIn", "responseStatusCodeGT", "responseStatusCodeGTE", "responseStatusCodeLT", "responseStatusCodeLTE", "responseStatusCodeIsNil", "responseStatusCodeNotNil", "status", "statusNEQ", "statusIn", "statusNotIn", "stream", "streamNEQ", "metricsLatencyMs", "metricsLatencyMsNEQ", "metricsLatencyMsIn", "metricsLatencyMsNotIn", "metricsLatencyMsGT", "metricsLatencyMsGTE", "metricsLatencyMsLT", "metricsLatencyMsLTE", "metricsLatencyMsIsNil", "metricsLatencyMsNotNil", "metricsFirstTokenLatencyMs", "metricsFirstTokenLatencyMsNEQ", "metricsFirstTokenLatencyMsIn", "metricsFirstTokenLatencyMsNotIn", "metricsFirstTokenLatencyMsGT", "metricsFirstTokenLatencyMsGTE", "metricsFirstTokenLatencyMsLT", "metricsFirstTokenLatencyMsLTE", "metricsFirstTokenLatencyMsIsNil", "metricsFirstTokenLatencyMsNotNil", "metricsReasoningDurationMs", "metricsReasoningDurationMsNEQ", "metricsReasoningDurationMsIn", "metricsReasoningDurationMsNotIn", "metricsReasoningDurationMsGT", "metricsReasoningDurationMsGTE", "metricsReasoningDurationMsLT", "metricsReasoningDurationMsLTE", "metricsReasoningDurationMsIsNil", "metricsReasoningDurationMsNotNil", "hasRequest", "hasRequestWith", "hasChannel", "hasChannelWith", "hasDataStorage", "hasDataStorageWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "projectID", "projectIDNEQ", "projectIDIn", "projectIDNotIn", "projectIDGT", "projectIDGTE", "projectIDLT", "projectIDLTE", "requestID", "requestIDNEQ", "requestIDIn", "requestIDNotIn", "channelID", "channelIDNEQ", "channelIDIn", "channelIDNotIn", "channelIDIsNil", "channelIDNotNil", "dataStorageID", "dataStorageIDNEQ", "dataStorageIDIn", "dataStorageIDNotIn", "dataStorageIDIsNil", "dataStorageIDNotNil", "externalID", "externalIDNEQ", "externalIDIn", "externalIDNotIn", "externalIDGT", "externalIDGTE", "externalIDLT", "externalIDLTE", "externalIDContains", "externalIDHasPrefix", "externalIDHasSuffix", "externalIDIsNil", "externalIDNotNil", "externalIDEqualFold", "externalIDContainsFold", "modelID", "modelIDNEQ", "modelIDIn", "modelIDNotIn", "modelIDGT", "modelIDGTE", "modelIDLT", "modelIDLTE", "modelIDContains", "modelIDHasPrefix", "modelIDHasSuffix", "modelIDEqualFold", "modelIDContainsFold", "format", "formatNEQ", "formatIn", "formatNotIn", "formatGT", "formatGTE", "formatLT", "formatLTE", "formatContains", "formatHasPrefix", "formatHasSuffix", "formatEqualFold", "formatContainsFold", "errorMessage", "errorMessageNEQ", "errorMessageIn", "errorMessageNotIn", "errorMessageGT", "errorMessageGTE", "errorMessageLT", "errorMessageLTE", "errorMessageContains", "errorMessageHasPrefix", "errorMessageHasSuffix", "errorMessageIsNil", "errorMessageNotNil", "errorMessageEqualFold", "errorMessageContainsFold", "responseStatusCode", "responseStatusCodeNEQ", "responseStatusCodeIn", "responseStatusCodeNotIn", "responseStatusCodeGT", "responseStatusCodeGTE", "responseStatusCodeLT", "responseStatusCodeLTE", "responseStatusCodeIsNil", "responseStatusCodeNotNil", "status", "statusNEQ", "statusIn", "statusNotIn", "stream", "streamNEQ", "metricsLatencyMs", "metricsLatencyMsNEQ", "metricsLatencyMsIn", "metricsLatencyMsNotIn", "metricsLatencyMsGT", "metricsLatencyMsGTE", "metricsLatencyMsLT", "metricsLatencyMsLTE", "metricsLatencyMsIsNil", "metricsLatencyMsNotNil", "metricsFirstTokenLatencyMs", "metricsFirstTokenLatencyMsNEQ", "metricsFirstTokenLatencyMsIn", "metricsFirstTokenLatencyMsNotIn", "metricsFirstTokenLatencyMsGT", "metricsFirstTokenLatencyMsGTE", "metricsFirstTokenLatencyMsLT", "metricsFirstTokenLatencyMsLTE", "metricsFirstTokenLatencyMsIsNil", "metricsFirstTokenLatencyMsNotNil", "metricsReasoningDurationMs", "metricsReasoningDurationMsNEQ", "metricsReasoningDurationMsIn", "metricsReasoningDurationMsNotIn", "metricsReasoningDurationMsGT", "metricsReasoningDurationMsGTE", "metricsReasoningDurationMsLT", "metricsReasoningDurationMsLTE", "metricsReasoningDurationMsIsNil", "metricsReasoningDurationMsNotNil", "hedgeRole", "hedgeRoleNEQ", "hedgeRoleIn", "hedgeRoleNotIn", "hedgeOutcome", "hedgeOutcomeNEQ", "hedgeOutcomeIn", "hedgeOutcomeNotIn", "hedgePairID", "hedgePairIDNEQ", "hedgePairIDIn", "hedgePairIDNotIn", "hedgePairIDGT", "hedgePairIDGTE", "hedgePairIDLT", "hedgePairIDLTE", "hedgePairIDContains", "hedgePairIDHasPrefix", "hedgePairIDHasSuffix", "hedgePairIDIsNil", "hedgePairIDNotNil", "hedgePairIDEqualFold", "hedgePairIDContainsFold", "metricsObservationWindowTps", "metricsObservationWindowTpsNEQ", "metricsObservationWindowTpsIn", "metricsObservationWindowTpsNotIn", "metricsObservationWindowTpsGT", "metricsObservationWindowTpsGTE", "metricsObservationWindowTpsLT", "metricsObservationWindowTpsLTE", "metricsObservationWindowTpsIsNil", "metricsObservationWindowTpsNotNil", "metricsHedgeStartTime", "metricsHedgeStartTimeNEQ", "metricsHedgeStartTimeIn", "metricsHedgeStartTimeNotIn", "metricsHedgeStartTimeGT", "metricsHedgeStartTimeGTE", "metricsHedgeStartTimeLT", "metricsHedgeStartTimeLTE", "metricsHedgeStartTimeIsNil", "metricsHedgeStartTimeNotNil", "metricsShadowCompletionReason", "metricsShadowCompletionReasonNEQ", "metricsShadowCompletionReasonIn", "metricsShadowCompletionReasonNotIn", "metricsShadowCompletionReasonGT", "metricsShadowCompletionReasonGTE", "metricsShadowCompletionReasonLT", "metricsShadowCompletionReasonLTE", "metricsShadowCompletionReasonContains", "metricsShadowCompletionReasonHasPrefix", "metricsShadowCompletionReasonHasSuffix", "metricsShadowCompletionReasonIsNil", "metricsShadowCompletionReasonNotNil", "metricsShadowCompletionReasonEqualFold", "metricsShadowCompletionReasonContainsFold", "hasRequest", "hasRequestWith", "hasChannel", "hasChannelWith", "hasDataStorage", "hasDataStorageWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -66211,6 +66439,412 @@ func (ec *executionContext) unmarshalInputRequestExecutionWhereInput(ctx context
 				return it, err
 			}
 			it.MetricsReasoningDurationMsNotNil = data
+		case "hedgeRole":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeRole"))
+			data, err := ec.unmarshalORequestExecutionHedgeRole2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeRole = data
+		case "hedgeRoleNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeRoleNEQ"))
+			data, err := ec.unmarshalORequestExecutionHedgeRole2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeRoleNEQ = data
+		case "hedgeRoleIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeRoleIn"))
+			data, err := ec.unmarshalORequestExecutionHedgeRole2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRoleᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeRoleIn = data
+		case "hedgeRoleNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeRoleNotIn"))
+			data, err := ec.unmarshalORequestExecutionHedgeRole2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRoleᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeRoleNotIn = data
+		case "hedgeOutcome":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeOutcome"))
+			data, err := ec.unmarshalORequestExecutionHedgeOutcome2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeOutcome = data
+		case "hedgeOutcomeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeOutcomeNEQ"))
+			data, err := ec.unmarshalORequestExecutionHedgeOutcome2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeOutcomeNEQ = data
+		case "hedgeOutcomeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeOutcomeIn"))
+			data, err := ec.unmarshalORequestExecutionHedgeOutcome2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcomeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeOutcomeIn = data
+		case "hedgeOutcomeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgeOutcomeNotIn"))
+			data, err := ec.unmarshalORequestExecutionHedgeOutcome2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcomeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgeOutcomeNotIn = data
+		case "hedgePairID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairID = data
+		case "hedgePairIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDNEQ = data
+		case "hedgePairIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDIn = data
+		case "hedgePairIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDNotIn = data
+		case "hedgePairIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDGT = data
+		case "hedgePairIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDGTE = data
+		case "hedgePairIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDLT = data
+		case "hedgePairIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDLTE = data
+		case "hedgePairIDContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDContains = data
+		case "hedgePairIDHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDHasPrefix = data
+		case "hedgePairIDHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDHasSuffix = data
+		case "hedgePairIDIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDIsNil = data
+		case "hedgePairIDNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDNotNil = data
+		case "hedgePairIDEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDEqualFold = data
+		case "hedgePairIDContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hedgePairIDContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HedgePairIDContainsFold = data
+		case "metricsObservationWindowTps":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTps"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTps = data
+		case "metricsObservationWindowTpsNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsNEQ"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsNEQ = data
+		case "metricsObservationWindowTpsIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsIn = data
+		case "metricsObservationWindowTpsNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsNotIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsNotIn = data
+		case "metricsObservationWindowTpsGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsGT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsGT = data
+		case "metricsObservationWindowTpsGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsGTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsGTE = data
+		case "metricsObservationWindowTpsLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsLT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsLT = data
+		case "metricsObservationWindowTpsLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsLTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsLTE = data
+		case "metricsObservationWindowTpsIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsIsNil = data
+		case "metricsObservationWindowTpsNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsObservationWindowTpsNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsObservationWindowTpsNotNil = data
+		case "metricsHedgeStartTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTime"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTime = data
+		case "metricsHedgeStartTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeNEQ = data
+		case "metricsHedgeStartTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeIn = data
+		case "metricsHedgeStartTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeNotIn"))
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeNotIn = data
+		case "metricsHedgeStartTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeGT = data
+		case "metricsHedgeStartTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeGTE = data
+		case "metricsHedgeStartTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeLT = data
+		case "metricsHedgeStartTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeLTE = data
+		case "metricsHedgeStartTimeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeIsNil = data
+		case "metricsHedgeStartTimeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsHedgeStartTimeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsHedgeStartTimeNotNil = data
+		case "metricsShadowCompletionReason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReason"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReason = data
+		case "metricsShadowCompletionReasonNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonNEQ = data
+		case "metricsShadowCompletionReasonIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonIn = data
+		case "metricsShadowCompletionReasonNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonNotIn = data
+		case "metricsShadowCompletionReasonGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonGT = data
+		case "metricsShadowCompletionReasonGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonGTE = data
+		case "metricsShadowCompletionReasonLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonLT = data
+		case "metricsShadowCompletionReasonLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonLTE = data
+		case "metricsShadowCompletionReasonContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonContains = data
+		case "metricsShadowCompletionReasonHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonHasPrefix = data
+		case "metricsShadowCompletionReasonHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonHasSuffix = data
+		case "metricsShadowCompletionReasonIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonIsNil = data
+		case "metricsShadowCompletionReasonNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonNotNil = data
+		case "metricsShadowCompletionReasonEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonEqualFold = data
+		case "metricsShadowCompletionReasonContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metricsShadowCompletionReasonContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MetricsShadowCompletionReasonContainsFold = data
 		case "hasRequest":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRequest"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -87183,6 +87817,24 @@ func (ec *executionContext) _RequestExecution(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._RequestExecution_metricsReasoningDurationMs(ctx, field, obj)
 		case "requestHeaders":
 			out.Values[i] = ec._RequestExecution_requestHeaders(ctx, field, obj)
+		case "hedgeRole":
+			out.Values[i] = ec._RequestExecution_hedgeRole(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "hedgeOutcome":
+			out.Values[i] = ec._RequestExecution_hedgeOutcome(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "hedgePairID":
+			out.Values[i] = ec._RequestExecution_hedgePairID(ctx, field, obj)
+		case "metricsObservationWindowTps":
+			out.Values[i] = ec._RequestExecution_metricsObservationWindowTps(ctx, field, obj)
+		case "metricsHedgeStartTime":
+			out.Values[i] = ec._RequestExecution_metricsHedgeStartTime(ctx, field, obj)
+		case "metricsShadowCompletionReason":
+			out.Values[i] = ec._RequestExecution_metricsShadowCompletionReason(ctx, field, obj)
 		case "request":
 			field := field
 
@@ -96801,6 +97453,26 @@ func (ec *executionContext) marshalNRequestExecutionConnection2ᚖgithubᚗcom�
 	return ec._RequestExecutionConnection(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNRequestExecutionHedgeOutcome2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx context.Context, v any) (requestexecution.HedgeOutcome, error) {
+	var res requestexecution.HedgeOutcome
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRequestExecutionHedgeOutcome2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx context.Context, sel ast.SelectionSet, v requestexecution.HedgeOutcome) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNRequestExecutionHedgeRole2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx context.Context, v any) (requestexecution.HedgeRole, error) {
+	var res requestexecution.HedgeRole
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRequestExecutionHedgeRole2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx context.Context, sel ast.SelectionSet, v requestexecution.HedgeRole) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNRequestExecutionOrderField2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚐRequestExecutionOrderField(ctx context.Context, v any) (*ent.RequestExecutionOrderField, error) {
 	var res = new(ent.RequestExecutionOrderField)
 	err := res.UnmarshalGQL(v)
@@ -102842,6 +103514,168 @@ func (ec *executionContext) marshalORequestExecutionEdge2ᚖgithubᚗcomᚋloopl
 		return graphql.Null
 	}
 	return ec._RequestExecutionEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalORequestExecutionHedgeOutcome2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcomeᚄ(ctx context.Context, v any) ([]requestexecution.HedgeOutcome, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]requestexecution.HedgeOutcome, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRequestExecutionHedgeOutcome2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalORequestExecutionHedgeOutcome2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcomeᚄ(ctx context.Context, sel ast.SelectionSet, v []requestexecution.HedgeOutcome) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRequestExecutionHedgeOutcome2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalORequestExecutionHedgeOutcome2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx context.Context, v any) (*requestexecution.HedgeOutcome, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(requestexecution.HedgeOutcome)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORequestExecutionHedgeOutcome2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeOutcome(ctx context.Context, sel ast.SelectionSet, v *requestexecution.HedgeOutcome) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalORequestExecutionHedgeRole2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRoleᚄ(ctx context.Context, v any) ([]requestexecution.HedgeRole, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]requestexecution.HedgeRole, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRequestExecutionHedgeRole2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalORequestExecutionHedgeRole2ᚕgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []requestexecution.HedgeRole) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRequestExecutionHedgeRole2githubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalORequestExecutionHedgeRole2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx context.Context, v any) (*requestexecution.HedgeRole, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(requestexecution.HedgeRole)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORequestExecutionHedgeRole2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚋrequestexecutionᚐHedgeRole(ctx context.Context, sel ast.SelectionSet, v *requestexecution.HedgeRole) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalORequestExecutionOrder2ᚖgithubᚗcomᚋloopljᚋaxonhubᚋinternalᚋentᚐRequestExecutionOrder(ctx context.Context, v any) (*ent.RequestExecutionOrder, error) {

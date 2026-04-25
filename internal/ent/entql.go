@@ -363,26 +363,32 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "RequestExecution",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			requestexecution.FieldCreatedAt:                  {Type: field.TypeTime, Column: requestexecution.FieldCreatedAt},
-			requestexecution.FieldUpdatedAt:                  {Type: field.TypeTime, Column: requestexecution.FieldUpdatedAt},
-			requestexecution.FieldProjectID:                  {Type: field.TypeInt, Column: requestexecution.FieldProjectID},
-			requestexecution.FieldRequestID:                  {Type: field.TypeInt, Column: requestexecution.FieldRequestID},
-			requestexecution.FieldChannelID:                  {Type: field.TypeInt, Column: requestexecution.FieldChannelID},
-			requestexecution.FieldDataStorageID:              {Type: field.TypeInt, Column: requestexecution.FieldDataStorageID},
-			requestexecution.FieldExternalID:                 {Type: field.TypeString, Column: requestexecution.FieldExternalID},
-			requestexecution.FieldModelID:                    {Type: field.TypeString, Column: requestexecution.FieldModelID},
-			requestexecution.FieldFormat:                     {Type: field.TypeString, Column: requestexecution.FieldFormat},
-			requestexecution.FieldRequestBody:                {Type: field.TypeJSON, Column: requestexecution.FieldRequestBody},
-			requestexecution.FieldResponseBody:               {Type: field.TypeJSON, Column: requestexecution.FieldResponseBody},
-			requestexecution.FieldResponseChunks:             {Type: field.TypeJSON, Column: requestexecution.FieldResponseChunks},
-			requestexecution.FieldErrorMessage:               {Type: field.TypeString, Column: requestexecution.FieldErrorMessage},
-			requestexecution.FieldResponseStatusCode:         {Type: field.TypeInt, Column: requestexecution.FieldResponseStatusCode},
-			requestexecution.FieldStatus:                     {Type: field.TypeEnum, Column: requestexecution.FieldStatus},
-			requestexecution.FieldStream:                     {Type: field.TypeBool, Column: requestexecution.FieldStream},
-			requestexecution.FieldMetricsLatencyMs:           {Type: field.TypeInt64, Column: requestexecution.FieldMetricsLatencyMs},
-			requestexecution.FieldMetricsFirstTokenLatencyMs: {Type: field.TypeInt64, Column: requestexecution.FieldMetricsFirstTokenLatencyMs},
-			requestexecution.FieldMetricsReasoningDurationMs: {Type: field.TypeInt64, Column: requestexecution.FieldMetricsReasoningDurationMs},
-			requestexecution.FieldRequestHeaders:             {Type: field.TypeJSON, Column: requestexecution.FieldRequestHeaders},
+			requestexecution.FieldCreatedAt:                     {Type: field.TypeTime, Column: requestexecution.FieldCreatedAt},
+			requestexecution.FieldUpdatedAt:                     {Type: field.TypeTime, Column: requestexecution.FieldUpdatedAt},
+			requestexecution.FieldProjectID:                     {Type: field.TypeInt, Column: requestexecution.FieldProjectID},
+			requestexecution.FieldRequestID:                     {Type: field.TypeInt, Column: requestexecution.FieldRequestID},
+			requestexecution.FieldChannelID:                     {Type: field.TypeInt, Column: requestexecution.FieldChannelID},
+			requestexecution.FieldDataStorageID:                 {Type: field.TypeInt, Column: requestexecution.FieldDataStorageID},
+			requestexecution.FieldExternalID:                    {Type: field.TypeString, Column: requestexecution.FieldExternalID},
+			requestexecution.FieldModelID:                       {Type: field.TypeString, Column: requestexecution.FieldModelID},
+			requestexecution.FieldFormat:                        {Type: field.TypeString, Column: requestexecution.FieldFormat},
+			requestexecution.FieldRequestBody:                   {Type: field.TypeJSON, Column: requestexecution.FieldRequestBody},
+			requestexecution.FieldResponseBody:                  {Type: field.TypeJSON, Column: requestexecution.FieldResponseBody},
+			requestexecution.FieldResponseChunks:                {Type: field.TypeJSON, Column: requestexecution.FieldResponseChunks},
+			requestexecution.FieldErrorMessage:                  {Type: field.TypeString, Column: requestexecution.FieldErrorMessage},
+			requestexecution.FieldResponseStatusCode:            {Type: field.TypeInt, Column: requestexecution.FieldResponseStatusCode},
+			requestexecution.FieldStatus:                        {Type: field.TypeEnum, Column: requestexecution.FieldStatus},
+			requestexecution.FieldStream:                        {Type: field.TypeBool, Column: requestexecution.FieldStream},
+			requestexecution.FieldMetricsLatencyMs:              {Type: field.TypeInt64, Column: requestexecution.FieldMetricsLatencyMs},
+			requestexecution.FieldMetricsFirstTokenLatencyMs:    {Type: field.TypeInt64, Column: requestexecution.FieldMetricsFirstTokenLatencyMs},
+			requestexecution.FieldMetricsReasoningDurationMs:    {Type: field.TypeInt64, Column: requestexecution.FieldMetricsReasoningDurationMs},
+			requestexecution.FieldRequestHeaders:                {Type: field.TypeJSON, Column: requestexecution.FieldRequestHeaders},
+			requestexecution.FieldHedgeRole:                     {Type: field.TypeEnum, Column: requestexecution.FieldHedgeRole},
+			requestexecution.FieldHedgeOutcome:                  {Type: field.TypeEnum, Column: requestexecution.FieldHedgeOutcome},
+			requestexecution.FieldHedgePairID:                   {Type: field.TypeString, Column: requestexecution.FieldHedgePairID},
+			requestexecution.FieldMetricsObservationWindowTps:   {Type: field.TypeFloat64, Column: requestexecution.FieldMetricsObservationWindowTps},
+			requestexecution.FieldMetricsHedgeStartTime:         {Type: field.TypeInt64, Column: requestexecution.FieldMetricsHedgeStartTime},
+			requestexecution.FieldMetricsShadowCompletionReason: {Type: field.TypeString, Column: requestexecution.FieldMetricsShadowCompletionReason},
 		},
 	}
 	graph.Nodes[14] = &sqlgraph.Node{
@@ -3130,6 +3136,36 @@ func (f *RequestExecutionFilter) WhereMetricsReasoningDurationMs(p entql.Int64P)
 // WhereRequestHeaders applies the entql json.RawMessage predicate on the request_headers field.
 func (f *RequestExecutionFilter) WhereRequestHeaders(p entql.BytesP) {
 	f.Where(p.Field(requestexecution.FieldRequestHeaders))
+}
+
+// WhereHedgeRole applies the entql string predicate on the hedge_role field.
+func (f *RequestExecutionFilter) WhereHedgeRole(p entql.StringP) {
+	f.Where(p.Field(requestexecution.FieldHedgeRole))
+}
+
+// WhereHedgeOutcome applies the entql string predicate on the hedge_outcome field.
+func (f *RequestExecutionFilter) WhereHedgeOutcome(p entql.StringP) {
+	f.Where(p.Field(requestexecution.FieldHedgeOutcome))
+}
+
+// WhereHedgePairID applies the entql string predicate on the hedge_pair_id field.
+func (f *RequestExecutionFilter) WhereHedgePairID(p entql.StringP) {
+	f.Where(p.Field(requestexecution.FieldHedgePairID))
+}
+
+// WhereMetricsObservationWindowTps applies the entql float64 predicate on the metrics_observation_window_tps field.
+func (f *RequestExecutionFilter) WhereMetricsObservationWindowTps(p entql.Float64P) {
+	f.Where(p.Field(requestexecution.FieldMetricsObservationWindowTps))
+}
+
+// WhereMetricsHedgeStartTime applies the entql int64 predicate on the metrics_hedge_start_time field.
+func (f *RequestExecutionFilter) WhereMetricsHedgeStartTime(p entql.Int64P) {
+	f.Where(p.Field(requestexecution.FieldMetricsHedgeStartTime))
+}
+
+// WhereMetricsShadowCompletionReason applies the entql string predicate on the metrics_shadow_completion_reason field.
+func (f *RequestExecutionFilter) WhereMetricsShadowCompletionReason(p entql.StringP) {
+	f.Where(p.Field(requestexecution.FieldMetricsShadowCompletionReason))
 }
 
 // WhereHasRequest applies a predicate to check if query has an edge request.

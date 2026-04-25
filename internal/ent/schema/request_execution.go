@@ -77,6 +77,24 @@ func (RequestExecution) Fields() []ent.Field {
 		field.JSON("request_headers", objects.JSONRawMessage{}).
 			Optional().
 			Comment("Request headers"),
+		// Hedge role: whether this execution was part of a hedge race
+		field.Enum("hedge_role").Values("none", "primary", "secondary").Default("none").Immutable().
+			Comment("Whether this execution was part of a hedge race"),
+		// Hedge outcome: outcome for this execution
+		field.Enum("hedge_outcome").Values("none", "winner", "loser").Default("none").Immutable().
+			Comment("Outcome for this execution in a hedge race"),
+		// Hedge pair ID: links primary and secondary executions of same hedge race
+		field.String("hedge_pair_id").Optional().Immutable().
+			Comment("Links primary and secondary executions of same hedge race"),
+		// TPS during observation window
+		field.Float("metrics_observation_window_tps").Optional().Nillable().
+			Comment("TPS during observation window"),
+		// Unix ms when hedge race started
+		field.Int64("metrics_hedge_start_time").Optional().Nillable().
+			Comment("Unix ms when hedge race started"),
+		// Shadow completion reason
+		field.String("metrics_shadow_completion_reason").Optional().
+			Comment("Shadow completion reason: completed, deadline_exceeded, upstream_error, server_shutdown, client_disconnected"),
 	}
 }
 

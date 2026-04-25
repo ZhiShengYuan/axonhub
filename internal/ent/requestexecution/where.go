@@ -130,6 +130,26 @@ func MetricsReasoningDurationMs(v int64) predicate.RequestExecution {
 	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsReasoningDurationMs, v))
 }
 
+// HedgePairID applies equality check predicate on the "hedge_pair_id" field. It's identical to HedgePairIDEQ.
+func HedgePairID(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldHedgePairID, v))
+}
+
+// MetricsObservationWindowTps applies equality check predicate on the "metrics_observation_window_tps" field. It's identical to MetricsObservationWindowTpsEQ.
+func MetricsObservationWindowTps(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsHedgeStartTime applies equality check predicate on the "metrics_hedge_start_time" field. It's identical to MetricsHedgeStartTimeEQ.
+func MetricsHedgeStartTime(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsShadowCompletionReason applies equality check predicate on the "metrics_shadow_completion_reason" field. It's identical to MetricsShadowCompletionReasonEQ.
+func MetricsShadowCompletionReason(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsShadowCompletionReason, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.RequestExecution {
 	return predicate.RequestExecution(sql.FieldEQ(FieldCreatedAt, v))
@@ -868,6 +888,296 @@ func RequestHeadersIsNil() predicate.RequestExecution {
 // RequestHeadersNotNil applies the NotNil predicate on the "request_headers" field.
 func RequestHeadersNotNil() predicate.RequestExecution {
 	return predicate.RequestExecution(sql.FieldNotNull(FieldRequestHeaders))
+}
+
+// HedgeRoleEQ applies the EQ predicate on the "hedge_role" field.
+func HedgeRoleEQ(v HedgeRole) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldHedgeRole, v))
+}
+
+// HedgeRoleNEQ applies the NEQ predicate on the "hedge_role" field.
+func HedgeRoleNEQ(v HedgeRole) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldHedgeRole, v))
+}
+
+// HedgeRoleIn applies the In predicate on the "hedge_role" field.
+func HedgeRoleIn(vs ...HedgeRole) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldHedgeRole, vs...))
+}
+
+// HedgeRoleNotIn applies the NotIn predicate on the "hedge_role" field.
+func HedgeRoleNotIn(vs ...HedgeRole) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldHedgeRole, vs...))
+}
+
+// HedgeOutcomeEQ applies the EQ predicate on the "hedge_outcome" field.
+func HedgeOutcomeEQ(v HedgeOutcome) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldHedgeOutcome, v))
+}
+
+// HedgeOutcomeNEQ applies the NEQ predicate on the "hedge_outcome" field.
+func HedgeOutcomeNEQ(v HedgeOutcome) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldHedgeOutcome, v))
+}
+
+// HedgeOutcomeIn applies the In predicate on the "hedge_outcome" field.
+func HedgeOutcomeIn(vs ...HedgeOutcome) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldHedgeOutcome, vs...))
+}
+
+// HedgeOutcomeNotIn applies the NotIn predicate on the "hedge_outcome" field.
+func HedgeOutcomeNotIn(vs ...HedgeOutcome) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldHedgeOutcome, vs...))
+}
+
+// HedgePairIDEQ applies the EQ predicate on the "hedge_pair_id" field.
+func HedgePairIDEQ(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldHedgePairID, v))
+}
+
+// HedgePairIDNEQ applies the NEQ predicate on the "hedge_pair_id" field.
+func HedgePairIDNEQ(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldHedgePairID, v))
+}
+
+// HedgePairIDIn applies the In predicate on the "hedge_pair_id" field.
+func HedgePairIDIn(vs ...string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldHedgePairID, vs...))
+}
+
+// HedgePairIDNotIn applies the NotIn predicate on the "hedge_pair_id" field.
+func HedgePairIDNotIn(vs ...string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldHedgePairID, vs...))
+}
+
+// HedgePairIDGT applies the GT predicate on the "hedge_pair_id" field.
+func HedgePairIDGT(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGT(FieldHedgePairID, v))
+}
+
+// HedgePairIDGTE applies the GTE predicate on the "hedge_pair_id" field.
+func HedgePairIDGTE(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGTE(FieldHedgePairID, v))
+}
+
+// HedgePairIDLT applies the LT predicate on the "hedge_pair_id" field.
+func HedgePairIDLT(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLT(FieldHedgePairID, v))
+}
+
+// HedgePairIDLTE applies the LTE predicate on the "hedge_pair_id" field.
+func HedgePairIDLTE(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLTE(FieldHedgePairID, v))
+}
+
+// HedgePairIDContains applies the Contains predicate on the "hedge_pair_id" field.
+func HedgePairIDContains(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldContains(FieldHedgePairID, v))
+}
+
+// HedgePairIDHasPrefix applies the HasPrefix predicate on the "hedge_pair_id" field.
+func HedgePairIDHasPrefix(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldHasPrefix(FieldHedgePairID, v))
+}
+
+// HedgePairIDHasSuffix applies the HasSuffix predicate on the "hedge_pair_id" field.
+func HedgePairIDHasSuffix(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldHasSuffix(FieldHedgePairID, v))
+}
+
+// HedgePairIDIsNil applies the IsNil predicate on the "hedge_pair_id" field.
+func HedgePairIDIsNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIsNull(FieldHedgePairID))
+}
+
+// HedgePairIDNotNil applies the NotNil predicate on the "hedge_pair_id" field.
+func HedgePairIDNotNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotNull(FieldHedgePairID))
+}
+
+// HedgePairIDEqualFold applies the EqualFold predicate on the "hedge_pair_id" field.
+func HedgePairIDEqualFold(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEqualFold(FieldHedgePairID, v))
+}
+
+// HedgePairIDContainsFold applies the ContainsFold predicate on the "hedge_pair_id" field.
+func HedgePairIDContainsFold(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldContainsFold(FieldHedgePairID, v))
+}
+
+// MetricsObservationWindowTpsEQ applies the EQ predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsEQ(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsNEQ applies the NEQ predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsNEQ(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsIn applies the In predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsIn(vs ...float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldMetricsObservationWindowTps, vs...))
+}
+
+// MetricsObservationWindowTpsNotIn applies the NotIn predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsNotIn(vs ...float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldMetricsObservationWindowTps, vs...))
+}
+
+// MetricsObservationWindowTpsGT applies the GT predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsGT(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGT(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsGTE applies the GTE predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsGTE(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGTE(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsLT applies the LT predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsLT(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLT(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsLTE applies the LTE predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsLTE(v float64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLTE(FieldMetricsObservationWindowTps, v))
+}
+
+// MetricsObservationWindowTpsIsNil applies the IsNil predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsIsNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIsNull(FieldMetricsObservationWindowTps))
+}
+
+// MetricsObservationWindowTpsNotNil applies the NotNil predicate on the "metrics_observation_window_tps" field.
+func MetricsObservationWindowTpsNotNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotNull(FieldMetricsObservationWindowTps))
+}
+
+// MetricsHedgeStartTimeEQ applies the EQ predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeEQ(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeNEQ applies the NEQ predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeNEQ(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeIn applies the In predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeIn(vs ...int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldMetricsHedgeStartTime, vs...))
+}
+
+// MetricsHedgeStartTimeNotIn applies the NotIn predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeNotIn(vs ...int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldMetricsHedgeStartTime, vs...))
+}
+
+// MetricsHedgeStartTimeGT applies the GT predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeGT(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGT(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeGTE applies the GTE predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeGTE(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGTE(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeLT applies the LT predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeLT(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLT(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeLTE applies the LTE predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeLTE(v int64) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLTE(FieldMetricsHedgeStartTime, v))
+}
+
+// MetricsHedgeStartTimeIsNil applies the IsNil predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeIsNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIsNull(FieldMetricsHedgeStartTime))
+}
+
+// MetricsHedgeStartTimeNotNil applies the NotNil predicate on the "metrics_hedge_start_time" field.
+func MetricsHedgeStartTimeNotNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotNull(FieldMetricsHedgeStartTime))
+}
+
+// MetricsShadowCompletionReasonEQ applies the EQ predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonEQ(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEQ(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonNEQ applies the NEQ predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonNEQ(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNEQ(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonIn applies the In predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonIn(vs ...string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIn(FieldMetricsShadowCompletionReason, vs...))
+}
+
+// MetricsShadowCompletionReasonNotIn applies the NotIn predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonNotIn(vs ...string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotIn(FieldMetricsShadowCompletionReason, vs...))
+}
+
+// MetricsShadowCompletionReasonGT applies the GT predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonGT(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGT(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonGTE applies the GTE predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonGTE(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldGTE(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonLT applies the LT predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonLT(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLT(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonLTE applies the LTE predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonLTE(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldLTE(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonContains applies the Contains predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonContains(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldContains(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonHasPrefix applies the HasPrefix predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonHasPrefix(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldHasPrefix(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonHasSuffix applies the HasSuffix predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonHasSuffix(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldHasSuffix(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonIsNil applies the IsNil predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonIsNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldIsNull(FieldMetricsShadowCompletionReason))
+}
+
+// MetricsShadowCompletionReasonNotNil applies the NotNil predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonNotNil() predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldNotNull(FieldMetricsShadowCompletionReason))
+}
+
+// MetricsShadowCompletionReasonEqualFold applies the EqualFold predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonEqualFold(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldEqualFold(FieldMetricsShadowCompletionReason, v))
+}
+
+// MetricsShadowCompletionReasonContainsFold applies the ContainsFold predicate on the "metrics_shadow_completion_reason" field.
+func MetricsShadowCompletionReasonContainsFold(v string) predicate.RequestExecution {
+	return predicate.RequestExecution(sql.FieldContainsFold(FieldMetricsShadowCompletionReason, v))
 }
 
 // HasRequest applies the HasEdge predicate on the "request" edge.

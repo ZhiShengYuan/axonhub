@@ -93,6 +93,10 @@ const (
 	// SystemKeyUserAgentPassThrough is the key used to store the user agent pass-through setting.
 	// When set to true, the system will pass through the original User-Agent header to upstream AI providers.
 	SystemKeyUserAgentPassThrough = "system_user_agent_pass_through"
+
+	// SystemKeyHedgePolicy is the key used to store the hedge policy configuration.
+	// The value is JSON-encoded HedgePolicy struct.
+	SystemKeyHedgePolicy = "hedge_policy"
 )
 
 // SystemGeneralSettings represents general system configuration settings.
@@ -206,6 +210,24 @@ type AutoDisableChannelStatus struct {
 
 	// Times is the number of times the status code occurs before auto-disable the channel.
 	Times int `json:"times"`
+}
+
+// HedgePolicy represents the hedge/shadow routing policy configuration.
+type HedgePolicy struct {
+	// Enabled controls whether hedge routing is active
+	Enabled bool `json:"enabled"`
+	// HedgeTriggerSeconds is the time to wait before launching shadow request
+	HedgeTriggerSeconds int `json:"hedge_trigger_seconds"`
+	// ObservationWindowSeconds is the time window to observe primary request TPS
+	ObservationWindowSeconds int `json:"observation_window_seconds"`
+	// ProbingPercentage is the percentage of requests to probe with shadow
+	ProbingPercentage float64 `json:"probing_percentage"`
+	// ShadowHardDeadlineMinutes is the hard deadline for shadow request completion
+	ShadowHardDeadlineMinutes int `json:"shadow_hard_deadline_minutes"`
+	// FullShadowTextEnabled controls whether full shadow response text is stored
+	FullShadowTextEnabled bool `json:"full_shadow_text_enabled"`
+	// ShadowTextRetentionDays controls how many days to retain shadow text (0 = keep all)
+	ShadowTextRetentionDays int `json:"shadow_text_retention_days"`
 }
 
 type WebhookNotifierConfig struct {
@@ -833,6 +855,84 @@ func normalizeRetryPolicy(policy *RetryPolicy) {
 
 	if policy.AutoDisableChannel.Statuses == nil {
 		policy.AutoDisableChannel.Statuses = []AutoDisableChannelStatus{}
+	}
+}
+
+// HedgePolicy retrieves the hedge policy configuration.
+func (s *SystemService) HedgePolicy(ctx context.Context) (*HedgePolicy, error) {
+	value, err := s.getSystemValue(ctx, SystemKeyHedgePolicy)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			policy := defaultHedgePolicy
+			normalizeHedgePolicy(&policy)
+
+			return &policy, nil
+		}
+
+		return nil, fmt.Errorf("failed to get hedge policy: %w", err)
+	}
+
+	var policy HedgePolicy
+	if err := json.Unmarshal([]byte(value), &policy); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal hedge policy: %w", err)
+	}
+
+	normalizeHedgePolicy(&policy)
+
+	return &policy, nil
+}
+
+// HedgePolicyOrDefault retrieves the hedge policy or returns the default if not available.
+func (s *SystemService) HedgePolicyOrDefault(ctx context.Context) *HedgePolicy {
+	policy, err := s.HedgePolicy(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return lo.ToPtr(defaultHedgePolicy)
+		}
+
+		log.Warn(ctx, "failed to get hedge policy", log.Cause(err))
+
+		return lo.ToPtr(defaultHedgePolicy)
+	}
+
+	return policy
+}
+
+// SetHedgePolicy sets the hedge policy configuration.
+func (s *SystemService) SetHedgePolicy(ctx context.Context, policy *HedgePolicy) error {
+	normalizeHedgePolicy(policy)
+
+	jsonBytes, err := json.Marshal(policy)
+	if err != nil {
+		return fmt.Errorf("failed to marshal hedge policy: %w", err)
+	}
+
+	return s.setSystemValue(ctx, SystemKeyHedgePolicy, string(jsonBytes))
+}
+
+func normalizeHedgePolicy(policy *HedgePolicy) {
+	if policy == nil {
+		return
+	}
+
+	if policy.HedgeTriggerSeconds <= 0 {
+		policy.HedgeTriggerSeconds = defaultHedgePolicy.HedgeTriggerSeconds
+	}
+
+	if policy.ObservationWindowSeconds <= 0 {
+		policy.ObservationWindowSeconds = defaultHedgePolicy.ObservationWindowSeconds
+	}
+
+	if policy.ProbingPercentage <= 0 {
+		policy.ProbingPercentage = defaultHedgePolicy.ProbingPercentage
+	}
+
+	if policy.ShadowHardDeadlineMinutes <= 0 {
+		policy.ShadowHardDeadlineMinutes = defaultHedgePolicy.ShadowHardDeadlineMinutes
+	}
+
+	if policy.ShadowTextRetentionDays < 0 {
+		policy.ShadowTextRetentionDays = defaultHedgePolicy.ShadowTextRetentionDays
 	}
 }
 

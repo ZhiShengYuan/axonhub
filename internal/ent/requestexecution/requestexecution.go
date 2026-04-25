@@ -57,6 +57,18 @@ const (
 	FieldMetricsReasoningDurationMs = "metrics_reasoning_duration_ms"
 	// FieldRequestHeaders holds the string denoting the request_headers field in the database.
 	FieldRequestHeaders = "request_headers"
+	// FieldHedgeRole holds the string denoting the hedge_role field in the database.
+	FieldHedgeRole = "hedge_role"
+	// FieldHedgeOutcome holds the string denoting the hedge_outcome field in the database.
+	FieldHedgeOutcome = "hedge_outcome"
+	// FieldHedgePairID holds the string denoting the hedge_pair_id field in the database.
+	FieldHedgePairID = "hedge_pair_id"
+	// FieldMetricsObservationWindowTps holds the string denoting the metrics_observation_window_tps field in the database.
+	FieldMetricsObservationWindowTps = "metrics_observation_window_tps"
+	// FieldMetricsHedgeStartTime holds the string denoting the metrics_hedge_start_time field in the database.
+	FieldMetricsHedgeStartTime = "metrics_hedge_start_time"
+	// FieldMetricsShadowCompletionReason holds the string denoting the metrics_shadow_completion_reason field in the database.
+	FieldMetricsShadowCompletionReason = "metrics_shadow_completion_reason"
 	// EdgeRequest holds the string denoting the request edge name in mutations.
 	EdgeRequest = "request"
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
@@ -111,6 +123,12 @@ var Columns = []string{
 	FieldMetricsFirstTokenLatencyMs,
 	FieldMetricsReasoningDurationMs,
 	FieldRequestHeaders,
+	FieldHedgeRole,
+	FieldHedgeOutcome,
+	FieldHedgePairID,
+	FieldMetricsObservationWindowTps,
+	FieldMetricsHedgeStartTime,
+	FieldMetricsShadowCompletionReason,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -161,6 +179,60 @@ func StatusValidator(s Status) error {
 		return nil
 	default:
 		return fmt.Errorf("requestexecution: invalid enum value for status field: %q", s)
+	}
+}
+
+// HedgeRole defines the type for the "hedge_role" enum field.
+type HedgeRole string
+
+// HedgeRoleNone is the default value of the HedgeRole enum.
+const DefaultHedgeRole = HedgeRoleNone
+
+// HedgeRole values.
+const (
+	HedgeRoleNone      HedgeRole = "none"
+	HedgeRolePrimary   HedgeRole = "primary"
+	HedgeRoleSecondary HedgeRole = "secondary"
+)
+
+func (hr HedgeRole) String() string {
+	return string(hr)
+}
+
+// HedgeRoleValidator is a validator for the "hedge_role" field enum values. It is called by the builders before save.
+func HedgeRoleValidator(hr HedgeRole) error {
+	switch hr {
+	case HedgeRoleNone, HedgeRolePrimary, HedgeRoleSecondary:
+		return nil
+	default:
+		return fmt.Errorf("requestexecution: invalid enum value for hedge_role field: %q", hr)
+	}
+}
+
+// HedgeOutcome defines the type for the "hedge_outcome" enum field.
+type HedgeOutcome string
+
+// HedgeOutcomeNone is the default value of the HedgeOutcome enum.
+const DefaultHedgeOutcome = HedgeOutcomeNone
+
+// HedgeOutcome values.
+const (
+	HedgeOutcomeNone   HedgeOutcome = "none"
+	HedgeOutcomeWinner HedgeOutcome = "winner"
+	HedgeOutcomeLoser  HedgeOutcome = "loser"
+)
+
+func (ho HedgeOutcome) String() string {
+	return string(ho)
+}
+
+// HedgeOutcomeValidator is a validator for the "hedge_outcome" field enum values. It is called by the builders before save.
+func HedgeOutcomeValidator(ho HedgeOutcome) error {
+	switch ho {
+	case HedgeOutcomeNone, HedgeOutcomeWinner, HedgeOutcomeLoser:
+		return nil
+	default:
+		return fmt.Errorf("requestexecution: invalid enum value for hedge_outcome field: %q", ho)
 	}
 }
 
@@ -252,6 +324,36 @@ func ByMetricsReasoningDurationMs(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMetricsReasoningDurationMs, opts...).ToFunc()
 }
 
+// ByHedgeRole orders the results by the hedge_role field.
+func ByHedgeRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHedgeRole, opts...).ToFunc()
+}
+
+// ByHedgeOutcome orders the results by the hedge_outcome field.
+func ByHedgeOutcome(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHedgeOutcome, opts...).ToFunc()
+}
+
+// ByHedgePairID orders the results by the hedge_pair_id field.
+func ByHedgePairID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHedgePairID, opts...).ToFunc()
+}
+
+// ByMetricsObservationWindowTps orders the results by the metrics_observation_window_tps field.
+func ByMetricsObservationWindowTps(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMetricsObservationWindowTps, opts...).ToFunc()
+}
+
+// ByMetricsHedgeStartTime orders the results by the metrics_hedge_start_time field.
+func ByMetricsHedgeStartTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMetricsHedgeStartTime, opts...).ToFunc()
+}
+
+// ByMetricsShadowCompletionReason orders the results by the metrics_shadow_completion_reason field.
+func ByMetricsShadowCompletionReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMetricsShadowCompletionReason, opts...).ToFunc()
+}
+
 // ByRequestField orders the results by request field.
 func ByRequestField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -308,6 +410,42 @@ func (e *Status) UnmarshalGQL(val interface{}) error {
 	*e = Status(str)
 	if err := StatusValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e HedgeRole) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *HedgeRole) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = HedgeRole(str)
+	if err := HedgeRoleValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid HedgeRole", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e HedgeOutcome) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *HedgeOutcome) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = HedgeOutcome(str)
+	if err := HedgeOutcomeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid HedgeOutcome", str)
 	}
 	return nil
 }

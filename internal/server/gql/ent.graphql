@@ -4052,6 +4052,30 @@ type RequestExecution implements Node {
   Request headers
   """
   requestHeaders: JSONRawMessage
+  """
+  Whether this execution was part of a hedge race
+  """
+  hedgeRole: RequestExecutionHedgeRole!
+  """
+  Outcome for this execution in a hedge race
+  """
+  hedgeOutcome: RequestExecutionHedgeOutcome!
+  """
+  Links primary and secondary executions of same hedge race
+  """
+  hedgePairID: String
+  """
+  TPS during observation window
+  """
+  metricsObservationWindowTps: Float
+  """
+  Unix ms when hedge race started
+  """
+  metricsHedgeStartTime: Int
+  """
+  Shadow completion reason: completed, deadline_exceeded, upstream_error, server_shutdown, client_disconnected
+  """
+  metricsShadowCompletionReason: String
   request: Request!
   channel: Channel @goField(forceResolver: true)
   dataStorage: DataStorage
@@ -4085,6 +4109,22 @@ type RequestExecutionEdge {
   A cursor for use in pagination.
   """
   cursor: Cursor!
+}
+"""
+RequestExecutionHedgeOutcome is enum for the field hedge_outcome
+"""
+enum RequestExecutionHedgeOutcome @goModel(model: "github.com/looplj/axonhub/internal/ent/requestexecution.HedgeOutcome") {
+  none
+  winner
+  loser
+}
+"""
+RequestExecutionHedgeRole is enum for the field hedge_role
+"""
+enum RequestExecutionHedgeRole @goModel(model: "github.com/looplj/axonhub/internal/ent/requestexecution.HedgeRole") {
+  none
+  primary
+  secondary
 }
 """
 Ordering options for RequestExecution connections
@@ -4325,6 +4365,82 @@ input RequestExecutionWhereInput {
   metricsReasoningDurationMsLTE: Int
   metricsReasoningDurationMsIsNil: Boolean
   metricsReasoningDurationMsNotNil: Boolean
+  """
+  hedge_role field predicates
+  """
+  hedgeRole: RequestExecutionHedgeRole
+  hedgeRoleNEQ: RequestExecutionHedgeRole
+  hedgeRoleIn: [RequestExecutionHedgeRole!]
+  hedgeRoleNotIn: [RequestExecutionHedgeRole!]
+  """
+  hedge_outcome field predicates
+  """
+  hedgeOutcome: RequestExecutionHedgeOutcome
+  hedgeOutcomeNEQ: RequestExecutionHedgeOutcome
+  hedgeOutcomeIn: [RequestExecutionHedgeOutcome!]
+  hedgeOutcomeNotIn: [RequestExecutionHedgeOutcome!]
+  """
+  hedge_pair_id field predicates
+  """
+  hedgePairID: String
+  hedgePairIDNEQ: String
+  hedgePairIDIn: [String!]
+  hedgePairIDNotIn: [String!]
+  hedgePairIDGT: String
+  hedgePairIDGTE: String
+  hedgePairIDLT: String
+  hedgePairIDLTE: String
+  hedgePairIDContains: String
+  hedgePairIDHasPrefix: String
+  hedgePairIDHasSuffix: String
+  hedgePairIDIsNil: Boolean
+  hedgePairIDNotNil: Boolean
+  hedgePairIDEqualFold: String
+  hedgePairIDContainsFold: String
+  """
+  metrics_observation_window_tps field predicates
+  """
+  metricsObservationWindowTps: Float
+  metricsObservationWindowTpsNEQ: Float
+  metricsObservationWindowTpsIn: [Float!]
+  metricsObservationWindowTpsNotIn: [Float!]
+  metricsObservationWindowTpsGT: Float
+  metricsObservationWindowTpsGTE: Float
+  metricsObservationWindowTpsLT: Float
+  metricsObservationWindowTpsLTE: Float
+  metricsObservationWindowTpsIsNil: Boolean
+  metricsObservationWindowTpsNotNil: Boolean
+  """
+  metrics_hedge_start_time field predicates
+  """
+  metricsHedgeStartTime: Int
+  metricsHedgeStartTimeNEQ: Int
+  metricsHedgeStartTimeIn: [Int!]
+  metricsHedgeStartTimeNotIn: [Int!]
+  metricsHedgeStartTimeGT: Int
+  metricsHedgeStartTimeGTE: Int
+  metricsHedgeStartTimeLT: Int
+  metricsHedgeStartTimeLTE: Int
+  metricsHedgeStartTimeIsNil: Boolean
+  metricsHedgeStartTimeNotNil: Boolean
+  """
+  metrics_shadow_completion_reason field predicates
+  """
+  metricsShadowCompletionReason: String
+  metricsShadowCompletionReasonNEQ: String
+  metricsShadowCompletionReasonIn: [String!]
+  metricsShadowCompletionReasonNotIn: [String!]
+  metricsShadowCompletionReasonGT: String
+  metricsShadowCompletionReasonGTE: String
+  metricsShadowCompletionReasonLT: String
+  metricsShadowCompletionReasonLTE: String
+  metricsShadowCompletionReasonContains: String
+  metricsShadowCompletionReasonHasPrefix: String
+  metricsShadowCompletionReasonHasSuffix: String
+  metricsShadowCompletionReasonIsNil: Boolean
+  metricsShadowCompletionReasonNotNil: Boolean
+  metricsShadowCompletionReasonEqualFold: String
+  metricsShadowCompletionReasonContainsFold: String
   """
   request edge predicates
   """

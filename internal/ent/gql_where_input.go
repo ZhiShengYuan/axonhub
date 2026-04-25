@@ -6747,6 +6747,76 @@ type RequestExecutionWhereInput struct {
 	MetricsReasoningDurationMsIsNil  bool    `json:"metricsReasoningDurationMsIsNil,omitempty"`
 	MetricsReasoningDurationMsNotNil bool    `json:"metricsReasoningDurationMsNotNil,omitempty"`
 
+	// "hedge_role" field predicates.
+	HedgeRole      *requestexecution.HedgeRole  `json:"hedgeRole,omitempty"`
+	HedgeRoleNEQ   *requestexecution.HedgeRole  `json:"hedgeRoleNEQ,omitempty"`
+	HedgeRoleIn    []requestexecution.HedgeRole `json:"hedgeRoleIn,omitempty"`
+	HedgeRoleNotIn []requestexecution.HedgeRole `json:"hedgeRoleNotIn,omitempty"`
+
+	// "hedge_outcome" field predicates.
+	HedgeOutcome      *requestexecution.HedgeOutcome  `json:"hedgeOutcome,omitempty"`
+	HedgeOutcomeNEQ   *requestexecution.HedgeOutcome  `json:"hedgeOutcomeNEQ,omitempty"`
+	HedgeOutcomeIn    []requestexecution.HedgeOutcome `json:"hedgeOutcomeIn,omitempty"`
+	HedgeOutcomeNotIn []requestexecution.HedgeOutcome `json:"hedgeOutcomeNotIn,omitempty"`
+
+	// "hedge_pair_id" field predicates.
+	HedgePairID             *string  `json:"hedgePairID,omitempty"`
+	HedgePairIDNEQ          *string  `json:"hedgePairIDNEQ,omitempty"`
+	HedgePairIDIn           []string `json:"hedgePairIDIn,omitempty"`
+	HedgePairIDNotIn        []string `json:"hedgePairIDNotIn,omitempty"`
+	HedgePairIDGT           *string  `json:"hedgePairIDGT,omitempty"`
+	HedgePairIDGTE          *string  `json:"hedgePairIDGTE,omitempty"`
+	HedgePairIDLT           *string  `json:"hedgePairIDLT,omitempty"`
+	HedgePairIDLTE          *string  `json:"hedgePairIDLTE,omitempty"`
+	HedgePairIDContains     *string  `json:"hedgePairIDContains,omitempty"`
+	HedgePairIDHasPrefix    *string  `json:"hedgePairIDHasPrefix,omitempty"`
+	HedgePairIDHasSuffix    *string  `json:"hedgePairIDHasSuffix,omitempty"`
+	HedgePairIDIsNil        bool     `json:"hedgePairIDIsNil,omitempty"`
+	HedgePairIDNotNil       bool     `json:"hedgePairIDNotNil,omitempty"`
+	HedgePairIDEqualFold    *string  `json:"hedgePairIDEqualFold,omitempty"`
+	HedgePairIDContainsFold *string  `json:"hedgePairIDContainsFold,omitempty"`
+
+	// "metrics_observation_window_tps" field predicates.
+	MetricsObservationWindowTps       *float64  `json:"metricsObservationWindowTps,omitempty"`
+	MetricsObservationWindowTpsNEQ    *float64  `json:"metricsObservationWindowTpsNEQ,omitempty"`
+	MetricsObservationWindowTpsIn     []float64 `json:"metricsObservationWindowTpsIn,omitempty"`
+	MetricsObservationWindowTpsNotIn  []float64 `json:"metricsObservationWindowTpsNotIn,omitempty"`
+	MetricsObservationWindowTpsGT     *float64  `json:"metricsObservationWindowTpsGT,omitempty"`
+	MetricsObservationWindowTpsGTE    *float64  `json:"metricsObservationWindowTpsGTE,omitempty"`
+	MetricsObservationWindowTpsLT     *float64  `json:"metricsObservationWindowTpsLT,omitempty"`
+	MetricsObservationWindowTpsLTE    *float64  `json:"metricsObservationWindowTpsLTE,omitempty"`
+	MetricsObservationWindowTpsIsNil  bool      `json:"metricsObservationWindowTpsIsNil,omitempty"`
+	MetricsObservationWindowTpsNotNil bool      `json:"metricsObservationWindowTpsNotNil,omitempty"`
+
+	// "metrics_hedge_start_time" field predicates.
+	MetricsHedgeStartTime       *int64  `json:"metricsHedgeStartTime,omitempty"`
+	MetricsHedgeStartTimeNEQ    *int64  `json:"metricsHedgeStartTimeNEQ,omitempty"`
+	MetricsHedgeStartTimeIn     []int64 `json:"metricsHedgeStartTimeIn,omitempty"`
+	MetricsHedgeStartTimeNotIn  []int64 `json:"metricsHedgeStartTimeNotIn,omitempty"`
+	MetricsHedgeStartTimeGT     *int64  `json:"metricsHedgeStartTimeGT,omitempty"`
+	MetricsHedgeStartTimeGTE    *int64  `json:"metricsHedgeStartTimeGTE,omitempty"`
+	MetricsHedgeStartTimeLT     *int64  `json:"metricsHedgeStartTimeLT,omitempty"`
+	MetricsHedgeStartTimeLTE    *int64  `json:"metricsHedgeStartTimeLTE,omitempty"`
+	MetricsHedgeStartTimeIsNil  bool    `json:"metricsHedgeStartTimeIsNil,omitempty"`
+	MetricsHedgeStartTimeNotNil bool    `json:"metricsHedgeStartTimeNotNil,omitempty"`
+
+	// "metrics_shadow_completion_reason" field predicates.
+	MetricsShadowCompletionReason             *string  `json:"metricsShadowCompletionReason,omitempty"`
+	MetricsShadowCompletionReasonNEQ          *string  `json:"metricsShadowCompletionReasonNEQ,omitempty"`
+	MetricsShadowCompletionReasonIn           []string `json:"metricsShadowCompletionReasonIn,omitempty"`
+	MetricsShadowCompletionReasonNotIn        []string `json:"metricsShadowCompletionReasonNotIn,omitempty"`
+	MetricsShadowCompletionReasonGT           *string  `json:"metricsShadowCompletionReasonGT,omitempty"`
+	MetricsShadowCompletionReasonGTE          *string  `json:"metricsShadowCompletionReasonGTE,omitempty"`
+	MetricsShadowCompletionReasonLT           *string  `json:"metricsShadowCompletionReasonLT,omitempty"`
+	MetricsShadowCompletionReasonLTE          *string  `json:"metricsShadowCompletionReasonLTE,omitempty"`
+	MetricsShadowCompletionReasonContains     *string  `json:"metricsShadowCompletionReasonContains,omitempty"`
+	MetricsShadowCompletionReasonHasPrefix    *string  `json:"metricsShadowCompletionReasonHasPrefix,omitempty"`
+	MetricsShadowCompletionReasonHasSuffix    *string  `json:"metricsShadowCompletionReasonHasSuffix,omitempty"`
+	MetricsShadowCompletionReasonIsNil        bool     `json:"metricsShadowCompletionReasonIsNil,omitempty"`
+	MetricsShadowCompletionReasonNotNil       bool     `json:"metricsShadowCompletionReasonNotNil,omitempty"`
+	MetricsShadowCompletionReasonEqualFold    *string  `json:"metricsShadowCompletionReasonEqualFold,omitempty"`
+	MetricsShadowCompletionReasonContainsFold *string  `json:"metricsShadowCompletionReasonContainsFold,omitempty"`
+
 	// "request" edge predicates.
 	HasRequest     *bool                `json:"hasRequest,omitempty"`
 	HasRequestWith []*RequestWhereInput `json:"hasRequestWith,omitempty"`
@@ -7280,6 +7350,180 @@ func (i *RequestExecutionWhereInput) P() (predicate.RequestExecution, error) {
 	}
 	if i.MetricsReasoningDurationMsNotNil {
 		predicates = append(predicates, requestexecution.MetricsReasoningDurationMsNotNil())
+	}
+	if i.HedgeRole != nil {
+		predicates = append(predicates, requestexecution.HedgeRoleEQ(*i.HedgeRole))
+	}
+	if i.HedgeRoleNEQ != nil {
+		predicates = append(predicates, requestexecution.HedgeRoleNEQ(*i.HedgeRoleNEQ))
+	}
+	if len(i.HedgeRoleIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgeRoleIn(i.HedgeRoleIn...))
+	}
+	if len(i.HedgeRoleNotIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgeRoleNotIn(i.HedgeRoleNotIn...))
+	}
+	if i.HedgeOutcome != nil {
+		predicates = append(predicates, requestexecution.HedgeOutcomeEQ(*i.HedgeOutcome))
+	}
+	if i.HedgeOutcomeNEQ != nil {
+		predicates = append(predicates, requestexecution.HedgeOutcomeNEQ(*i.HedgeOutcomeNEQ))
+	}
+	if len(i.HedgeOutcomeIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgeOutcomeIn(i.HedgeOutcomeIn...))
+	}
+	if len(i.HedgeOutcomeNotIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgeOutcomeNotIn(i.HedgeOutcomeNotIn...))
+	}
+	if i.HedgePairID != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDEQ(*i.HedgePairID))
+	}
+	if i.HedgePairIDNEQ != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDNEQ(*i.HedgePairIDNEQ))
+	}
+	if len(i.HedgePairIDIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgePairIDIn(i.HedgePairIDIn...))
+	}
+	if len(i.HedgePairIDNotIn) > 0 {
+		predicates = append(predicates, requestexecution.HedgePairIDNotIn(i.HedgePairIDNotIn...))
+	}
+	if i.HedgePairIDGT != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDGT(*i.HedgePairIDGT))
+	}
+	if i.HedgePairIDGTE != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDGTE(*i.HedgePairIDGTE))
+	}
+	if i.HedgePairIDLT != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDLT(*i.HedgePairIDLT))
+	}
+	if i.HedgePairIDLTE != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDLTE(*i.HedgePairIDLTE))
+	}
+	if i.HedgePairIDContains != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDContains(*i.HedgePairIDContains))
+	}
+	if i.HedgePairIDHasPrefix != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDHasPrefix(*i.HedgePairIDHasPrefix))
+	}
+	if i.HedgePairIDHasSuffix != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDHasSuffix(*i.HedgePairIDHasSuffix))
+	}
+	if i.HedgePairIDIsNil {
+		predicates = append(predicates, requestexecution.HedgePairIDIsNil())
+	}
+	if i.HedgePairIDNotNil {
+		predicates = append(predicates, requestexecution.HedgePairIDNotNil())
+	}
+	if i.HedgePairIDEqualFold != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDEqualFold(*i.HedgePairIDEqualFold))
+	}
+	if i.HedgePairIDContainsFold != nil {
+		predicates = append(predicates, requestexecution.HedgePairIDContainsFold(*i.HedgePairIDContainsFold))
+	}
+	if i.MetricsObservationWindowTps != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsEQ(*i.MetricsObservationWindowTps))
+	}
+	if i.MetricsObservationWindowTpsNEQ != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsNEQ(*i.MetricsObservationWindowTpsNEQ))
+	}
+	if len(i.MetricsObservationWindowTpsIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsIn(i.MetricsObservationWindowTpsIn...))
+	}
+	if len(i.MetricsObservationWindowTpsNotIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsNotIn(i.MetricsObservationWindowTpsNotIn...))
+	}
+	if i.MetricsObservationWindowTpsGT != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsGT(*i.MetricsObservationWindowTpsGT))
+	}
+	if i.MetricsObservationWindowTpsGTE != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsGTE(*i.MetricsObservationWindowTpsGTE))
+	}
+	if i.MetricsObservationWindowTpsLT != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsLT(*i.MetricsObservationWindowTpsLT))
+	}
+	if i.MetricsObservationWindowTpsLTE != nil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsLTE(*i.MetricsObservationWindowTpsLTE))
+	}
+	if i.MetricsObservationWindowTpsIsNil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsIsNil())
+	}
+	if i.MetricsObservationWindowTpsNotNil {
+		predicates = append(predicates, requestexecution.MetricsObservationWindowTpsNotNil())
+	}
+	if i.MetricsHedgeStartTime != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeEQ(*i.MetricsHedgeStartTime))
+	}
+	if i.MetricsHedgeStartTimeNEQ != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeNEQ(*i.MetricsHedgeStartTimeNEQ))
+	}
+	if len(i.MetricsHedgeStartTimeIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeIn(i.MetricsHedgeStartTimeIn...))
+	}
+	if len(i.MetricsHedgeStartTimeNotIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeNotIn(i.MetricsHedgeStartTimeNotIn...))
+	}
+	if i.MetricsHedgeStartTimeGT != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeGT(*i.MetricsHedgeStartTimeGT))
+	}
+	if i.MetricsHedgeStartTimeGTE != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeGTE(*i.MetricsHedgeStartTimeGTE))
+	}
+	if i.MetricsHedgeStartTimeLT != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeLT(*i.MetricsHedgeStartTimeLT))
+	}
+	if i.MetricsHedgeStartTimeLTE != nil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeLTE(*i.MetricsHedgeStartTimeLTE))
+	}
+	if i.MetricsHedgeStartTimeIsNil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeIsNil())
+	}
+	if i.MetricsHedgeStartTimeNotNil {
+		predicates = append(predicates, requestexecution.MetricsHedgeStartTimeNotNil())
+	}
+	if i.MetricsShadowCompletionReason != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonEQ(*i.MetricsShadowCompletionReason))
+	}
+	if i.MetricsShadowCompletionReasonNEQ != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonNEQ(*i.MetricsShadowCompletionReasonNEQ))
+	}
+	if len(i.MetricsShadowCompletionReasonIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonIn(i.MetricsShadowCompletionReasonIn...))
+	}
+	if len(i.MetricsShadowCompletionReasonNotIn) > 0 {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonNotIn(i.MetricsShadowCompletionReasonNotIn...))
+	}
+	if i.MetricsShadowCompletionReasonGT != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonGT(*i.MetricsShadowCompletionReasonGT))
+	}
+	if i.MetricsShadowCompletionReasonGTE != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonGTE(*i.MetricsShadowCompletionReasonGTE))
+	}
+	if i.MetricsShadowCompletionReasonLT != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonLT(*i.MetricsShadowCompletionReasonLT))
+	}
+	if i.MetricsShadowCompletionReasonLTE != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonLTE(*i.MetricsShadowCompletionReasonLTE))
+	}
+	if i.MetricsShadowCompletionReasonContains != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonContains(*i.MetricsShadowCompletionReasonContains))
+	}
+	if i.MetricsShadowCompletionReasonHasPrefix != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonHasPrefix(*i.MetricsShadowCompletionReasonHasPrefix))
+	}
+	if i.MetricsShadowCompletionReasonHasSuffix != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonHasSuffix(*i.MetricsShadowCompletionReasonHasSuffix))
+	}
+	if i.MetricsShadowCompletionReasonIsNil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonIsNil())
+	}
+	if i.MetricsShadowCompletionReasonNotNil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonNotNil())
+	}
+	if i.MetricsShadowCompletionReasonEqualFold != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonEqualFold(*i.MetricsShadowCompletionReasonEqualFold))
+	}
+	if i.MetricsShadowCompletionReasonContainsFold != nil {
+		predicates = append(predicates, requestexecution.MetricsShadowCompletionReasonContainsFold(*i.MetricsShadowCompletionReasonContainsFold))
 	}
 
 	if i.HasRequest != nil {

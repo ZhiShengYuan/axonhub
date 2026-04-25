@@ -3789,6 +3789,36 @@ func (_q *RequestExecutionQuery) collectField(ctx context.Context, oneNode bool,
 				selectedFields = append(selectedFields, requestexecution.FieldRequestHeaders)
 				fieldSeen[requestexecution.FieldRequestHeaders] = struct{}{}
 			}
+		case "hedgeRole":
+			if _, ok := fieldSeen[requestexecution.FieldHedgeRole]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldHedgeRole)
+				fieldSeen[requestexecution.FieldHedgeRole] = struct{}{}
+			}
+		case "hedgeOutcome":
+			if _, ok := fieldSeen[requestexecution.FieldHedgeOutcome]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldHedgeOutcome)
+				fieldSeen[requestexecution.FieldHedgeOutcome] = struct{}{}
+			}
+		case "hedgePairID":
+			if _, ok := fieldSeen[requestexecution.FieldHedgePairID]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldHedgePairID)
+				fieldSeen[requestexecution.FieldHedgePairID] = struct{}{}
+			}
+		case "metricsObservationWindowTps":
+			if _, ok := fieldSeen[requestexecution.FieldMetricsObservationWindowTps]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldMetricsObservationWindowTps)
+				fieldSeen[requestexecution.FieldMetricsObservationWindowTps] = struct{}{}
+			}
+		case "metricsHedgeStartTime":
+			if _, ok := fieldSeen[requestexecution.FieldMetricsHedgeStartTime]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldMetricsHedgeStartTime)
+				fieldSeen[requestexecution.FieldMetricsHedgeStartTime] = struct{}{}
+			}
+		case "metricsShadowCompletionReason":
+			if _, ok := fieldSeen[requestexecution.FieldMetricsShadowCompletionReason]; !ok {
+				selectedFields = append(selectedFields, requestexecution.FieldMetricsShadowCompletionReason)
+				fieldSeen[requestexecution.FieldMetricsShadowCompletionReason] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

@@ -253,6 +253,80 @@ func (_u *RequestExecutionUpdate) ClearRequestHeaders() *RequestExecutionUpdate 
 	return _u
 }
 
+// SetMetricsObservationWindowTps sets the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdate) SetMetricsObservationWindowTps(v float64) *RequestExecutionUpdate {
+	_u.mutation.ResetMetricsObservationWindowTps()
+	_u.mutation.SetMetricsObservationWindowTps(v)
+	return _u
+}
+
+// SetNillableMetricsObservationWindowTps sets the "metrics_observation_window_tps" field if the given value is not nil.
+func (_u *RequestExecutionUpdate) SetNillableMetricsObservationWindowTps(v *float64) *RequestExecutionUpdate {
+	if v != nil {
+		_u.SetMetricsObservationWindowTps(*v)
+	}
+	return _u
+}
+
+// AddMetricsObservationWindowTps adds value to the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdate) AddMetricsObservationWindowTps(v float64) *RequestExecutionUpdate {
+	_u.mutation.AddMetricsObservationWindowTps(v)
+	return _u
+}
+
+// ClearMetricsObservationWindowTps clears the value of the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdate) ClearMetricsObservationWindowTps() *RequestExecutionUpdate {
+	_u.mutation.ClearMetricsObservationWindowTps()
+	return _u
+}
+
+// SetMetricsHedgeStartTime sets the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdate) SetMetricsHedgeStartTime(v int64) *RequestExecutionUpdate {
+	_u.mutation.ResetMetricsHedgeStartTime()
+	_u.mutation.SetMetricsHedgeStartTime(v)
+	return _u
+}
+
+// SetNillableMetricsHedgeStartTime sets the "metrics_hedge_start_time" field if the given value is not nil.
+func (_u *RequestExecutionUpdate) SetNillableMetricsHedgeStartTime(v *int64) *RequestExecutionUpdate {
+	if v != nil {
+		_u.SetMetricsHedgeStartTime(*v)
+	}
+	return _u
+}
+
+// AddMetricsHedgeStartTime adds value to the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdate) AddMetricsHedgeStartTime(v int64) *RequestExecutionUpdate {
+	_u.mutation.AddMetricsHedgeStartTime(v)
+	return _u
+}
+
+// ClearMetricsHedgeStartTime clears the value of the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdate) ClearMetricsHedgeStartTime() *RequestExecutionUpdate {
+	_u.mutation.ClearMetricsHedgeStartTime()
+	return _u
+}
+
+// SetMetricsShadowCompletionReason sets the "metrics_shadow_completion_reason" field.
+func (_u *RequestExecutionUpdate) SetMetricsShadowCompletionReason(v string) *RequestExecutionUpdate {
+	_u.mutation.SetMetricsShadowCompletionReason(v)
+	return _u
+}
+
+// SetNillableMetricsShadowCompletionReason sets the "metrics_shadow_completion_reason" field if the given value is not nil.
+func (_u *RequestExecutionUpdate) SetNillableMetricsShadowCompletionReason(v *string) *RequestExecutionUpdate {
+	if v != nil {
+		_u.SetMetricsShadowCompletionReason(*v)
+	}
+	return _u
+}
+
+// ClearMetricsShadowCompletionReason clears the value of the "metrics_shadow_completion_reason" field.
+func (_u *RequestExecutionUpdate) ClearMetricsShadowCompletionReason() *RequestExecutionUpdate {
+	_u.mutation.ClearMetricsShadowCompletionReason()
+	return _u
+}
+
 // Mutation returns the RequestExecutionMutation object of the builder.
 func (_u *RequestExecutionUpdate) Mutation() *RequestExecutionMutation {
 	return _u.mutation
@@ -411,6 +485,33 @@ func (_u *RequestExecutionUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if _u.mutation.RequestHeadersCleared() {
 		_spec.ClearField(requestexecution.FieldRequestHeaders, field.TypeJSON)
+	}
+	if _u.mutation.HedgePairIDCleared() {
+		_spec.ClearField(requestexecution.FieldHedgePairID, field.TypeString)
+	}
+	if value, ok := _u.mutation.MetricsObservationWindowTps(); ok {
+		_spec.SetField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMetricsObservationWindowTps(); ok {
+		_spec.AddField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64, value)
+	}
+	if _u.mutation.MetricsObservationWindowTpsCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.MetricsHedgeStartTime(); ok {
+		_spec.SetField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMetricsHedgeStartTime(); ok {
+		_spec.AddField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64, value)
+	}
+	if _u.mutation.MetricsHedgeStartTimeCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.MetricsShadowCompletionReason(); ok {
+		_spec.SetField(requestexecution.FieldMetricsShadowCompletionReason, field.TypeString, value)
+	}
+	if _u.mutation.MetricsShadowCompletionReasonCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsShadowCompletionReason, field.TypeString)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -656,6 +757,80 @@ func (_u *RequestExecutionUpdateOne) ClearRequestHeaders() *RequestExecutionUpda
 	return _u
 }
 
+// SetMetricsObservationWindowTps sets the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdateOne) SetMetricsObservationWindowTps(v float64) *RequestExecutionUpdateOne {
+	_u.mutation.ResetMetricsObservationWindowTps()
+	_u.mutation.SetMetricsObservationWindowTps(v)
+	return _u
+}
+
+// SetNillableMetricsObservationWindowTps sets the "metrics_observation_window_tps" field if the given value is not nil.
+func (_u *RequestExecutionUpdateOne) SetNillableMetricsObservationWindowTps(v *float64) *RequestExecutionUpdateOne {
+	if v != nil {
+		_u.SetMetricsObservationWindowTps(*v)
+	}
+	return _u
+}
+
+// AddMetricsObservationWindowTps adds value to the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdateOne) AddMetricsObservationWindowTps(v float64) *RequestExecutionUpdateOne {
+	_u.mutation.AddMetricsObservationWindowTps(v)
+	return _u
+}
+
+// ClearMetricsObservationWindowTps clears the value of the "metrics_observation_window_tps" field.
+func (_u *RequestExecutionUpdateOne) ClearMetricsObservationWindowTps() *RequestExecutionUpdateOne {
+	_u.mutation.ClearMetricsObservationWindowTps()
+	return _u
+}
+
+// SetMetricsHedgeStartTime sets the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdateOne) SetMetricsHedgeStartTime(v int64) *RequestExecutionUpdateOne {
+	_u.mutation.ResetMetricsHedgeStartTime()
+	_u.mutation.SetMetricsHedgeStartTime(v)
+	return _u
+}
+
+// SetNillableMetricsHedgeStartTime sets the "metrics_hedge_start_time" field if the given value is not nil.
+func (_u *RequestExecutionUpdateOne) SetNillableMetricsHedgeStartTime(v *int64) *RequestExecutionUpdateOne {
+	if v != nil {
+		_u.SetMetricsHedgeStartTime(*v)
+	}
+	return _u
+}
+
+// AddMetricsHedgeStartTime adds value to the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdateOne) AddMetricsHedgeStartTime(v int64) *RequestExecutionUpdateOne {
+	_u.mutation.AddMetricsHedgeStartTime(v)
+	return _u
+}
+
+// ClearMetricsHedgeStartTime clears the value of the "metrics_hedge_start_time" field.
+func (_u *RequestExecutionUpdateOne) ClearMetricsHedgeStartTime() *RequestExecutionUpdateOne {
+	_u.mutation.ClearMetricsHedgeStartTime()
+	return _u
+}
+
+// SetMetricsShadowCompletionReason sets the "metrics_shadow_completion_reason" field.
+func (_u *RequestExecutionUpdateOne) SetMetricsShadowCompletionReason(v string) *RequestExecutionUpdateOne {
+	_u.mutation.SetMetricsShadowCompletionReason(v)
+	return _u
+}
+
+// SetNillableMetricsShadowCompletionReason sets the "metrics_shadow_completion_reason" field if the given value is not nil.
+func (_u *RequestExecutionUpdateOne) SetNillableMetricsShadowCompletionReason(v *string) *RequestExecutionUpdateOne {
+	if v != nil {
+		_u.SetMetricsShadowCompletionReason(*v)
+	}
+	return _u
+}
+
+// ClearMetricsShadowCompletionReason clears the value of the "metrics_shadow_completion_reason" field.
+func (_u *RequestExecutionUpdateOne) ClearMetricsShadowCompletionReason() *RequestExecutionUpdateOne {
+	_u.mutation.ClearMetricsShadowCompletionReason()
+	return _u
+}
+
 // Mutation returns the RequestExecutionMutation object of the builder.
 func (_u *RequestExecutionUpdateOne) Mutation() *RequestExecutionMutation {
 	return _u.mutation
@@ -844,6 +1019,33 @@ func (_u *RequestExecutionUpdateOne) sqlSave(ctx context.Context) (_node *Reques
 	}
 	if _u.mutation.RequestHeadersCleared() {
 		_spec.ClearField(requestexecution.FieldRequestHeaders, field.TypeJSON)
+	}
+	if _u.mutation.HedgePairIDCleared() {
+		_spec.ClearField(requestexecution.FieldHedgePairID, field.TypeString)
+	}
+	if value, ok := _u.mutation.MetricsObservationWindowTps(); ok {
+		_spec.SetField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMetricsObservationWindowTps(); ok {
+		_spec.AddField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64, value)
+	}
+	if _u.mutation.MetricsObservationWindowTpsCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsObservationWindowTps, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.MetricsHedgeStartTime(); ok {
+		_spec.SetField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMetricsHedgeStartTime(); ok {
+		_spec.AddField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64, value)
+	}
+	if _u.mutation.MetricsHedgeStartTimeCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsHedgeStartTime, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.MetricsShadowCompletionReason(); ok {
+		_spec.SetField(requestexecution.FieldMetricsShadowCompletionReason, field.TypeString, value)
+	}
+	if _u.mutation.MetricsShadowCompletionReasonCleared() {
+		_spec.ClearField(requestexecution.FieldMetricsShadowCompletionReason, field.TypeString)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &RequestExecution{config: _u.config}

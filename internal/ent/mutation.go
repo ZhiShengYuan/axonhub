@@ -15748,6 +15748,14 @@ type RequestExecutionMutation struct {
 	addmetrics_reasoning_duration_ms  *int64
 	request_headers                   *objects.JSONRawMessage
 	appendrequest_headers             objects.JSONRawMessage
+	hedge_role                        *requestexecution.HedgeRole
+	hedge_outcome                     *requestexecution.HedgeOutcome
+	hedge_pair_id                     *string
+	metrics_observation_window_tps    *float64
+	addmetrics_observation_window_tps *float64
+	metrics_hedge_start_time          *int64
+	addmetrics_hedge_start_time       *int64
+	metrics_shadow_completion_reason  *string
 	clearedFields                     map[string]struct{}
 	request                           *int
 	clearedrequest                    bool
@@ -16888,6 +16896,316 @@ func (m *RequestExecutionMutation) ResetRequestHeaders() {
 	delete(m.clearedFields, requestexecution.FieldRequestHeaders)
 }
 
+// SetHedgeRole sets the "hedge_role" field.
+func (m *RequestExecutionMutation) SetHedgeRole(rr requestexecution.HedgeRole) {
+	m.hedge_role = &rr
+}
+
+// HedgeRole returns the value of the "hedge_role" field in the mutation.
+func (m *RequestExecutionMutation) HedgeRole() (r requestexecution.HedgeRole, exists bool) {
+	v := m.hedge_role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHedgeRole returns the old "hedge_role" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldHedgeRole(ctx context.Context) (v requestexecution.HedgeRole, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHedgeRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHedgeRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHedgeRole: %w", err)
+	}
+	return oldValue.HedgeRole, nil
+}
+
+// ResetHedgeRole resets all changes to the "hedge_role" field.
+func (m *RequestExecutionMutation) ResetHedgeRole() {
+	m.hedge_role = nil
+}
+
+// SetHedgeOutcome sets the "hedge_outcome" field.
+func (m *RequestExecutionMutation) SetHedgeOutcome(ro requestexecution.HedgeOutcome) {
+	m.hedge_outcome = &ro
+}
+
+// HedgeOutcome returns the value of the "hedge_outcome" field in the mutation.
+func (m *RequestExecutionMutation) HedgeOutcome() (r requestexecution.HedgeOutcome, exists bool) {
+	v := m.hedge_outcome
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHedgeOutcome returns the old "hedge_outcome" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldHedgeOutcome(ctx context.Context) (v requestexecution.HedgeOutcome, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHedgeOutcome is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHedgeOutcome requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHedgeOutcome: %w", err)
+	}
+	return oldValue.HedgeOutcome, nil
+}
+
+// ResetHedgeOutcome resets all changes to the "hedge_outcome" field.
+func (m *RequestExecutionMutation) ResetHedgeOutcome() {
+	m.hedge_outcome = nil
+}
+
+// SetHedgePairID sets the "hedge_pair_id" field.
+func (m *RequestExecutionMutation) SetHedgePairID(s string) {
+	m.hedge_pair_id = &s
+}
+
+// HedgePairID returns the value of the "hedge_pair_id" field in the mutation.
+func (m *RequestExecutionMutation) HedgePairID() (r string, exists bool) {
+	v := m.hedge_pair_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHedgePairID returns the old "hedge_pair_id" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldHedgePairID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHedgePairID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHedgePairID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHedgePairID: %w", err)
+	}
+	return oldValue.HedgePairID, nil
+}
+
+// ClearHedgePairID clears the value of the "hedge_pair_id" field.
+func (m *RequestExecutionMutation) ClearHedgePairID() {
+	m.hedge_pair_id = nil
+	m.clearedFields[requestexecution.FieldHedgePairID] = struct{}{}
+}
+
+// HedgePairIDCleared returns if the "hedge_pair_id" field was cleared in this mutation.
+func (m *RequestExecutionMutation) HedgePairIDCleared() bool {
+	_, ok := m.clearedFields[requestexecution.FieldHedgePairID]
+	return ok
+}
+
+// ResetHedgePairID resets all changes to the "hedge_pair_id" field.
+func (m *RequestExecutionMutation) ResetHedgePairID() {
+	m.hedge_pair_id = nil
+	delete(m.clearedFields, requestexecution.FieldHedgePairID)
+}
+
+// SetMetricsObservationWindowTps sets the "metrics_observation_window_tps" field.
+func (m *RequestExecutionMutation) SetMetricsObservationWindowTps(f float64) {
+	m.metrics_observation_window_tps = &f
+	m.addmetrics_observation_window_tps = nil
+}
+
+// MetricsObservationWindowTps returns the value of the "metrics_observation_window_tps" field in the mutation.
+func (m *RequestExecutionMutation) MetricsObservationWindowTps() (r float64, exists bool) {
+	v := m.metrics_observation_window_tps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetricsObservationWindowTps returns the old "metrics_observation_window_tps" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldMetricsObservationWindowTps(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetricsObservationWindowTps is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetricsObservationWindowTps requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetricsObservationWindowTps: %w", err)
+	}
+	return oldValue.MetricsObservationWindowTps, nil
+}
+
+// AddMetricsObservationWindowTps adds f to the "metrics_observation_window_tps" field.
+func (m *RequestExecutionMutation) AddMetricsObservationWindowTps(f float64) {
+	if m.addmetrics_observation_window_tps != nil {
+		*m.addmetrics_observation_window_tps += f
+	} else {
+		m.addmetrics_observation_window_tps = &f
+	}
+}
+
+// AddedMetricsObservationWindowTps returns the value that was added to the "metrics_observation_window_tps" field in this mutation.
+func (m *RequestExecutionMutation) AddedMetricsObservationWindowTps() (r float64, exists bool) {
+	v := m.addmetrics_observation_window_tps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMetricsObservationWindowTps clears the value of the "metrics_observation_window_tps" field.
+func (m *RequestExecutionMutation) ClearMetricsObservationWindowTps() {
+	m.metrics_observation_window_tps = nil
+	m.addmetrics_observation_window_tps = nil
+	m.clearedFields[requestexecution.FieldMetricsObservationWindowTps] = struct{}{}
+}
+
+// MetricsObservationWindowTpsCleared returns if the "metrics_observation_window_tps" field was cleared in this mutation.
+func (m *RequestExecutionMutation) MetricsObservationWindowTpsCleared() bool {
+	_, ok := m.clearedFields[requestexecution.FieldMetricsObservationWindowTps]
+	return ok
+}
+
+// ResetMetricsObservationWindowTps resets all changes to the "metrics_observation_window_tps" field.
+func (m *RequestExecutionMutation) ResetMetricsObservationWindowTps() {
+	m.metrics_observation_window_tps = nil
+	m.addmetrics_observation_window_tps = nil
+	delete(m.clearedFields, requestexecution.FieldMetricsObservationWindowTps)
+}
+
+// SetMetricsHedgeStartTime sets the "metrics_hedge_start_time" field.
+func (m *RequestExecutionMutation) SetMetricsHedgeStartTime(i int64) {
+	m.metrics_hedge_start_time = &i
+	m.addmetrics_hedge_start_time = nil
+}
+
+// MetricsHedgeStartTime returns the value of the "metrics_hedge_start_time" field in the mutation.
+func (m *RequestExecutionMutation) MetricsHedgeStartTime() (r int64, exists bool) {
+	v := m.metrics_hedge_start_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetricsHedgeStartTime returns the old "metrics_hedge_start_time" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldMetricsHedgeStartTime(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetricsHedgeStartTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetricsHedgeStartTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetricsHedgeStartTime: %w", err)
+	}
+	return oldValue.MetricsHedgeStartTime, nil
+}
+
+// AddMetricsHedgeStartTime adds i to the "metrics_hedge_start_time" field.
+func (m *RequestExecutionMutation) AddMetricsHedgeStartTime(i int64) {
+	if m.addmetrics_hedge_start_time != nil {
+		*m.addmetrics_hedge_start_time += i
+	} else {
+		m.addmetrics_hedge_start_time = &i
+	}
+}
+
+// AddedMetricsHedgeStartTime returns the value that was added to the "metrics_hedge_start_time" field in this mutation.
+func (m *RequestExecutionMutation) AddedMetricsHedgeStartTime() (r int64, exists bool) {
+	v := m.addmetrics_hedge_start_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMetricsHedgeStartTime clears the value of the "metrics_hedge_start_time" field.
+func (m *RequestExecutionMutation) ClearMetricsHedgeStartTime() {
+	m.metrics_hedge_start_time = nil
+	m.addmetrics_hedge_start_time = nil
+	m.clearedFields[requestexecution.FieldMetricsHedgeStartTime] = struct{}{}
+}
+
+// MetricsHedgeStartTimeCleared returns if the "metrics_hedge_start_time" field was cleared in this mutation.
+func (m *RequestExecutionMutation) MetricsHedgeStartTimeCleared() bool {
+	_, ok := m.clearedFields[requestexecution.FieldMetricsHedgeStartTime]
+	return ok
+}
+
+// ResetMetricsHedgeStartTime resets all changes to the "metrics_hedge_start_time" field.
+func (m *RequestExecutionMutation) ResetMetricsHedgeStartTime() {
+	m.metrics_hedge_start_time = nil
+	m.addmetrics_hedge_start_time = nil
+	delete(m.clearedFields, requestexecution.FieldMetricsHedgeStartTime)
+}
+
+// SetMetricsShadowCompletionReason sets the "metrics_shadow_completion_reason" field.
+func (m *RequestExecutionMutation) SetMetricsShadowCompletionReason(s string) {
+	m.metrics_shadow_completion_reason = &s
+}
+
+// MetricsShadowCompletionReason returns the value of the "metrics_shadow_completion_reason" field in the mutation.
+func (m *RequestExecutionMutation) MetricsShadowCompletionReason() (r string, exists bool) {
+	v := m.metrics_shadow_completion_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetricsShadowCompletionReason returns the old "metrics_shadow_completion_reason" field's value of the RequestExecution entity.
+// If the RequestExecution object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestExecutionMutation) OldMetricsShadowCompletionReason(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetricsShadowCompletionReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetricsShadowCompletionReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetricsShadowCompletionReason: %w", err)
+	}
+	return oldValue.MetricsShadowCompletionReason, nil
+}
+
+// ClearMetricsShadowCompletionReason clears the value of the "metrics_shadow_completion_reason" field.
+func (m *RequestExecutionMutation) ClearMetricsShadowCompletionReason() {
+	m.metrics_shadow_completion_reason = nil
+	m.clearedFields[requestexecution.FieldMetricsShadowCompletionReason] = struct{}{}
+}
+
+// MetricsShadowCompletionReasonCleared returns if the "metrics_shadow_completion_reason" field was cleared in this mutation.
+func (m *RequestExecutionMutation) MetricsShadowCompletionReasonCleared() bool {
+	_, ok := m.clearedFields[requestexecution.FieldMetricsShadowCompletionReason]
+	return ok
+}
+
+// ResetMetricsShadowCompletionReason resets all changes to the "metrics_shadow_completion_reason" field.
+func (m *RequestExecutionMutation) ResetMetricsShadowCompletionReason() {
+	m.metrics_shadow_completion_reason = nil
+	delete(m.clearedFields, requestexecution.FieldMetricsShadowCompletionReason)
+}
+
 // ClearRequest clears the "request" edge to the Request entity.
 func (m *RequestExecutionMutation) ClearRequest() {
 	m.clearedrequest = true
@@ -17003,7 +17321,7 @@ func (m *RequestExecutionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RequestExecutionMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 26)
 	if m.created_at != nil {
 		fields = append(fields, requestexecution.FieldCreatedAt)
 	}
@@ -17064,6 +17382,24 @@ func (m *RequestExecutionMutation) Fields() []string {
 	if m.request_headers != nil {
 		fields = append(fields, requestexecution.FieldRequestHeaders)
 	}
+	if m.hedge_role != nil {
+		fields = append(fields, requestexecution.FieldHedgeRole)
+	}
+	if m.hedge_outcome != nil {
+		fields = append(fields, requestexecution.FieldHedgeOutcome)
+	}
+	if m.hedge_pair_id != nil {
+		fields = append(fields, requestexecution.FieldHedgePairID)
+	}
+	if m.metrics_observation_window_tps != nil {
+		fields = append(fields, requestexecution.FieldMetricsObservationWindowTps)
+	}
+	if m.metrics_hedge_start_time != nil {
+		fields = append(fields, requestexecution.FieldMetricsHedgeStartTime)
+	}
+	if m.metrics_shadow_completion_reason != nil {
+		fields = append(fields, requestexecution.FieldMetricsShadowCompletionReason)
+	}
 	return fields
 }
 
@@ -17112,6 +17448,18 @@ func (m *RequestExecutionMutation) Field(name string) (ent.Value, bool) {
 		return m.MetricsReasoningDurationMs()
 	case requestexecution.FieldRequestHeaders:
 		return m.RequestHeaders()
+	case requestexecution.FieldHedgeRole:
+		return m.HedgeRole()
+	case requestexecution.FieldHedgeOutcome:
+		return m.HedgeOutcome()
+	case requestexecution.FieldHedgePairID:
+		return m.HedgePairID()
+	case requestexecution.FieldMetricsObservationWindowTps:
+		return m.MetricsObservationWindowTps()
+	case requestexecution.FieldMetricsHedgeStartTime:
+		return m.MetricsHedgeStartTime()
+	case requestexecution.FieldMetricsShadowCompletionReason:
+		return m.MetricsShadowCompletionReason()
 	}
 	return nil, false
 }
@@ -17161,6 +17509,18 @@ func (m *RequestExecutionMutation) OldField(ctx context.Context, name string) (e
 		return m.OldMetricsReasoningDurationMs(ctx)
 	case requestexecution.FieldRequestHeaders:
 		return m.OldRequestHeaders(ctx)
+	case requestexecution.FieldHedgeRole:
+		return m.OldHedgeRole(ctx)
+	case requestexecution.FieldHedgeOutcome:
+		return m.OldHedgeOutcome(ctx)
+	case requestexecution.FieldHedgePairID:
+		return m.OldHedgePairID(ctx)
+	case requestexecution.FieldMetricsObservationWindowTps:
+		return m.OldMetricsObservationWindowTps(ctx)
+	case requestexecution.FieldMetricsHedgeStartTime:
+		return m.OldMetricsHedgeStartTime(ctx)
+	case requestexecution.FieldMetricsShadowCompletionReason:
+		return m.OldMetricsShadowCompletionReason(ctx)
 	}
 	return nil, fmt.Errorf("unknown RequestExecution field %s", name)
 }
@@ -17310,6 +17670,48 @@ func (m *RequestExecutionMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetRequestHeaders(v)
 		return nil
+	case requestexecution.FieldHedgeRole:
+		v, ok := value.(requestexecution.HedgeRole)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHedgeRole(v)
+		return nil
+	case requestexecution.FieldHedgeOutcome:
+		v, ok := value.(requestexecution.HedgeOutcome)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHedgeOutcome(v)
+		return nil
+	case requestexecution.FieldHedgePairID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHedgePairID(v)
+		return nil
+	case requestexecution.FieldMetricsObservationWindowTps:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetricsObservationWindowTps(v)
+		return nil
+	case requestexecution.FieldMetricsHedgeStartTime:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetricsHedgeStartTime(v)
+		return nil
+	case requestexecution.FieldMetricsShadowCompletionReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetricsShadowCompletionReason(v)
+		return nil
 	}
 	return fmt.Errorf("unknown RequestExecution field %s", name)
 }
@@ -17333,6 +17735,12 @@ func (m *RequestExecutionMutation) AddedFields() []string {
 	if m.addmetrics_reasoning_duration_ms != nil {
 		fields = append(fields, requestexecution.FieldMetricsReasoningDurationMs)
 	}
+	if m.addmetrics_observation_window_tps != nil {
+		fields = append(fields, requestexecution.FieldMetricsObservationWindowTps)
+	}
+	if m.addmetrics_hedge_start_time != nil {
+		fields = append(fields, requestexecution.FieldMetricsHedgeStartTime)
+	}
 	return fields
 }
 
@@ -17351,6 +17759,10 @@ func (m *RequestExecutionMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedMetricsFirstTokenLatencyMs()
 	case requestexecution.FieldMetricsReasoningDurationMs:
 		return m.AddedMetricsReasoningDurationMs()
+	case requestexecution.FieldMetricsObservationWindowTps:
+		return m.AddedMetricsObservationWindowTps()
+	case requestexecution.FieldMetricsHedgeStartTime:
+		return m.AddedMetricsHedgeStartTime()
 	}
 	return nil, false
 }
@@ -17395,6 +17807,20 @@ func (m *RequestExecutionMutation) AddField(name string, value ent.Value) error 
 		}
 		m.AddMetricsReasoningDurationMs(v)
 		return nil
+	case requestexecution.FieldMetricsObservationWindowTps:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMetricsObservationWindowTps(v)
+		return nil
+	case requestexecution.FieldMetricsHedgeStartTime:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMetricsHedgeStartTime(v)
+		return nil
 	}
 	return fmt.Errorf("unknown RequestExecution numeric field %s", name)
 }
@@ -17435,6 +17861,18 @@ func (m *RequestExecutionMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(requestexecution.FieldRequestHeaders) {
 		fields = append(fields, requestexecution.FieldRequestHeaders)
+	}
+	if m.FieldCleared(requestexecution.FieldHedgePairID) {
+		fields = append(fields, requestexecution.FieldHedgePairID)
+	}
+	if m.FieldCleared(requestexecution.FieldMetricsObservationWindowTps) {
+		fields = append(fields, requestexecution.FieldMetricsObservationWindowTps)
+	}
+	if m.FieldCleared(requestexecution.FieldMetricsHedgeStartTime) {
+		fields = append(fields, requestexecution.FieldMetricsHedgeStartTime)
+	}
+	if m.FieldCleared(requestexecution.FieldMetricsShadowCompletionReason) {
+		fields = append(fields, requestexecution.FieldMetricsShadowCompletionReason)
 	}
 	return fields
 }
@@ -17482,6 +17920,18 @@ func (m *RequestExecutionMutation) ClearField(name string) error {
 		return nil
 	case requestexecution.FieldRequestHeaders:
 		m.ClearRequestHeaders()
+		return nil
+	case requestexecution.FieldHedgePairID:
+		m.ClearHedgePairID()
+		return nil
+	case requestexecution.FieldMetricsObservationWindowTps:
+		m.ClearMetricsObservationWindowTps()
+		return nil
+	case requestexecution.FieldMetricsHedgeStartTime:
+		m.ClearMetricsHedgeStartTime()
+		return nil
+	case requestexecution.FieldMetricsShadowCompletionReason:
+		m.ClearMetricsShadowCompletionReason()
 		return nil
 	}
 	return fmt.Errorf("unknown RequestExecution nullable field %s", name)
@@ -17550,6 +18000,24 @@ func (m *RequestExecutionMutation) ResetField(name string) error {
 		return nil
 	case requestexecution.FieldRequestHeaders:
 		m.ResetRequestHeaders()
+		return nil
+	case requestexecution.FieldHedgeRole:
+		m.ResetHedgeRole()
+		return nil
+	case requestexecution.FieldHedgeOutcome:
+		m.ResetHedgeOutcome()
+		return nil
+	case requestexecution.FieldHedgePairID:
+		m.ResetHedgePairID()
+		return nil
+	case requestexecution.FieldMetricsObservationWindowTps:
+		m.ResetMetricsObservationWindowTps()
+		return nil
+	case requestexecution.FieldMetricsHedgeStartTime:
+		m.ResetMetricsHedgeStartTime()
+		return nil
+	case requestexecution.FieldMetricsShadowCompletionReason:
+		m.ResetMetricsShadowCompletionReason()
 		return nil
 	}
 	return fmt.Errorf("unknown RequestExecution field %s", name)

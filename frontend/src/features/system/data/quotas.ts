@@ -59,10 +59,10 @@ export function useProviderQuotaStatuses() {
 
   const channels = data?.queryChannels?.edges?.map((e: any) => e.node) || [];
 
-  // Filter for OAuth channels (claudecode, codex) - check both lowercase and PascalCase
+  // Filter for OAuth channels (claudecode, codex, minimax, zhipu) - check both lowercase and PascalCase
   const oauthChannels = channels.filter((c: any) => {
     const type = c.type?.toLowerCase();
-    const match = ['claudecode', 'codex'].includes(type);
+    const match = ['claudecode', 'codex', 'minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic'].includes(type);
     return match;
   });
 

@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { CHANNEL_CONFIGS } from '../data/config_channels';
 import { Channel } from '../data/schema';
 
+const MINIMAX_ZHIPU_TYPES = ['minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic'];
+
 interface ChannelExpandedRowProps {
   channel: Channel;
   columnsLength: number;
@@ -98,9 +100,130 @@ export const ChannelExpandedRow = memo(({ channel, columnsLength, getApiFormatLa
             </div>
           </div>
         )}
+
+        {MINIMAX_ZHIPU_TYPES.includes(channel.type) && (
+          <QuotaSummarySection channel={channel} />
+        )}
       </div>
     </div>
   );
 });
+
+interface QuotaSummarySectionProps {
+  channel: Channel;
+}
+
+const QuotaSummarySection = memo(({ channel }: QuotaSummarySectionProps) => {
+  const { t } = useTranslation();
+  const quotaStatus = channel.providerQuotaStatus;
+  const summary = quotaStatus?.quotaData?.summary;
+
+  if (!quotaStatus) {
+    return (
+      <div className='space-y-3'>
+        <h4 className='text-sm font-semibold'>{t('channels.quota.title')}</h4>
+        <p className='text-muted-foreground text-sm'>{t('channels.quota.notAvailable')}</p>
+      </div>
+    );
+  }
+
+  const status = quotaStatus.status || 'unknown';
+  // usage_ratio is 0-1 scale; provider_used_percentage is 0-100 scale. Handle each correctly.
+  const usageRatio = summary?.usage_ratio;
+  const providerUsedPercentage = summary?.provider_used_percentage;
+  // Display percentage: usage_ratio * 100 or provider_used_percentage directly
+  const displayPercent = usageRatio != null ? usageRatio * 100 : providerUsedPercentage != null ? providerUsedPercentage : null;
+  const periodLabel = summary?.period_label;
+  const periodEnd = summary?.period_end_at;
+  const partial = summary?.partial;
+  const channelRequestCount = summary?.channel_request_count;
+  const usedCount = summary?.provider_used_count;
+  const totalCount = summary?.provider_total_count;
+  const remainingCount = summary?.provider_remaining_count;
+
+  const getStatusColor = () => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-800';
+      case 'warning':
+        return 'bg-amber-100 text-amber-800';
+      case 'exhausted':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className='space-y-3'>
+      <h4 className='text-sm font-semibold'>{t('channels.quota.title')}</h4>
+      <div className='space-y-2 text-sm'>
+        <div className='flex items-center justify-between'>
+          <span className='text-muted-foreground'>{t('channels.quota.status')}:</span>
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor()}`}>
+            {t(`quota.status.${status}`)}
+          </span>
+        </div>
+
+        {displayPercent != null && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.usage')}:</span>
+            <span className='font-mono text-xs'>{Math.round(displayPercent ?? 0)}% {t('channels.quota.used')}</span>
+          </div>
+        )}
+
+        {usedCount != null && totalCount != null && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.allocation')}:</span>
+            <span className='font-mono text-xs'>{usedCount} / {totalCount}</span>
+          </div>
+        )}
+
+        {remainingCount != null && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.remaining')}:</span>
+            <span className='font-mono text-xs'>{remainingCount}</span>
+          </div>
+        )}
+
+        {periodLabel && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.period')}:</span>
+            <span className='text-muted-foreground'>{t('channels.quota.periodType.' + periodLabel, periodLabel)}</span>
+          </div>
+        )}
+
+        {periodEnd && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.resets')}:</span>
+            <span className='font-mono text-xs'>
+              {format(new Date(periodEnd), 'yyyy-MM-dd HH:mm')}
+            </span>
+          </div>
+        )}
+
+        {channelRequestCount != null && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.requests')}:</span>
+            <span className='font-mono text-xs'>{channelRequestCount} {t('channels.quota.requestsThisPeriod')}</span>
+          </div>
+        )}
+
+        {partial && (
+          <div className='flex items-center justify-between'>
+            <span className='text-muted-foreground'>{t('channels.quota.note')}:</span>
+            <span className='text-muted-foreground text-xs italic'>{t('channels.quota.partialData')}</span>
+          </div>
+        )}
+
+        {displayPercent == null && !periodLabel && !periodEnd && channelRequestCount == null && !partial && usedCount == null && remainingCount == null && (
+          <p className='text-muted-foreground text-sm'>—</p>
+        )}
+      </div>
+    </div>
+  );
+});
+
+QuotaSummarySection.displayName = 'QuotaSummarySection';
 
 ChannelExpandedRow.displayName = 'ChannelExpandedRow';

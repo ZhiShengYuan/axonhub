@@ -588,7 +588,7 @@ func requestToSegment(ctx context.Context, req *ent.Request) (*Segment, error) {
 	if len(req.RequestBody) > 0 {
 		apiFormat := llm.APIFormat(req.Format)
 
-		if apiFormat == llm.APIFormatOpenAIResponseCompact {
+if apiFormat == llm.APIFormatOpenAIResponseCompact {
 			requestSpans = append(requestSpans, extractSpansFromCompactRequestBody(req.RequestBody, fmt.Sprintf("request-%d", req.ID))...)
 		} else if isImageFormat(apiFormat) {
 			requestSpans = append(requestSpans, extractSpansFromImageRequestBody(req.RequestBody, fmt.Sprintf("request-%d", req.ID))...)

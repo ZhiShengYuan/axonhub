@@ -212,6 +212,39 @@ export const disabledAPIKeySchema = z.object({
 });
 export type DisabledAPIKey = z.infer<typeof disabledAPIKeySchema>;
 
+// Provider Quota Status
+export const quotaSummarySchema = z.object({
+  usage_ratio: z.number().nullable().optional(),
+  period_label: z.string().nullable().optional(),
+  period_end_at: z.string().nullable().optional(),
+  partial: z.boolean().nullable().optional(),
+  // Extended fields from backend normalization
+  provider_used_percentage: z.number().nullable().optional(),
+  provider_used_count: z.number().nullable().optional(),
+  provider_total_count: z.number().nullable().optional(),
+  provider_remaining_count: z.number().nullable().optional(),
+  channel_request_count: z.number().nullable().optional(),
+  display_status_reason: z.string().nullable().optional(),
+  window_kind: z.string().nullable().optional(),
+  period_start_at: z.string().nullable().optional(),
+});
+export type QuotaSummary = z.infer<typeof quotaSummarySchema>;
+
+export const providerQuotaStatusSchema = z.object({
+  providerType: z.string(),
+  status: z.string(),
+  quotaData: z
+    .object({
+      summary: quotaSummarySchema.nullable().optional(),
+      // Raw data fields stored as-is
+    })
+    .nullable()
+    .optional(),
+  nextResetAt: z.string().nullable().optional(),
+  ready: z.boolean().nullable().optional(),
+});
+export type ProviderQuotaStatus = z.infer<typeof providerQuotaStatusSchema>;
+
 // Channel
 export const channelSchema = z.object({
   id: z.string(),
@@ -235,6 +268,7 @@ export const channelSchema = z.object({
   errorMessage: z.string().optional().nullable(),
   remark: z.string().optional().nullable(),
   allModelEntries: z.array(channelModelEntrySchema).optional(),
+  providerQuotaStatus: providerQuotaStatusSchema.optional().nullable(),
 });
 export type Channel = z.infer<typeof channelSchema>;
 

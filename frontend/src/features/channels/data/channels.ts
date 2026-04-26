@@ -619,6 +619,13 @@ const QUERY_CHANNELS_QUERY = `
             errorCode
             reason
           }
+          providerQuotaStatus {
+            providerType
+            status
+            ready
+            nextResetAt
+            quotaData
+          }
         }
         cursor
       }

@@ -1,8 +1,6 @@
 import { Loader2, RefreshCw, Battery, BatteryLow, BatteryMedium, BatteryFull, BatteryWarning } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useProviderQuotaStatuses, ProviderQuotaChannel, checkProviderQuotas } from '@/features/system/data/quotas';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useProviderQuotaStatuses, ProviderQuotaChannel } from '@/features/system/data/quotas';
 import { useTranslation } from 'react-i18next';
 
 const STATUS_COLORS = {
@@ -19,6 +17,12 @@ const STATUS_LABELS = {
   unknown: 'quota.status.unknown',
 } as const;
 
+const MINIMAX_ZHIPU_TYPES = ['minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic'];
+
+function isMinimaxOrZhipuType(type: string): boolean {
+  return MINIMAX_ZHIPU_TYPES.includes(type);
+}
+
 type QuotaData = {
   windows?: {
     '5h'?: { utilization?: number; reset?: number; status?: string };
@@ -30,6 +34,20 @@ type QuotaData = {
   rate_limit?: {
     primary_window?: { used_percent?: number; reset_at?: number; limit_window_seconds?: number };
     secondary_window?: { used_percent?: number; reset_at?: number; limit_window_seconds?: number };
+  };
+  summary?: {
+    usage_ratio?: number;
+    provider_used_percentage?: number;
+    provider_used_count?: number;
+    provider_total_count?: number;
+    provider_remaining_count?: number;
+    period_label?: string;
+    period_start_at?: string;
+    period_end_at?: string;
+    partial?: boolean;
+    channel_request_count?: number;
+    display_status_reason?: string;
+    window_kind?: string;
   };
   error?: string;
 };
@@ -68,6 +86,11 @@ function getChannelPercentage(channel: ProviderQuotaChannel, quotaData: QuotaDat
     percentage = Math.max(util5h, util7d) * 100;
   } else if (channel.type === 'codex') {
     percentage = quotaData.rate_limit?.primary_window?.used_percent || 0;
+  } else if (isMinimaxOrZhipuType(channel.type)) {
+    const summary = quotaData?.summary;
+    const usageRatio = summary?.usage_ratio;
+    const providerUsedPercentage = summary?.provider_used_percentage;
+    percentage = usageRatio != null ? usageRatio * 100 : providerUsedPercentage != null ? providerUsedPercentage : 0;
   }
   return percentage;
 }
@@ -91,9 +114,9 @@ function QuotaRow({ channel }: { channel: ProviderQuotaChannel }) {
     if (!seconds) return t('quota.unknown');
     const hours = Math.floor(seconds / 3600);
     const days = hours >= 24 ? Math.floor(hours / 24) : 0;
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''}`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`;
-    return `${Math.floor(seconds / 60)} min`;
+    if (days > 0) return t('system.quota.durationDays', { count: days });
+    if (hours > 0) return t('system.quota.durationHours', { count: hours });
+    return t('system.quota.durationMinutes', { count: Math.floor(seconds / 60) });
   };
 
   const formatTimeToReset = (resetAt?: string | null) => {
@@ -101,11 +124,11 @@ function QuotaRow({ channel }: { channel: ProviderQuotaChannel }) {
     const now = Date.now();
     const reset = new Date(resetAt).getTime();
     const diffMs = reset - now;
-    if (diffMs < 0) return 'Reset now';
+    if (diffMs < 0) return t('system.quota.resetNow');
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours > 0) return `${diffHours}h ${diffMins % 60}m`;
-    return `${diffMins}m`;
+    if (diffHours > 0) return t('system.quota.resetTimeHoursMinutes', { hours: diffHours, minutes: diffMins % 60 });
+    return t('system.quota.resetTimeMinutes', { minutes: diffMins });
   };
 
   return (
@@ -197,12 +220,82 @@ function QuotaRow({ channel }: { channel: ProviderQuotaChannel }) {
           </div>
         </div>
       )}
+
+      {isMinimaxOrZhipuType(channel.type) && (
+        <div className="ml-6 mt-2">
+          {(() => {
+            const summary = quotaData?.summary;
+            const usageRatio = summary?.usage_ratio;
+            const providerUsedPercentage = summary?.provider_used_percentage;
+            const displayPercent = usageRatio != null ? usageRatio * 100 : providerUsedPercentage != null ? providerUsedPercentage : null;
+            const hasData = displayPercent !== null;
+            const isPartial = summary?.partial === true;
+            const periodLabel = summary?.period_label;
+            const periodEnd = summary?.period_end_at;
+            const usedCount = summary?.provider_used_count;
+            const totalCount = summary?.provider_total_count;
+            const remainingCount = summary?.provider_remaining_count;
+            const channelRequestCount = summary?.channel_request_count;
+
+            let iconColor = 'text-muted-foreground';
+            if (status === 'exhausted') {
+              iconColor = 'text-red-500';
+            } else if (status === 'warning') {
+              iconColor = 'text-yellow-500';
+            } else if (hasData) {
+              if (displayPercent >= 95) iconColor = 'text-red-500';
+              else if (displayPercent >= 80) iconColor = 'text-yellow-500';
+              else iconColor = 'text-green-500';
+            }
+
+            return (
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>{t('quota.label.used')}</span>
+                  <span className={`font-medium ${iconColor.includes('red') ? 'text-red-500' : iconColor.includes('yellow') ? 'text-yellow-500' : 'text-foreground'}`}>
+                    {displayPercent !== null ? `${Math.round(displayPercent)}%${isPartial ? t('system.quota.partial') : ''}` : '—'}
+                  </span>
+                </div>
+                {usedCount != null && totalCount != null && (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>{t('quota.label.usage')}</span>
+                    <span className="font-medium">{usedCount} / {totalCount}</span>
+                  </div>
+                )}
+                {remainingCount != null && (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>{t('quota.label.remaining')}</span>
+                    <span className="font-medium">{remainingCount}</span>
+                  </div>
+                )}
+                {channelRequestCount != null && (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>{t('quota.label.requests')}</span>
+                    <span className="font-medium">{channelRequestCount}</span>
+                  </div>
+                )}
+                {periodLabel && (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>{t('quota.label.period')}</span>
+                    <span>{t('system.quota.periodType.' + periodLabel, periodLabel)}</span>
+                  </div>
+                )}
+                {periodEnd && (
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>{t('quota.label.resets_at')}</span>
+                    <span>{new Date(periodEnd).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      )}
     </div>
   );
 }
 
 function QuotaBadgeTrigger({ channels }: { channels: ProviderQuotaChannel[] }) {
-  const { t } = useTranslation();
   const highestUsed = Math.max(...channels.map(c => {
     const quota = c.quotaStatus;
     if (!quota) return 0;
@@ -250,7 +343,7 @@ export function QuotaBadges({ isRefreshing, onRefresh }: { isRefreshing: boolean
               onClick={onRefresh}
               disabled={isRefreshing}
               className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Refresh quotas"
+              aria-label={t('system.quota.refreshQuotas')}
             >
               {isRefreshing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

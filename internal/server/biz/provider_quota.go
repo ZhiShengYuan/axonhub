@@ -14,6 +14,7 @@ import (
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/ent/channel"
 	"github.com/looplj/axonhub/internal/ent/providerquotastatus"
+	"github.com/looplj/axonhub/internal/ent/usagelog"
 	"github.com/looplj/axonhub/internal/log"
 	"github.com/looplj/axonhub/internal/server/biz/provider_quota"
 	"github.com/looplj/axonhub/llm/httpclient"
@@ -118,6 +119,8 @@ func NewProviderQuotaService(params ProviderQuotaServiceParams) *ProviderQuotaSe
 
 	svc.registerClaudeCodeSupport()
 	svc.registerCodexSupport()
+	svc.registerMiniMaxSupport()
+	svc.registerZhipuSupport()
 
 	return svc
 }
@@ -128,6 +131,14 @@ func (svc *ProviderQuotaService) registerClaudeCodeSupport() {
 
 func (svc *ProviderQuotaService) registerCodexSupport() {
 	svc.checkers["codex"] = provider_quota.NewCodexQuotaChecker(svc.httpClient)
+}
+
+func (svc *ProviderQuotaService) registerMiniMaxSupport() {
+	svc.checkers["minimax"] = provider_quota.NewMiniMaxQuotaChecker(svc.httpClient)
+}
+
+func (svc *ProviderQuotaService) registerZhipuSupport() {
+	svc.checkers["zhipu"] = provider_quota.NewZhipuQuotaChecker(svc.httpClient)
 }
 
 func (svc *ProviderQuotaService) Start(ctx context.Context) error {
@@ -216,7 +227,7 @@ func (svc *ProviderQuotaService) runQuotaCheck(ctx context.Context, force bool) 
 	q := svc.db.Channel.Query().
 		Where(
 			channel.StatusEQ(channel.StatusEnabled),
-			channel.TypeIn(channel.TypeClaudecode, channel.TypeCodex),
+			channel.TypeIn(channel.TypeClaudecode, channel.TypeCodex, channel.TypeMinimax, channel.TypeMinimaxAnthropic, channel.TypeZhipu, channel.TypeZhipuAnthropic),
 		)
 
 	if !force {
@@ -254,13 +265,14 @@ func (svc *ProviderQuotaService) runQuotaCheck(ctx context.Context, force bool) 
 }
 
 func (svc *ProviderQuotaService) checkChannelQuota(ctx context.Context, ch *ent.Channel, now time.Time) {
-	if ch.Credentials.OAuth == nil && !isOAuthJSON(ch.Credentials.APIKey) {
-		log.Debug(ctx, "channel does not support check quota", log.Int("channel_id", ch.ID), log.String("channel_name", ch.Name))
+	providerType := svc.getProviderType(ch)
+	if providerType == "" {
 		return
 	}
 
-	providerType := svc.getProviderType(ch)
-	if providerType == "" {
+	// MiniMax and Zhipu use plain API keys, not OAuth
+	if ch.Credentials.OAuth == nil && !isOAuthJSON(ch.Credentials.APIKey) && !isApiKeyOnlyProvider(providerType) {
+		log.Debug(ctx, "channel does not support check quota", log.Int("channel_id", ch.ID), log.String("channel_name", ch.Name))
 		return
 	}
 
@@ -284,6 +296,35 @@ func (svc *ProviderQuotaService) checkChannelQuota(ctx context.Context, ch *ent.
 
 		svc.saveQuotaError(ctx, ch, providerType, err, now)
 		return
+	}
+
+	if quotaData.Summary != nil && quotaData.Summary.PeriodEnd != nil {
+		periodStartAt := quotaData.Summary.PeriodStartAt
+		if periodStartAt == nil {
+			periodStartAt = svc.computePeriodStartAt(quotaData.Summary.PeriodEnd, quotaData.Summary.PeriodLabel)
+			quotaData.Summary.PeriodStartAt = periodStartAt
+		}
+		if periodStartAt != nil {
+			count, err := svc.db.UsageLog.Query().
+				Where(
+					usagelog.ChannelIDEQ(ch.ID),
+					usagelog.CreatedAtGTE(*periodStartAt),
+					usagelog.CreatedAtLT(*quotaData.Summary.PeriodEnd),
+				).
+				Count(ctx)
+			if err != nil {
+				log.Warn(ctx, "Failed to count channel requests for period",
+					log.Int("channel_id", ch.ID),
+					log.Cause(err))
+			} else {
+				countInt64 := int64(count)
+				quotaData.Summary.ChannelRequestCount = &countInt64
+			}
+		}
+	}
+
+	if quotaData.Summary != nil {
+		quotaData.RawData["summary"] = quotaData.Summary
 	}
 
 	// Save quota status
@@ -386,14 +427,40 @@ func (svc *ProviderQuotaService) saveQuotaError(
 	}
 }
 
+func isApiKeyOnlyProvider(providerType string) bool {
+	return providerType == "minimax" || providerType == "zhipu"
+}
+
 func (svc *ProviderQuotaService) getProviderType(ch *ent.Channel) string {
-	// Only claudecode and codex support quota checking; all others return empty
+	// Only claudecode, codex, minimax, and zhipu support quota checking; all others return empty
 	switch ch.Type { //nolint:exhaustive
 	case channel.TypeClaudecode:
 		return "claudecode"
 	case channel.TypeCodex:
 		return "codex"
+	case channel.TypeMinimax, channel.TypeMinimaxAnthropic:
+		return "minimax"
+	case channel.TypeZhipu, channel.TypeZhipuAnthropic:
+		return "zhipu"
 	default:
 		return ""
 	}
+}
+
+func (svc *ProviderQuotaService) computePeriodStartAt(periodEnd *time.Time, periodLabel string) *time.Time {
+	if periodEnd == nil {
+		return nil
+	}
+
+	var start time.Time
+	switch periodLabel {
+	case "Monthly":
+		start = periodEnd.AddDate(0, -1, 0)
+	case "Hourly":
+		start = periodEnd.Add(-1 * time.Hour)
+	default:
+		return nil
+	}
+
+	return &start
 }

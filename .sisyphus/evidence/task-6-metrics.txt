@@ -1,0 +1,22 @@
+=== RUN   TestComputeHedgeMetrics_BasicTPSCalculation
+--- PASS: TestComputeHedgeMetrics_BasicTPSCalculation (0.00s)
+=== RUN   TestComputeHedgeMetrics_ZeroEvents
+--- PASS: TestComputeHedgeMetrics_ZeroEvents (0.00s)
+=== RUN   TestComputeHedgeMetrics_DoneSentinelExcluded
+--- PASS: TestComputeHedgeMetrics_DoneSentinelExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_EmptyDataExcluded
+--- PASS: TestComputeHedgeMetrics_EmptyDataExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_TieBreaking
+--- PASS: TestComputeHedgeMetrics_TieBreaking (0.00s)
+=== RUN   TestComputeHedgeMetrics_SecondaryWins
+--- PASS: TestComputeHedgeMetrics_SecondaryWins (0.00s)
+=== RUN   TestComputeHedgeMetrics_WindowDuration
+--- PASS: TestComputeHedgeMetrics_WindowDuration (0.00s)
+=== RUN   TestComputeHedgeMetrics_ZeroWindowDuration
+--- PASS: TestComputeHedgeMetrics_ZeroWindowDuration (0.00s)
+=== RUN   TestComputeHedgeMetrics_TypeDoneExcluded
+--- PASS: TestComputeHedgeMetrics_TypeDoneExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_TypeDoneEventWithDifferentData
+--- PASS: TestComputeHedgeMetrics_TypeDoneEventWithDifferentData (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.051s

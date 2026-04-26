@@ -1,0 +1,58 @@
+{
+  "active_plan": "/home/kexi/axonhub/.sisyphus/plans/verify-advanced-hedged-routing-completion.md",
+  "started_at": "2026-04-25T17:57:54.884Z",
+  "session_ids": [
+    "ses_23a3584f9ffeGHPpdMsu0sMf5l"
+  ],
+  "session_origins": {
+    "ses_23a3584f9ffeGHPpdMsu0sMf5l": "direct"
+  },
+  "plan_name": "verify-advanced-hedged-routing-completion",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Reconcile planned completion claims against recorded execution metadata",
+      "session_id": "ses_23a3491f4ffe7fGuBOV3Em6AjA",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-25T18:00:27.812Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Verify source-code implementation coverage against the original task map",
+      "session_id": "ses_23a30c6e3ffeq10ekVsS57dCiP",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-25T18:06:04.096Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Execute targeted behavioral verification for hedge/shadow code paths and regression claims",
+      "session_id": "ses_23a2cdff8ffeSVC5FapIsRTyNv",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-25T18:12:19.493Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Produce the final discrepancy matrix and completion verdict report",
+      "session_id": "ses_23a2787acffe7ASewZoOVl25vY",
+      "agent": "Sisyphus-Junior",
+      "category": "writing",
+      "updated_at": "2026-04-25T18:15:42.669Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "Plan Compliance Audit — oracle",
+      "session_id": "ses_23a1e7aeeffeu21W8vJ0VlmRMC",
+      "agent": "oracle",
+      "updated_at": "2026-04-25T18:23:26.073Z"
+    }
+  }
+}

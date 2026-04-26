@@ -1,0 +1,406 @@
+=== RUN   TestSelectHedgeCandidates_Top2Ordering
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"loaded channels","count":3}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T07:54:45Z"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+    candidates_loadbalance_test.go:629: Primary: High Weight Channel (id=1), Secondary: Medium Weight Channel (id=2)
+--- PASS: TestSelectHedgeCandidates_Top2Ordering (0.01s)
+=== RUN   TestSelectHedgeCandidates_DuplicateElimination
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"loaded channels","count":2}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T07:54:45Z"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_DuplicateElimination (0.03s)
+=== RUN   TestSelectHedgeCandidates_SingleCandidatePool
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_SingleCandidatePool (0.02s)
+=== RUN   TestSelectHedgeCandidates_RemainingPreservesOrder
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"loaded channels","count":3}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T07:54:45Z"}
+{"level":"INFO","time":"2026-04-25T03:54:45-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_RemainingPreservesOrder (0.02s)
+=== RUN   TestSelectHedgeCandidates_NilLoadBalancer
+--- PASS: TestSelectHedgeCandidates_NilLoadBalancer (0.01s)
+=== RUN   TestShouldActivateHedge_AllConditionsMet
+--- PASS: TestShouldActivateHedge_AllConditionsMet (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNotStreaming
+--- PASS: TestShouldActivateHedge_ConditionNotStreaming (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNotEnabled
+--- PASS: TestShouldActivateHedge_ConditionNotEnabled (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNilPolicy
+--- PASS: TestShouldActivateHedge_ConditionNilPolicy (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionInsufficientCandidates
+--- PASS: TestShouldActivateHedge_ConditionInsufficientCandidates (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionOnlyPrimaryCandidate
+--- PASS: TestShouldActivateHedge_ConditionOnlyPrimaryCandidate (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionOnlySecondaryCandidate
+--- PASS: TestShouldActivateHedge_ConditionOnlySecondaryCandidate (0.00s)
+=== RUN   TestShouldActivateHedge_UnsupportedProtocol
+--- PASS: TestShouldActivateHedge_UnsupportedProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_ProbingModeFalse
+--- PASS: TestShouldActivateHedge_ProbingModeFalse (0.00s)
+=== RUN   TestShouldActivateHedge_ProbingPercentageZero
+--- PASS: TestShouldActivateHedge_ProbingPercentageZero (0.00s)
+=== RUN   TestShouldActivateHedge_OpenAIProtocol
+--- PASS: TestShouldActivateHedge_OpenAIProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_AnthropicProtocol
+--- PASS: TestShouldActivateHedge_AnthropicProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_DefaultSampler
+--- PASS: TestShouldActivateHedge_DefaultSampler (0.00s)
+=== RUN   TestShouldActivateHedge_CustomSampler
+--- PASS: TestShouldActivateHedge_CustomSampler (0.00s)
+=== RUN   TestShouldActivateHedge_EmptyRequestID
+--- PASS: TestShouldActivateHedge_EmptyRequestID (0.00s)
+=== RUN   TestHedgeCoordinator_PrimaryWinsWithHigherTPS
+--- PASS: TestHedgeCoordinator_PrimaryWinsWithHigherTPS (1.50s)
+=== RUN   TestHedgeCoordinator_SecondaryWinsWithHigherTPS
+--- PASS: TestHedgeCoordinator_SecondaryWinsWithHigherTPS (1.50s)
+=== RUN   TestHedgeCoordinator_SingleActiveStreamWins
+--- PASS: TestHedgeCoordinator_SingleActiveStreamWins (0.60s)
+=== RUN   TestHedgeCoordinator_DualFailureReturnsBothFailed
+--- PASS: TestHedgeCoordinator_DualFailureReturnsBothFailed (0.00s)
+=== RUN   TestHedgeCoordinator_ProbingModeLaunchesBothImmediately
+--- PASS: TestHedgeCoordinator_ProbingModeLaunchesBothImmediately (0.30s)
+=== RUN   TestHedgeCoordinator_ComputeObservationTPS
+--- PASS: TestHedgeCoordinator_ComputeObservationTPS (0.00s)
+=== RUN   TestHedgeCoordinator_ComputeObservationTPS_EmptyEvents
+--- PASS: TestHedgeCoordinator_ComputeObservationTPS_EmptyEvents (0.00s)
+=== RUN   TestHedgeCoordinator_ComputeObservationTPS_ZeroDuration
+--- PASS: TestHedgeCoordinator_ComputeObservationTPS_ZeroDuration (0.00s)
+=== RUN   TestHedgeCoordinator_ContextCancellation_CleansUp
+--- PASS: TestHedgeCoordinator_ContextCancellation_CleansUp (10.00s)
+=== RUN   TestHedgeCoordinator_BufferFlushExactlyOnce
+--- PASS: TestHedgeCoordinator_BufferFlushExactlyOnce (0.40s)
+=== RUN   TestHedgeCoordinator_DefaultConfig
+--- PASS: TestHedgeCoordinator_DefaultConfig (0.00s)
+=== RUN   TestHedgeCoordinator_IsObservationActive
+--- PASS: TestHedgeCoordinator_IsObservationActive (0.30s)
+=== RUN   TestHedgeCoordinator_GetPrimaryBuffer
+--- PASS: TestHedgeCoordinator_GetPrimaryBuffer (0.30s)
+=== RUN   TestHedgeCoordinator_GetSecondaryBuffer
+--- PASS: TestHedgeCoordinator_GetSecondaryBuffer (0.30s)
+=== RUN   TestHedgeCoordinator_Cancel
+--- PASS: TestHedgeCoordinator_Cancel (10.00s)
+=== RUN   TestHedgeCoordinator_Err
+--- PASS: TestHedgeCoordinator_Err (0.00s)
+=== RUN   TestHedgeCoordinator_TPSCalculation_Correct
+--- PASS: TestHedgeCoordinator_TPSCalculation_Correct (0.00s)
+=== RUN   TestHedgeCoordinator_BothActiveSameTPS_PrimaryWins
+--- PASS: TestHedgeCoordinator_BothActiveSameTPS_PrimaryWins (0.50s)
+=== RUN   TestIsHedgeError
+--- PASS: TestIsHedgeError (0.00s)
+=== RUN   TestGetHedgeProtocol_OpenAIStreaming
+--- PASS: TestGetHedgeProtocol_OpenAIStreaming (0.00s)
+=== RUN   TestGetHedgeProtocol_AnthropicStreaming
+--- PASS: TestGetHedgeProtocol_AnthropicStreaming (0.00s)
+=== RUN   TestGetHedgeProtocol_NonStreaming
+--- PASS: TestGetHedgeProtocol_NonStreaming (0.00s)
+=== RUN   TestGetHedgeProtocol_NilRequest
+--- PASS: TestGetHedgeProtocol_NilRequest (0.00s)
+=== RUN   TestGetHedgeProtocol_EmptyBody
+--- PASS: TestGetHedgeProtocol_EmptyBody (0.00s)
+=== RUN   TestGetHedgeProtocol_UnsupportedFormat
+--- PASS: TestGetHedgeProtocol_UnsupportedFormat (0.00s)
+=== RUN   TestGetHedgeProtocol_OpenAIResponsesAPI
+--- PASS: TestGetHedgeProtocol_OpenAIResponsesAPI (0.00s)
+=== RUN   TestIsHedgeEligible_Eligible
+--- PASS: TestIsHedgeEligible_Eligible (0.00s)
+=== RUN   TestIsHedgeEligible_AnthropicEligible
+--- PASS: TestIsHedgeEligible_AnthropicEligible (0.00s)
+=== RUN   TestIsHedgeEligible_NonStreaming
+--- PASS: TestIsHedgeEligible_NonStreaming (0.00s)
+=== RUN   TestIsHedgeEligible_HedgeDisabled
+--- PASS: TestIsHedgeEligible_HedgeDisabled (0.00s)
+=== RUN   TestIsHedgeEligible_NilHedgePolicy
+--- PASS: TestIsHedgeEligible_NilHedgePolicy (0.00s)
+=== RUN   TestIsHedgeEligible_NilCandidateSet
+--- PASS: TestIsHedgeEligible_NilCandidateSet (0.00s)
+=== RUN   TestIsHedgeEligible_NilPrimary
+--- PASS: TestIsHedgeEligible_NilPrimary (0.00s)
+=== RUN   TestIsHedgeEligible_NilSecondary
+--- PASS: TestIsHedgeEligible_NilSecondary (0.00s)
+=== RUN   TestIsHedgeEligible_UnsupportedEndpoint
+--- PASS: TestIsHedgeEligible_UnsupportedEndpoint (0.00s)
+=== RUN   TestIsHedgeEligible_NilRequest
+--- PASS: TestIsHedgeEligible_NilRequest (0.00s)
+=== RUN   TestHedgeProtocol_String
+=== RUN   TestHedgeProtocol_String/HedgeProtocolNone
+=== RUN   TestHedgeProtocol_String/HedgeProtocolOpenAI
+=== RUN   TestHedgeProtocol_String/HedgeProtocolAnthropic
+=== RUN   TestHedgeProtocol_String/Unknown
+--- PASS: TestHedgeProtocol_String (0.00s)
+    --- PASS: TestHedgeProtocol_String/HedgeProtocolNone (0.00s)
+    --- PASS: TestHedgeProtocol_String/HedgeProtocolOpenAI (0.00s)
+    --- PASS: TestHedgeProtocol_String/HedgeProtocolAnthropic (0.00s)
+    --- PASS: TestHedgeProtocol_String/Unknown (0.00s)
+=== RUN   TestIsHedgeEligible_OpenAIWithAllConditionsMet
+--- PASS: TestIsHedgeEligible_OpenAIWithAllConditionsMet (0.00s)
+=== RUN   TestIsHedgeEligible_AnthropicWithAllConditionsMet
+--- PASS: TestIsHedgeEligible_AnthropicWithAllConditionsMet (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_BothFailed
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_BothFailed (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_PrimaryFailsDuringObservation
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_PrimaryFailsDuringObservation (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_SecondaryFailsDuringObservation
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_SecondaryFailsDuringObservation (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_WinnerReleased_LoserShadowing
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_WinnerReleased_LoserShadowing (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_LoserFailsDuringShadow
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_LoserFailsDuringShadow (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_NilRaceResult
+{"level":"WARN","time":"2026-04-25T03:55:11-04:00","logger":"global","message":"HandleHedgeFailure called with nil raceResult"}
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_NilRaceResult (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_NilState
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_WithRemaining
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_WithRemaining (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_ReconstructsFromChannelModels
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_ReconstructsFromChannelModels (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_NilState
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_NoHedgeCandidates
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_NoHedgeCandidates (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_MissingPrimary
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_MissingPrimary (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_MissingSecondary
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_MissingSecondary (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_SameChannel
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_SameChannel (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_ValidDistinct
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_ValidDistinct (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_NilState
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_CanRetrySameChannel
+--- PASS: TestHedgeFallbackManager_CanRetrySameChannel (0.00s)
+=== RUN   TestHedgeFallbackManager_RecordRetry
+--- PASS: TestHedgeFallbackManager_RecordRetry (0.00s)
+=== RUN   TestHedgeFallbackManager_GetRetryCount
+--- PASS: TestHedgeFallbackManager_GetRetryCount (0.00s)
+=== RUN   TestHedgeFallbackManager_Reset
+--- PASS: TestHedgeFallbackManager_Reset (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NoRemaining
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NoRemaining (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NilState
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NilState (0.00s)
+=== RUN   TestHedgeFallbackAction_String
+--- PASS: TestHedgeFallbackAction_String (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_WinnerAlreadySelected
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_WinnerAlreadySelected (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithWinner
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithWinner (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithNoWinner
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithNoWinner (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_NilHedgeCandidates
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_NilHedgeCandidates (0.00s)
+=== RUN   TestHedgeIntegration_PrimaryWinsFullLifecycle
+--- PASS: TestHedgeIntegration_PrimaryWinsFullLifecycle (2.00s)
+=== RUN   TestHedgeIntegration_SecondaryWinsFullLifecycle
+--- PASS: TestHedgeIntegration_SecondaryWinsFullLifecycle (2.00s)
+=== RUN   TestHedgeIntegration_BothFailFallbackToRemaining
+--- PASS: TestHedgeIntegration_BothFailFallbackToRemaining (0.00s)
+=== RUN   TestHedgeIntegration_ProbingModeBothLaunchImmediately
+--- PASS: TestHedgeIntegration_ProbingModeBothLaunchImmediately (0.30s)
+=== RUN   TestHedgeIntegration_WinnerPassthroughStream
+--- PASS: TestHedgeIntegration_WinnerPassthroughStream (1.60s)
+=== RUN   TestHedgeIntegration_ShadowDeadlineExceeded
+--- PASS: TestHedgeIntegration_ShadowDeadlineExceeded (0.05s)
+=== RUN   TestHedgeIntegration_ObservationWindowWithNoTokens
+--- PASS: TestHedgeIntegration_ObservationWindowWithNoTokens (0.00s)
+=== RUN   TestHedgeIntegration_ContextCancellationDuringObservation
+--- PASS: TestHedgeIntegration_ContextCancellationDuringObservation (0.20s)
+=== RUN   TestHedgeIntegration_PrimaryProducesFirstSecondaryNeverStarts
+--- PASS: TestHedgeIntegration_PrimaryProducesFirstSecondaryNeverStarts (0.50s)
+=== RUN   TestHedgeIntegration_SecondaryProducesFirstBeforePrimary
+--- PASS: TestHedgeIntegration_SecondaryProducesFirstBeforePrimary (2.00s)
+=== RUN   TestHedgeIntegration_BothStreamsProduceTokensSimultaneously
+--- PASS: TestHedgeIntegration_BothStreamsProduceTokensSimultaneously (0.50s)
+=== RUN   TestHedgeIntegration_AllShadowCompletionReasons
+=== RUN   TestHedgeIntegration_AllShadowCompletionReasons/normal_completion_EOF
+=== RUN   TestHedgeIntegration_AllShadowCompletionReasons/normal_completion_DONE_sentinel
+=== RUN   TestHedgeIntegration_AllShadowCompletionReasons/upstream_error
+=== RUN   TestHedgeIntegration_AllShadowCompletionReasons/deadline_exceeded
+--- PASS: TestHedgeIntegration_AllShadowCompletionReasons (0.00s)
+    --- PASS: TestHedgeIntegration_AllShadowCompletionReasons/normal_completion_EOF (0.00s)
+    --- PASS: TestHedgeIntegration_AllShadowCompletionReasons/normal_completion_DONE_sentinel (0.00s)
+    --- PASS: TestHedgeIntegration_AllShadowCompletionReasons/upstream_error (0.00s)
+    --- PASS: TestHedgeIntegration_AllShadowCompletionReasons/deadline_exceeded (0.00s)
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions/FallbackToRemaining_when_both_failed
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions/ContinueWithSingleStream_when_primary_fails
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions/ContinueWithSingleStream_when_secondary_fails
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions/NoAction_when_winner_already_released
+=== RUN   TestHedgeIntegration_AllHedgeFallbackActions/NoAction_when_loser_is_shadowing
+--- PASS: TestHedgeIntegration_AllHedgeFallbackActions (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgeFallbackActions/FallbackToRemaining_when_both_failed (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgeFallbackActions/ContinueWithSingleStream_when_primary_fails (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgeFallbackActions/ContinueWithSingleStream_when_secondary_fails (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgeFallbackActions/NoAction_when_winner_already_released (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgeFallbackActions/NoAction_when_loser_is_shadowing (0.00s)
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToSecondaryLaunched_from_PrimaryOnly
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToObservationActive_from_SecondaryLaunched
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToWinnerReleased_from_ObservationActive_primary_wins
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToWinnerReleased_from_ObservationActive_secondary_wins
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToLoserShadowing_from_WinnerReleased
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowCompleted_from_LoserShadowing_normal
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowCompleted_from_LoserShadowing_deadline_exceeded
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowDeadlineExceeded_from_LoserShadowing
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToFallbackResumed_from_ShadowCompleted
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToFallbackResumed_from_WinnerReleased
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_transition_SecondaryLaunched_from_Disabled
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_transition_ObservationActive_from_Disabled
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_winner_index_2
+=== RUN   TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_winner_index_-1
+--- PASS: TestHedgeIntegration_AllHedgePhaseTransitions (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToSecondaryLaunched_from_PrimaryOnly (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToObservationActive_from_SecondaryLaunched (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToWinnerReleased_from_ObservationActive_primary_wins (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToWinnerReleased_from_ObservationActive_secondary_wins (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToLoserShadowing_from_WinnerReleased (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowCompleted_from_LoserShadowing_normal (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowCompleted_from_LoserShadowing_deadline_exceeded (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToShadowDeadlineExceeded_from_LoserShadowing (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToFallbackResumed_from_ShadowCompleted (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/TransitionToFallbackResumed_from_WinnerReleased (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_transition_SecondaryLaunched_from_Disabled (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_transition_ObservationActive_from_Disabled (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_winner_index_2 (0.00s)
+    --- PASS: TestHedgeIntegration_AllHedgePhaseTransitions/Invalid_winner_index_-1 (0.00s)
+=== RUN   TestComputeHedgeMetrics_BasicTPSCalculation
+--- PASS: TestComputeHedgeMetrics_BasicTPSCalculation (0.00s)
+=== RUN   TestComputeHedgeMetrics_ZeroEvents
+--- PASS: TestComputeHedgeMetrics_ZeroEvents (0.00s)
+=== RUN   TestComputeHedgeMetrics_DoneSentinelExcluded
+--- PASS: TestComputeHedgeMetrics_DoneSentinelExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_EmptyDataExcluded
+--- PASS: TestComputeHedgeMetrics_EmptyDataExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_TieBreaking
+--- PASS: TestComputeHedgeMetrics_TieBreaking (0.00s)
+=== RUN   TestComputeHedgeMetrics_SecondaryWins
+--- PASS: TestComputeHedgeMetrics_SecondaryWins (0.00s)
+=== RUN   TestComputeHedgeMetrics_WindowDuration
+--- PASS: TestComputeHedgeMetrics_WindowDuration (0.00s)
+=== RUN   TestComputeHedgeMetrics_ZeroWindowDuration
+--- PASS: TestComputeHedgeMetrics_ZeroWindowDuration (0.00s)
+=== RUN   TestComputeHedgeMetrics_TypeDoneExcluded
+--- PASS: TestComputeHedgeMetrics_TypeDoneExcluded (0.00s)
+=== RUN   TestComputeHedgeMetrics_TypeDoneEventWithDifferentData
+--- PASS: TestComputeHedgeMetrics_TypeDoneEventWithDifferentData (0.00s)
+=== RUN   TestLogHedgePrimaryLaunched
+--- PASS: TestLogHedgePrimaryLaunched (0.00s)
+=== RUN   TestLogHedgeSecondaryLaunched
+--- PASS: TestLogHedgeSecondaryLaunched (0.00s)
+=== RUN   TestLogHedgeObservationStarted
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-12345","first_token_from":"primary"}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-12345","first_token_from":"secondary"}
+--- PASS: TestLogHedgeObservationStarted (0.00s)
+=== RUN   TestLogHedgeObservationEnded
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-12345","primary_tps":50.5,"secondary_tps":45.2,"winner_index":0}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-12345","primary_tps":45.2,"secondary_tps":50.5,"winner_index":1}
+--- PASS: TestLogHedgeObservationEnded (0.00s)
+=== RUN   TestLogHedgeWinnerChosen
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.winner_chosen","hedge_pair_id":"hp-12345","winner_channel_id":123,"winner_tps":50.5,"loser_channel_id":124,"loser_tps":45.2}
+--- PASS: TestLogHedgeWinnerChosen (0.00s)
+=== RUN   TestLogHedgeLoserShadowed
+--- PASS: TestLogHedgeLoserShadowed (0.00s)
+=== RUN   TestLogHedgeShadowCompleted
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.shadow_completed","hedge_pair_id":"hp-12345","completion_reason":"normal_completion","tokens_consumed":100,"duration_seconds":5}
+--- PASS: TestLogHedgeShadowCompleted (0.00s)
+=== RUN   TestLogHedgeShadowDeadlineExceeded
+{"level":"WARN","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.shadow_deadline_exceeded","hedge_pair_id":"hp-12345","loser_channel_id":124}
+--- PASS: TestLogHedgeShadowDeadlineExceeded (0.00s)
+=== RUN   TestLogHedgeFallbackResumed
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.fallback_resumed","hedge_pair_id":"hp-12345","reason":"both_streams_failed"}
+--- PASS: TestLogHedgeFallbackResumed (0.00s)
+=== RUN   TestHedgeObservabilityRecorder
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-rec-test","first_token_from":"primary"}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-rec-test","primary_tps":50,"secondary_tps":45,"winner_index":0}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.winner_chosen","hedge_pair_id":"hp-rec-test","winner_channel_id":100,"winner_tps":50,"loser_channel_id":101,"loser_tps":45}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.shadow_completed","hedge_pair_id":"hp-rec-test","completion_reason":"normal_completion","tokens_consumed":100,"duration_seconds":5}
+{"level":"WARN","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.shadow_deadline_exceeded","hedge_pair_id":"hp-rec-test","loser_channel_id":101}
+{"level":"INFO","time":"2026-04-25T03:55:20-04:00","logger":"global","message":"hedge.fallback_resumed","hedge_pair_id":"hp-rec-test","reason":"winner_released"}
+--- PASS: TestHedgeObservabilityRecorder (0.00s)
+=== RUN   TestRecordHedgeRaceCompletion
+--- PASS: TestRecordHedgeRaceCompletion (0.00s)
+=== RUN   TestHedgeOutcomeValues
+--- PASS: TestHedgeOutcomeValues (0.00s)
+=== RUN   TestLatencyAwareStrategy_HedgeTPSOverridesHistorical
+--- PASS: TestLatencyAwareStrategy_HedgeTPSOverridesHistorical (0.00s)
+=== RUN   TestHedgePhase_String
+=== RUN   TestHedgePhase_String/HedgeDisabled
+=== RUN   TestHedgePhase_String/HedgePrimaryOnly
+=== RUN   TestHedgePhase_String/HedgeSecondaryLaunched
+=== RUN   TestHedgePhase_String/HedgeObservationActive
+=== RUN   TestHedgePhase_String/HedgeWinnerReleased
+=== RUN   TestHedgePhase_String/HedgeLoserShadowing
+=== RUN   TestHedgePhase_String/HedgeShadowCompleted
+=== RUN   TestHedgePhase_String/HedgeShadowDeadlineExceeded
+=== RUN   TestHedgePhase_String/HedgeFallbackResumed
+=== RUN   TestHedgePhase_String/Unknown
+--- PASS: TestHedgePhase_String (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeDisabled (0.00s)
+    --- PASS: TestHedgePhase_String/HedgePrimaryOnly (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeSecondaryLaunched (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeObservationActive (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeWinnerReleased (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeLoserShadowing (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeShadowCompleted (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeShadowDeadlineExceeded (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeFallbackResumed (0.00s)
+    --- PASS: TestHedgePhase_String/Unknown (0.00s)
+=== RUN   TestHedgeState_InitialState
+--- PASS: TestHedgeState_InitialState (0.00s)
+=== RUN   TestHedgeState_IsHedgeActive
+--- PASS: TestHedgeState_IsHedgeActive (0.00s)
+=== RUN   TestHedgeState_IsObservationActive
+--- PASS: TestHedgeState_IsObservationActive (0.00s)
+=== RUN   TestHedgeState_IsShadowActive
+--- PASS: TestHedgeState_IsShadowActive (0.00s)
+=== RUN   TestHedgeState_TransitionToSecondaryLaunched
+--- PASS: TestHedgeState_TransitionToSecondaryLaunched (0.00s)
+=== RUN   TestHedgeState_TransitionToSecondaryLaunched_InvalidPhase
+--- PASS: TestHedgeState_TransitionToSecondaryLaunched_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToObservationActive
+--- PASS: TestHedgeState_TransitionToObservationActive (0.00s)
+=== RUN   TestHedgeState_TransitionToObservationActive_InvalidPhase
+--- PASS: TestHedgeState_TransitionToObservationActive_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased
+--- PASS: TestHedgeState_TransitionToWinnerReleased (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased_InvalidPhase
+--- PASS: TestHedgeState_TransitionToWinnerReleased_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased_InvalidWinnerIndex
+--- PASS: TestHedgeState_TransitionToWinnerReleased_InvalidWinnerIndex (0.00s)
+=== RUN   TestHedgeState_TransitionToLoserShadowing
+--- PASS: TestHedgeState_TransitionToLoserShadowing (0.00s)
+=== RUN   TestHedgeState_TransitionToLoserShadowing_InvalidPhase
+--- PASS: TestHedgeState_TransitionToLoserShadowing_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted
+--- PASS: TestHedgeState_TransitionToShadowCompleted (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted_InvalidPhase
+--- PASS: TestHedgeState_TransitionToShadowCompleted_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted_InvalidReason
+--- PASS: TestHedgeState_TransitionToShadowCompleted_InvalidReason (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowDeadlineExceeded
+--- PASS: TestHedgeState_TransitionToShadowDeadlineExceeded (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowDeadlineExceeded_InvalidPhase
+--- PASS: TestHedgeState_TransitionToShadowDeadlineExceeded_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToFallbackResumed
+--- PASS: TestHedgeState_TransitionToFallbackResumed (0.00s)
+=== RUN   TestHedgeState_TransitionToFallbackResumed_InvalidPhase
+--- PASS: TestHedgeState_TransitionToFallbackResumed_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_FullValidLifecycle
+--- PASS: TestHedgeState_FullValidLifecycle (0.00s)
+=== RUN   TestPersistenceState_CanRetryStream_WithHedgeState
+--- PASS: TestPersistenceState_CanRetryStream_WithHedgeState (0.00s)
+=== RUN   TestPersistenceState_ReleaseInvariant_PreserveWithHedge
+--- PASS: TestPersistenceState_ReleaseInvariant_PreserveWithHedge (0.00s)
+=== RUN   TestHedgeState_ThreadSafety
+--- PASS: TestHedgeState_ThreadSafety (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	35.048s

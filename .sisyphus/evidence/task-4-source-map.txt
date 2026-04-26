@@ -1,0 +1,458 @@
+# Task 4: Source Code Implementation Coverage Audit
+## Advanced Hedged Routing & Shadow Execution
+## Generated: 2026-04-25
+
+## OVERVIEW
+Verification of implementation coverage against the original task map (Tasks 1-10).
+Each implementation area is mapped to actual source files with line references.
+
+---
+
+## TASK 1: Config/Persistence
+### Claim: Hedge configuration schema and persistence
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/ent/schema/system.go`
+   - HedgePolicy fields are NOT stored in system schema directly
+   - System schema is a simple key-value store only
+   - No hedge-specific fields found in system schema (lines 27-37)
+   - **STATUS**: PARTIAL - HedgePolicy stored as JSON in biz layer, not ent schema
+
+2. `internal/ent/schema/request_execution.go`
+   - Hedge role enum field: `"none", "primary", "secondary"` (line 81)
+   - Hedge outcome enum field: `"none", "winner", "loser"` (line 84)
+   - Hedge pair ID string field (line 87)
+   - Observation window TPS float field (line 90)
+   - Hedge start time int64 field (line 93)
+   - Shadow completion reason string field (line 96)
+   - **STATUS**: PRESENT - All required hedge outcome fields exist
+
+3. `internal/server/biz/system.go`
+   - HedgePolicy struct definition (lines 215-231):
+     - Enabled bool
+     - HedgeTriggerSeconds int (default: 12)
+     - ObservationWindowSeconds int (default: 3)
+     - ProbingPercentage float64
+     - ShadowHardDeadlineMinutes int (default: 30)
+     - FullShadowTextEnabled bool
+     - ShadowTextRetentionDays int
+   - HedgePolicyOrDefault() method (lines 886-899)
+   - HedgePolicy getter (lines 862-883)
+   - SetHedgePolicy() method (lines 901-911)
+   - normalizeHedgePolicy() function (lines 913-937)
+   - SystemKeyHedgePolicy constant (line 99)
+   - **STATUS**: PRESENT - Full HedgePolicy config with defaults
+
+**Note**: HedgePolicy is stored as JSON in the generic System key-value table (per system.go convention), not as dedicated ent fields. This is architecturally correct per the existing system settings pattern.
+
+---
+
+## TASK 2: State/Lifecycle
+### Claim: Hedge lifecycle state tracking
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/state.go`
+   - HedgePhase enum (lines 14-62):
+     - HedgeDisabled (0)
+     - HedgePrimaryOnly (1)
+     - HedgeSecondaryLaunched (2)
+     - HedgeObservationActive (3)
+     - HedgeWinnerReleased (4)
+     - HedgeLoserShadowing (5)
+     - HedgeShadowCompleted (6)
+     - HedgeShadowDeadlineExceeded (7)
+     - HedgeFallbackResumed (8)
+   - HedgeState struct (lines 64-97):
+     - Phase HedgePhase
+     - PrimaryCandidateIndex int
+     - SecondaryCandidateIndex int
+     - HedgeStartTime time.Time
+     - ObservationWindowStart time.Time
+     - ObservationWindowEnd time.Time
+     - WinnerIndex int
+     - LoserIndex int
+     - ShadowDeadline time.Time
+     - ShadowCompletionReason string
+     - FallbackAllowed bool
+     - hedgeMu sync.Mutex
+   - State transition methods (lines 99-222):
+     - TransitionToSecondaryLaunched()
+     - TransitionToObservationActive()
+     - TransitionToWinnerReleased()
+     - TransitionToLoserShadowing()
+     - TransitionToShadowCompleted()
+     - TransitionToShadowDeadlineExceeded()
+     - TransitionToFallbackResumed()
+   - Query methods:
+     - IsHedgeActive() (line 225)
+     - IsObservationActive() (line 232)
+     - IsShadowActive() (line 239)
+   - PersistenceState integration (line 317):
+     - HedgeState *HedgeState
+     - HedgePolicy *biz.HedgePolicy
+     - HedgeCandidates *HedgeCandidateSet
+     - HedgeProtocol HedgeProtocol
+   - Release-state invariants (lines 384-438):
+     - MarkStreamReleased()
+     - MarkReleaseForbidden()
+     - MarkStreamBuffering()
+     - IsStreamReleased()
+     - CanRetryStream()
+   - **STATUS**: PRESENT - Complete hedge lifecycle state machine
+
+---
+
+## TASK 3: Candidate Selection
+### Claim: Top-2 hedge candidate selection
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/candidates.go`
+   - HedgeCandidateSet struct (lines 565-572):
+     - Primary *ChannelModelsCandidate
+     - Secondary *ChannelModelsCandidate
+     - Remaining []*ChannelModelsCandidate
+   - SelectHedgeCandidates() function (lines 578-606):
+     - Checks loadBalancer != nil
+     - Requires len(candidates) >= 2
+     - Uses SortWithRest to get top-k and remaining
+     - Falls back to selectHedgeFromSorted()
+   - selectHedgeFromSorted() function (lines 608-654):
+     - Finds top-2 distinct candidates (different channel IDs)
+     - Same channel prevented from occupying both slots (lines 630-637)
+     - Returns nil if < 2 distinct candidates
+     - Preserves remaining candidates in order
+   - **STATUS**: PRESENT - Top-2 selection with duplicate elimination
+
+---
+
+## TASK 4: Hedge Coordinator
+### Claim: Full race lifecycle (primary launch, delayed secondary, probing, observation, buffering, winner selection)
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/hedge_coordinator.go`
+   - HedgeCoordinatorConfig struct (lines 13-28):
+     - HedgeTriggerDelay (default 12s)
+     - ObservationWindow (default 3s)
+     - IsProbingMode bool
+     - HedgePairID string
+     - TimeNow func()
+   - HedgeCoordinator struct (lines 66-103):
+     - Tracks firstToken flags per stream
+     - Observation window state (started/ended)
+     - Buffered events per stream
+     - Original streams for passthrough/shadow
+     - Completion tracking
+     - Error tracking
+     - Winner selection state
+   - StartRace() method (lines 133-263):
+     - Launches primary immediately
+     - Probing mode: launches secondary immediately (lines 160-166)
+     - Non-probing: delayed secondary after HedgeTriggerDelay (lines 167-189)
+     - Opens observation window on first token (lines 192-239)
+     - Handles dual failure before observation (lines 212-221, 222-231)
+   - consumeStream() method (lines 275-356):
+     - Buffers events
+     - Signals first token
+   - determineWinner() method (lines 358-431):
+     - Both failed case
+     - Single failure cases
+     - TPS-based winner selection (lines 403-430)
+   - computeObservationTPSLocked() (lines 433-459)
+   - BufferedStreamReader for passthrough (lines 646-726)
+   - **STATUS**: PRESENT - Complete race lifecycle
+
+---
+
+## TASK 5: Shadow Consumer
+### Claim: Loser detachment, shadow consumption, deadline controls
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/shadow_consumer.go`
+   - ShadowCompletionReason enum (lines 12-26):
+     - ShadowCompletionNormal
+     - ShadowCompletionUpstreamError
+     - ShadowCompletionClientDisconnected
+     - ShadowCompletionDeadlineExceeded
+     - ShadowCompletionServerShutdown
+   - ShadowResult struct (lines 41-55):
+     - CompletionReason
+     - TotalTokensConsumed
+     - Duration
+     - FullText (retention-gated)
+     - Error
+   - ShadowConsumerConfig (lines 57-69):
+     - ShadowDeadline (default 30 min)
+     - FullTextRetentionEnabled
+     - HedgePairID
+   - ShadowConsumer struct (lines 84-93)
+   - StartShadow() method (lines 122-168):
+     - Uses context.WithoutCancel for client disconnect tolerance
+     - Uses context.WithTimeout for deadline (line 142)
+     - Bounded by: EOF, [DONE], deadline, shutdown, explicit cancel
+   - consumeShadow() method (lines 170-278):
+     - FullText accumulated only if FullTextRetentionEnabled (line 273-275)
+     - Token counting (line 272)
+     - Deadline exceeded detection (lines 216-223)
+   - **STATUS**: PRESENT - Full shadow lifecycle with deadline enforcement
+
+---
+
+## TASK 6: Metrics/eTPS
+### Claim: Hedge-aware metrics and eTPS computation
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/hedge_metrics.go`
+   - HedgeMetricsResult struct (lines 12-18):
+     - PrimaryTPS, SecondaryTPS float64
+     - WinnerIndex, LoserIndex int
+     - ObservationWindowDuration time.Duration
+   - ComputeHedgeMetrics() function (lines 20-37):
+     - Computes TPS for primary and secondary
+     - Determines winner by higher TPS
+   - computeObservationTPS() function (lines 39-61)
+   - RecordHedgeMetrics() function (lines 63-133):
+     - Updates LatencyAwareStrategy with winner/loser TPS
+     - Winner gets full TPS update
+     - Loser gets 0.8x penalized TPS update
+     - Persists observation window TPS to RequestExecution
+   - findPendingExecutionForChannel() (lines 135-152)
+   - **STATUS**: PRESENT - eTPS computation and ranking updates
+
+2. `internal/metrics/prometheus.go` (lines 98-121)
+   - axonhubHedgeRacesTotal counter (lines 98-104)
+   - axonhubHedgeShadowCompletionsTotal counter (lines 106-112)
+   - axonhubHedgeObservationWindowSeconds histogram (lines 114-121)
+   - **STATUS**: PRESENT - Hedge-specific Prometheus metrics
+
+---
+
+## TASK 7: Observability
+### Claim: Structured logs distinguishing winner vs shadow paths
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/hedge_observability.go`
+   - HedgeOutcome type (lines 11-17):
+     - HedgeOutcomeWinnerReleased
+     - HedgeOutcomeBothFailed
+     - HedgeOutcomeFallback
+   - Logging functions:
+     - LogHedgePrimaryLaunched() (line 19)
+     - LogHedgeSecondaryLaunched() (line 27)
+     - LogHedgeObservationStarted() (line 36)
+     - LogHedgeObservationEnded() (line 43)
+     - LogHedgeWinnerChosen() (line 52)
+     - LogHedgeLoserShadowed() (line 62)
+     - LogHedgeShadowCompleted() (line 69)
+     - LogHedgeShadowDeadlineExceeded() (line 78)
+     - LogHedgeFallbackResumed() (line 85)
+   - Metric recording functions:
+     - RecordHedgeRaceCompletion() (line 92)
+     - RecordShadowCompletion() (line 96)
+     - RecordObservationWindowDuration() (line 100)
+   - HedgeObservabilityRecorder struct (lines 104-111)
+   - HedgeObservabilityRecorder methods (lines 113-163):
+     - RecordPrimaryLaunched()
+     - RecordSecondaryLaunched()
+     - RecordObservationStarted()
+     - RecordObservationEnded()
+     - RecordWinnerChosen()
+     - RecordLoserShadowed()
+     - RecordShadowCompleted()
+     - RecordShadowDeadlineExceeded()
+     - RecordFallbackResumed()
+   - **STATUS**: PRESENT - Full observability for hedge lifecycle
+
+---
+
+## TASK 8: Fallback Integration
+### Claim: Hedge coordinator integrated with existing retry/fallback machinery
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/hedge_fallback.go`
+   - HedgeFallbackAction enum (lines 11-27):
+     - FallbackToRemaining
+     - ContinueWithSingleStream
+     - NoAction
+     - RetrySameChannel
+   - HedgeFallbackManager struct (lines 46-52)
+   - HandleHedgeFailure() method (lines 84-149):
+     - BothFailed -> FallbackToRemaining
+     - Winner already released -> NoAction
+     - Primary failed during observation -> ContinueWithSingleStream
+     - Secondary failed during observation -> ContinueWithSingleStream
+   - GetFallbackCandidates() method (lines 151-212):
+     - Returns HedgeCandidateSet.Remaining if available
+     - Reconstructs remaining from ChannelModelsCandidates
+   - ShouldSkipHedge() method (lines 214-236)
+   - AdvanceToNextFallbackCandidate() method (lines 238-273)
+   - **STATUS**: PRESENT - Fallback integration
+
+2. `internal/server/orchestrator/outbound.go` (lines 474-524)
+   - HasMoreChannels() checks CanRetryStream() guardrail (line 482)
+   - NextChannel() respects release state invariant
+   - **STATUS**: PRESENT - Release-state invariant preserved
+
+3. `llm/pipeline/pipeline.go` (lines 15-35)
+   - Retryable interface: HasMoreChannels(), NextChannel()
+   - ChannelRetryable interface: CanRetry(), PrepareForRetry()
+   - WithRetry() option (lines 47-57)
+   - **STATUS**: PRESENT - Pipeline retry interfaces defined
+
+---
+
+## TASK 9: Protocol Wiring
+### Claim: Hedge eligibility and protocol-specific streaming entry points
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/orchestrator.go`
+   - Process() method (lines 149-356):
+     - Hedge eligibility check (lines 302-305):
+       - state.HedgeCandidates != nil
+       - state.HedgeProtocol != HedgeProtocolNone
+     - runHedgeRace() call (lines 316-325)
+     - Returns ChatCompletionResult with winningStream (lines 328-334)
+   - runHedgeRace() method (lines 358-530):
+     - Generates hedgePairID
+     - Initializes HedgeState
+     - Builds HedgeCoordinatorConfig from policy
+     - Builds ShadowConsumerConfig from policy
+     - Creates observability recorder
+     - Executes secondary candidate via executeSecondaryCandidate()
+     - Starts hedge race via coordinator.StartRace()
+     - Handles race errors gracefully
+     - Determines winner and loser
+     - Records metrics
+     - Transitions hedge state
+     - Starts shadow consumer in background goroutine
+     - Returns winner stream
+   - executeSecondaryCandidate() method (lines 532-570):
+     - Creates transformers
+     - Transforms request for secondary candidate
+     - Executes stream
+     - Transforms stream back through outbound/inbound
+   - **STATUS**: PRESENT - Full hedge wiring in orchestrator
+
+2. `internal/server/api/chat.go` (lines 114-129)
+   - Hedge protocol check (line 115):
+     - isHedgeEligible := result.HedgeProtocol != orchestrator.HedgeProtocolNone
+   - Debug logging for hedge-eligible requests (lines 117-120)
+   - StreamWriter handles hedge winner stream (line 128)
+   - **STATUS**: PRESENT - OpenAI handler wired for hedge
+
+---
+
+## TASK 10: Probing/Activation
+### Claim: Deterministic config-driven activation rules and probing mode
+### Verdict: PRESENT
+
+**Files Verified:**
+
+1. `internal/server/orchestrator/hedge_activation.go`
+   - HedgeSampler interface (lines 13-17)
+   - DefaultHedgeSampler struct (lines 19-20)
+   - ShouldProbe() method (lines 33-49):
+     - Uses FNV-1a hash for deterministic sampling
+     - Returns (hash % 100) < percentage
+     - percentage=0 -> never probe
+     - percentage=100 -> always probe
+   - IsProbingRequest() convenience function (lines 53-56)
+   - ShouldActivateHedgeWithSampler() function (lines 58-117):
+     - hedgePolicy nil/disabled -> false
+     - candidateSet nil/insufficient -> false
+     - Not streaming -> false
+     - Protocol not OpenAI/Anthropic -> false
+     - Otherwise -> shouldHedge=true, isProbing from sampler
+   - ShouldActivateHedge() function (lines 132-139):
+     - Uses default deterministic sampler
+   - **STATUS**: PRESENT - Deterministic probing with config gating
+
+2. `internal/server/orchestrator/hedge_eligibility.go`
+   - HedgeProtocol enum (lines 12-22):
+     - HedgeProtocolNone
+     - HedgeProtocolOpenAI
+     - HedgeProtocolAnthropic
+   - isStreamingRequest() (lines 37-58)
+   - GetHedgeProtocol() (lines 64-94):
+     - Parses request body for stream field
+     - Checks APIFormat for OpenAI/Anthropic
+   - GetHedgeProtocolFromLlmRequest() (lines 97-117)
+   - IsHedgeEligible() (lines 119-148):
+     - Streaming check
+     - Hedge policy enabled check
+     - 2+ distinct candidates check
+     - Protocol check
+   - **STATUS**: PRESENT - Full eligibility checking
+
+---
+
+## ORCHESTRATOR MAIN PATH WIRING SUMMARY
+
+**Entry Point Flow:**
+1. `internal/server/api/chat.go:ChatCompletion()` (line 60)
+   -> Calls `orchestrator.Process()` (line 79)
+
+2. `internal/server/orchestrator/orchestrator.go:Process()` (line 149)
+   -> Sets up PersistenceState with HedgePolicy, HedgeCandidates, HedgeProtocol
+   -> Checks hedge eligibility (lines 302-305)
+   -> If eligible, calls `runHedgeRace()` (line 316)
+
+3. `runHedgeRace()` (line 358)
+   -> Initializes HedgeCoordinator with config from HedgePolicy
+   -> Executes secondary candidate via `executeSecondaryCandidate()`
+   -> Calls `coordinator.StartRace()` which:
+     - Buffers both streams during observation window
+     - Selects winner by TPS
+     - Returns winning stream + loser stream
+   -> Starts ShadowConsumer for loser in background
+   -> Returns winner stream to client
+
+4. API handler writes winner stream via SSE (chat.go line 128)
+
+---
+
+## VERDICT SUMMARY
+
+| Task | Area | Status | Key Files |
+|------|------|--------|-----------|
+| 1 | Config/Persistence | PRESENT | biz/system.go, ent/schema/request_execution.go |
+| 2 | State/Lifecycle | PRESENT | state.go |
+| 3 | Candidate Selection | PRESENT | candidates.go |
+| 4 | Hedge Coordinator | PRESENT | hedge_coordinator.go |
+| 5 | Shadow Consumer | PRESENT | shadow_consumer.go |
+| 6 | Metrics/eTPS | PRESENT | hedge_metrics.go, prometheus.go |
+| 7 | Observability | PRESENT | hedge_observability.go |
+| 8 | Fallback Integration | PRESENT | hedge_fallback.go, outbound.go, pipeline.go |
+| 9 | Protocol Wiring | PRESENT | orchestrator.go, chat.go |
+| 10 | Probing/Activation | PRESENT | hedge_activation.go, hedge_eligibility.go |
+
+**ALL TASKS 1-10: IMPLEMENTATION PRESENT**
+
+---
+
+## NOTES
+
+1. HedgePolicy is stored via the existing System key-value JSON pattern, not as dedicated ent schema fields. This follows the existing system settings architecture and is correct per the plan's "extend existing persistence path" requirement.
+
+2. The system schema (system.go) does NOT contain hedge fields directly - it only stores key-value pairs. HedgePolicy is serialized to JSON and stored via the SystemService pattern. This is architecturally consistent with other policy storage (RetryPolicy, StoragePolicy, etc.).
+
+3. All hedge state transitions use mutex-protected methods to ensure thread safety during concurrent access.
+
+4. Observability distinguishes winner delivery from shadow consumption via separate log calls and metric counters.

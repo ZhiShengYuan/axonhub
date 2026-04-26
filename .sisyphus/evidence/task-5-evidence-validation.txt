@@ -1,0 +1,340 @@
+TASK-5 EVIDENCE VALIDATION REPORT
+Generated: Sat Apr 25 04:43:00 AM EDT 2026
+Plan: advanced-hedged-routing-shadow-execution.md
+
+================================================================================
+TASK 1 - HEDGE CONFIG
+Evidence: task-1-hedge-config.txt (14 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] System config exposes hedge/shadow settings with defaults matching PRD
+- [ ] Persistence model can represent primary/secondary role, winner/loser outcome, etc.
+- [ ] Existing non-hedged requests still persist successfully
+- [ ] Generated schema/code compiles and backend tests pass
+
+QA SCENARIOS:
+- Success: Hedge config defaults load correctly (go test ./internal/server/biz ./internal/server/orchestrator ./internal/ent/...)
+- Error: Legacy persistence remains valid (task-1-hedge-config-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-1-hedge-config.txt shows actual go test output:
+  * TestSystemService_HedgePolicyOrDefault_ReturnsPRDDefaults PASS
+  * TestSystemService_HedgePolicy_JSONRoundTrip PASS
+  * TestSystemService_HedgePolicy_OrDefault_WithExistingPolicy PASS
+- Error-path artifact MISSING: task-1-hedge-config-error.txt does not exist
+
+================================================================================
+TASK 2 - HEDGE STATE
+Evidence: task-2-hedge-state.txt (72 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Orchestrator state represents all hedge lifecycle phases
+- [ ] Release-state checks prevent client-path retry after first visible byte
+- [ ] State transitions covered by unit tests
+
+QA SCENARIOS:
+- Success: Release invariant preserved after hedge state added
+- Error: Invalid state transitions rejected (task-2-hedge-state-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-2-hedge-state.txt shows actual go test output with 30+ tests passing
+- Tests cover: HedgePhase_String (all 10 phases), HedgeState transitions (16+ transition tests),
+  CanRetryStream_WithHedgeState, ReleaseInvariant_PreserveWithHedge, ThreadSafety
+- Error-path artifact MISSING: task-2-hedge-state-error.txt does not exist
+
+================================================================================
+TASK 3 - CANDIDATES
+Evidence: task-3-candidates.txt (29 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Eligible streaming requests receive stable ordered top-2 hedge candidate set
+- [ ] Ineligible requests still receive single-path behavior
+- [ ] Duplicate elimination prevents primary/secondary duplication
+- [ ] Probing mode can force immediate top-2 launch
+
+QA SCENARIOS:
+- Success: Top-2 candidate ordering is stable
+- Error: Duplicate and single-candidate pools degrade safely (task-3-candidates-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-3-candidates.txt shows actual go test output:
+  * TestSelectHedgeCandidates_Top2Ordering PASS (with primary/secondary channel details)
+  * TestSelectHedgeCandidates_DuplicateElimination PASS
+  * TestSelectHedgeCandidates_SingleCandidatePool PASS
+  * TestSelectHedgeCandidates_RemainingPreservesOrder PASS
+- Error-path artifact MISSING: task-3-candidates-error.txt does not exist
+
+================================================================================
+TASK 4 - HEDGE COORDINATOR
+Evidence: task-4-hedge-coordinator.txt (137 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Primary launch, delayed secondary launch, observation-window buffering, winner selection
+- [ ] Client receives exactly one released stream
+- [ ] If both streams fail before release, fallback is invoked
+- [ ] If only one stream active during observation, it wins
+
+QA SCENARIOS:
+- Success: Delayed hedge selects higher-TPS winner
+- Error: Dual failure before release re-enters fallback (task-4-hedge-coordinator-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-4-hedge-coordinator.txt shows actual orchestrator test output:
+  * TestHedgeCoordinator_PrimaryWinsWithHigherTPS PASS (1.50s)
+  * TestHedgeCoordinator_SecondaryWinsWithHigherTPS PASS (1.50s)
+  * TestHedgeCoordinator_SingleActiveStreamWins PASS (0.60s)
+  * TestHedgeCoordinator_DualFailureReturnsBothFailed PASS
+  * TestHedgeCoordinator_ProbingModeLaunchesBothImmediately PASS (0.30s)
+  * TestHedgeCoordinator_BufferFlushExactlyOnce PASS
+- Error-path artifact MISSING: task-4-hedge-coordinator-error.txt does not exist
+
+================================================================================
+TASK 5 - SHADOW
+Evidence: task-5-shadow.txt (11 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Loser stream continues after winner release without writing to client
+- [ ] Shadow deadline forcibly terminates at 30 minutes
+- [ ] Full loser text retained only when gate enabled
+- [ ] Client disconnect does not automatically cancel shadow
+
+QA SCENARIOS:
+- Success: Shadow continues after client-visible winner release
+- Error: Shadow hard deadline terminates zombie stream (task-5-shadow-error.txt)
+
+VERDICT: PARTIAL (success), MISSING (error-path)
+- task-5-shadow.txt shows test output but is TRUNCATED:
+  * TestShadowConsumer_NormalCompletion_EOF PASS
+  * TestShadowConsumer_NormalCompletion_DONESentinel PASS
+  * TestShadowConsumer_NormalCompletion_DONEType PASS
+  * TestShadowConsumer_UpstreamError PASS
+  * TestShadowConsumer_DeadlineExceeded PASS
+  * TestShadowConsumer_ServerShutdown (INCOMPLETE - file ends mid-output)
+- File appears to be cut off - missing final PASS/FAIL marker and ok status
+- Error-path artifact MISSING: task-5-shadow-error.txt does not exist
+
+================================================================================
+TASK 6 - METRICS/eTPS
+Evidence: task-6-metrics.txt (22 lines, ASCII) [alias: task-6-etps.txt]
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Hedge requests persist sufficient timing/token data for exact eTPS
+- [ ] Ranking updates use hedge metrics without breaking existing scoring
+- [ ] Client-delivered metrics remain attributed only to winner
+- [ ] Prometheus metrics distinguish winner delivery from shadow
+
+QA SCENARIOS:
+- Success: Completed hedge updates eTPS inputs correctly
+- Error: Winner-only delivery metrics avoid double counting (task-6-etps-error.txt)
+
+VERDICT: PARTIAL (success), MISSING (error-path)
+- task-6-metrics.txt shows TestComputeHedgeMetrics tests (10 tests all PASS):
+  * TestComputeHedgeMetrics_BasicTPSCalculation
+  * TestComputeHedgeMetrics_ZeroEvents, DoneSentinelExcluded, EmptyDataExcluded
+  * TestComputeHedgeMetrics_TieBreaking, SecondaryWins
+  * TestComputeHedgeMetrics_WindowDuration, ZeroWindowDuration
+  * TestComputeHedgeMetrics_TypeDoneExcluded, TypeDoneEventWithDifferentData
+- Coverage: TPS calculation verified, but no evidence of:
+  * Winner-only delivery metrics (usage attribution)
+  * Non-hedged scoring preservation
+  * Prometheus metric emission distinction
+- Error-path artifact MISSING: task-6-etps-error.txt does not exist
+
+================================================================================
+TASK 7 - OBSERVABILITY
+Evidence: task-7-observability.txt (18 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Logs and metrics distinguish winner output from shadow-consumed loser output
+- [ ] Hedge lifecycle phases observable in single request trace
+- [ ] Full loser text absent from logs when retention disabled
+
+QA SCENARIOS:
+- Success: Hedge observability shows winner and shadow separately
+- Error: Retention-disabled mode suppresses loser text logging (task-7-observability-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-7-observability.txt shows actual test output with structured logs:
+  * TestLogHedgeObservationStarted - hedge.observation_started events
+  * TestLogHedgeObservationEnded - hedge.observation_ended with TPS metrics
+  * TestHedgeObservabilityRecorder - full lifecycle: observation_started, observation_ended,
+    winner_chosen, shadow_completed, shadow_deadline_exceeded, fallback_resumed
+- Structured logs show hedge_pair_id linking winner and loser attempts
+- Error-path artifact MISSING: task-7-observability-error.txt does not exist
+
+================================================================================
+TASK 8 - FALLBACK
+Evidence: task-8-fallback.txt (62 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Pre-release hedge failures reuse same-channel retry and remaining-channel fallback
+- [ ] Post-release winner failures do not trigger second client-visible stream
+- [ ] Remaining candidate order after hedge set is deterministic and preserved
+- [ ] Loser shadow failure does not corrupt winner completion
+
+QA SCENARIOS:
+- Success: Hedge race reuses fallback ordering correctly
+- Error: Winner failure after release does not leak second stream (task-8-fallback-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-8-fallback.txt shows HedgeFallbackManager tests (30+ tests all PASS):
+  * HandleHedgeFailure_BothFailed, PrimaryFailsDuringObservation, SecondaryFailsDuringObservation
+  * WinnerReleased_LoserShadowing, LoserFailsDuringShadow
+  * GetFallbackCandidates tests
+  * ShouldSkipHedge tests (7 scenarios)
+  * CanRetrySameChannel, RecordRetry, GetRetryCount, Reset
+  * AdvanceToNextFallbackCandidate tests
+- Error-path artifact MISSING: task-8-fallback-error.txt does not exist
+
+================================================================================
+TASK 9 - PROTOCOL WIRING
+Evidence: task-9-eligibility.txt (26 lines, ASCII) [alias: task-9-openai.txt]
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] OpenAI-compatible streaming handlers can invoke hedge orchestration when enabled
+- [ ] Non-streaming handlers retain existing behavior
+- [ ] Released winner output remains protocol-correct for OpenAI and Anthropic
+
+QA SCENARIOS:
+- Success: OpenAI streaming path releases protocol-correct winner output (task-9-openai.txt)
+- Error: Anthropic streaming path remains protocol-correct (task-9-anthropic-error.txt)
+
+VERDICT: INSUFFICIENT (success), MISSING (error-path)
+- task-9-eligibility.txt shows eligibility checking tests only (14 tests all PASS):
+  * TestIsHedgeEligible_Eligible, AnthropicEligible, NonStreaming, HedgeDisabled
+  * NilHedgePolicy, NilCandidateSet, NilPrimary, NilSecondary
+  * UnsupportedEndpoint, NilRequest
+  * OpenAIWithAllConditionsMet, AnthropicWithAllConditionsMet
+- PROBLEM: Eligibility tests do NOT prove actual OpenAI/Anthropic streaming integration
+  * No evidence of actual SSE/event payload emission through handler
+  * No evidence of OpenAI protocol correctness
+  * No evidence of non-streaming unchanged behavior
+  * No evidence of Anthropic streaming path
+- Named aliases suggest task-9-openai.txt should contain streaming integration evidence
+  but task-9-eligibility.txt contains only eligibility unit tests
+- task-9-anthropic-error.txt MISSING
+
+================================================================================
+TASK 10 - PROBING
+Evidence: task-10-probing.txt (54 lines, ASCII)
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Hedge activation limited to eligible streaming requests with 2 candidates
+- [ ] Probing mode launches both at configured percentage
+- [ ] Sampling is deterministic under test control
+- [ ] Disabled/ineligible requests take existing single-channel route
+
+QA SCENARIOS:
+- Success: Probing mode launches immediate dual requests
+- Error: Ineligible requests skip hedge path completely (task-10-probing-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-10-probing.txt shows actual test output:
+  * TestIsProbingRequest_Deterministic (4 subtests) PASS - determinism verified
+  * TestIsProbingRequest_PercentageBoundaries PASS
+  * TestIsProbingRequest_Distribution PASS - 5% sampling approximates 5%
+  * TestShouldActivateHedge tests (18 scenarios):
+    - AllConditionsMet, ConditionNotStreaming, ConditionNotEnabled, ConditionNilPolicy
+    - ConditionInsufficientCandidates, OnlyPrimaryCandidate, OnlySecondaryCandidate
+    - UnsupportedProtocol, ProbingModeFalse, ProbingPercentageZero
+    - OpenAIProtocol, AnthropicProtocol, DefaultSampler, CustomSampler
+- Error-path artifact MISSING: task-10-probing-error.txt does not exist
+
+================================================================================
+TASK 11 - TESTS/COVERAGE
+Evidence: task-11-coverage.txt (406 lines, ASCII) [alias: task-11-tests.txt]
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] Unit tests cover hedge state machine branches and timing/selection rules
+- [ ] Integration tests cover OpenAI and Anthropic hedged streaming + failures
+- [ ] Time-sensitive tests use deterministic clocks
+- [ ] Existing non-hedged streaming tests remain green
+
+QA SCENARIOS:
+- Success: Full backend test wave passes with hedge coverage
+- Error: Client disconnect path remains safe (task-11-tests-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-11-coverage.txt shows 130+ hedge tests all PASS in 35.048s:
+  * Candidates: 5 tests (Top2Ordering, DuplicateElimination, SingleCandidatePool, etc.)
+  * Eligibility: 14 tests (IsHedgeEligible_*, OpenAIWithAllConditionsMet, etc.)
+  * Coordinator: 17 tests (PrimaryWins, SecondaryWins, SingleActive, DualFailure, Probing, etc.)
+  * HedgeProtocol: 9 tests (GetHedgeProtocol_*)
+  * Fallback: 30+ tests (HandleHedgeFailure_*, GetFallbackCandidates, ShouldSkipHedge, etc.)
+  * Integration: 17 tests (FullLifecycle, BothFailFallback, ProbingMode, WinnerPassthrough, etc.)
+  * Metrics: 10 tests (ComputeHedgeMetrics_*)
+  * Observability: 15 tests (LogHedge*, HedgeObservabilityRecorder, RecordHedgeRaceCompletion)
+  * HedgeState: 16+ tests (state transitions, ThreadSafety, ReleaseInvariant)
+- NOTE: Evidence shows all PASS but no explicit non-hedged streaming "remain green" verification
+- Error-path artifact MISSING: task-11-tests-error.txt does not exist
+
+================================================================================
+TASK 12 - FULL VERIFICATION
+Evidence: task-12-full-verification.txt (136 lines, ASCII) [alias: task-12-verification.txt]
+================================================================================
+ACCEPTANCE CRITERIA:
+- [ ] go test ./... passes from repo root
+- [ ] cd llm && go test ./... passes
+- [ ] make test-backend-all passes (or equivalent)
+- [ ] Evidence files are saved under .sisyphus/evidence/
+
+QA SCENARIOS:
+- Success: Full verification succeeds
+- Error: Failing edge path fixed without scope creep (task-12-verification-error.txt)
+
+VERDICT: VERIFIED (success), MISSING (error-path)
+- task-12-full-verification.txt shows:
+  * Root module tests: all ok (internal/authz, contexts, dumper, ent, log, objects, etc.)
+  * LLM module tests: PASSED
+  * Code generation (make generate): PASSED
+  * Build verification (go build ./...): PASSED
+  * Hedge code nil-pointer safety fixes documented
+  * Graceful degradation verification documented
+- Error-path artifact MISSING: task-12-verification-error.txt does not exist
+- NOTE: Full test output not shown (uses cached results for many packages)
+
+================================================================================
+SUMMARY
+================================================================================
+
+VERIFICATION MATRIX:
+
+| Task | Success Evidence | Success Verdict | Error Evidence | Error Verdict |
+|------|-----------------|-----------------|---------------|---------------|
+| 1    | task-1-hedge-config.txt | VERIFIED | task-1-hedge-config-error.txt | MISSING |
+| 2    | task-2-hedge-state.txt | VERIFIED | task-2-hedge-state-error.txt | MISSING |
+| 3    | task-3-candidates.txt | VERIFIED | task-3-candidates-error.txt | MISSING |
+| 4    | task-4-hedge-coordinator.txt | VERIFIED | task-4-hedge-coordinator-error.txt | MISSING |
+| 5    | task-5-shadow.txt | PARTIAL* | task-5-shadow-error.txt | MISSING |
+| 6    | task-6-metrics.txt | PARTIAL** | task-6-etps-error.txt | MISSING |
+| 7    | task-7-observability.txt | VERIFIED | task-7-observability-error.txt | MISSING |
+| 8    | task-8-fallback.txt | VERIFIED | task-8-fallback-error.txt | MISSING |
+| 9    | task-9-eligibility.txt | INSUFFICIENT*** | task-9-anthropic-error.txt | MISSING |
+| 10   | task-10-probing.txt | VERIFIED | task-10-probing-error.txt | MISSING |
+| 11   | task-11-coverage.txt | VERIFIED | task-11-tests-error.txt | MISSING |
+| 12   | task-12-full-verification.txt | VERIFIED | task-12-verification-error.txt | MISSING |
+
+* task-5-shadow.txt is truncated (11 lines, ends mid-output)
+** task-6-metrics.txt only covers TPS calculation, not usage attribution or metrics distinction
+*** task-9-eligibility.txt proves eligibility checks only, not actual streaming protocol integration
+
+ERROR-PATH ARTIFACTS MISSING (11 total):
+- task-1-hedge-config-error.txt
+- task-2-hedge-state-error.txt
+- task-3-candidates-error.txt
+- task-4-hedge-coordinator-error.txt
+- task-5-shadow-error.txt
+- task-6-etps-error.txt
+- task-7-observability-error.txt
+- task-8-fallback-error.txt
+- task-9-anthropic-error.txt
+- task-10-probing-error.txt
+- task-11-tests-error.txt
+- task-12-verification-error.txt
+
+SUCCESS-PATH VERDICTS:
+- VERIFIED: 7 tasks (1, 2, 3, 4, 7, 8, 10, 11, 12)
+- PARTIAL: 2 tasks (5*, 6**)
+- INSUFFICIENT: 1 task (9***)
+
+Total: 12 tasks, 9 verified, 2 partial, 1 insufficient, 11 error-paths missing

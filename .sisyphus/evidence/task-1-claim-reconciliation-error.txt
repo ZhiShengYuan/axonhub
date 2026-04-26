@@ -1,0 +1,79 @@
+TASK CLAIM RECONCILIATION ERRORS AND VIOLATIONS
+==============================================
+
+Plan: .sisyphus/plans/advanced-hedged-routing-shadow-execution.md
+Boulder: .sisyphus/boulder.json
+Generated: 2026-04-25
+
+POLICY VIOLATION: F1-F4 EARLY COMPLETION
+----------------------------------------
+Location: Plan lines 634-641
+
+EXPLICIT POLICY TEXT (verbatim):
+"Final Verification Wave (MANDATORY — after ALL implementation tasks)
+ > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated
+   results to user and get explicit "okay" before marking work complete.
+ > Do NOT auto-proceed after verification. Wait for user's explicit approval
+   before marking work complete.
+ > Never mark F1-F4 as checked before getting user's okay. Rejection or
+   user feedback -> fix -> re-run -> present again -> wait for okay."
+
+VIOLATION DETAIL:
+- F1 is checked [x] — VIOLATION of "Never mark F1-F4 as checked before
+  getting user's okay"
+- F2 is checked [x] — VIOLATION of same policy
+- F3 is checked [x] — VIOLATION of same policy
+- F4 is checked [x] — VIOLATION of same policy
+
+No evidence in boulder.json of user approval having been obtained.
+The boulder.json session (ses_23a3584f9ffeGHPpdMsu0sMf5l) belongs to
+the verification plan (verify-advanced-hedged-routing-completion), not the
+implementation plan, and contains no F1-F4 approval records.
+
+CONTRADICTION: TASKS 1-12 ALL [x] WITH ZERO BOULDER SUPPORT
+------------------------------------------------------------
+All 12 implementation tasks are marked [x] in the plan.
+
+boulder.json shows ZERO session records for any of these tasks:
+- No session for task-1 (hedge config)
+- No session for task-2 (orchestrator state)
+- No session for task-3 (candidate selection)
+- No session for task-4 (hedge coordinator)
+- No session for task-5 (loser detachment/shadow)
+- No session for task-6 (hedge metrics/eTPS)
+- No session for task-7 (observability)
+- No session for task-8 (retry/fallback integration)
+- No session for task-9 (protocol entry points)
+- No session for task-10 (probing mode)
+- No session for task-11 (unit/integration coverage)
+- No session for task-12 (full backend verification)
+
+This constitutes a contradiction: the plan claims all tasks are complete [x]
+but boulder.json provides no session evidence supporting any completion claim.
+
+EVIDENCE FILE EXISTENCE VS. BOULDER TRACKING
+--------------------------------------------
+While evidence files exist in .sisyphus/evidence/ (e.g., task-1-hedge-config.txt,
+task-2-hedge-state.txt, etc.), these files are NOT linked to any session_id
+in boulder.json.
+
+Per the task requirements:
+- "Do NOT assume checked boxes are truthful"
+- "Missing Boulder support for checked items is classified as unverified
+   or contradicted, never silently normalized"
+- "Do NOT infer missing F2-F4 session records from adjacent sessions or
+   general repository state"
+
+Therefore, evidence file existence does NOT constitute verification. All 16
+items (1-12, F1-F4) remain classified as contradicted due to absent
+boulder.json session support.
+
+IMPLICATIONS
+------------
+1. The implementation state of tasks 1-12 cannot be verified through the
+   boulder tracking system
+2. F1-F4 completion violates the explicit policy at lines 634-641 which
+   requires user approval before marking these items complete
+3. The boulder.json session recorded is for a verification task, not
+   implementation tasks, suggesting the verification has not been completed
+   through proper channels

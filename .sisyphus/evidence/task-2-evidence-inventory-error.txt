@@ -1,0 +1,208 @@
+================================================================================
+EVIDENCE INVENTORY ERROR REPORT - TASK 2
+Plan: advanced-hedged-routing-shadow-execution.md
+Audited: Sat Apr 25 2026
+================================================================================
+
+This file documents ALL mismatches, insufficiencies, and missing artifacts
+that require attention or represent gaps in evidence coverage.
+
+================================================================================
+SECTION 1: CRITICAL - MISSING ERROR-PATH ARTIFACTS
+================================================================================
+
+All 12 error-path artifacts are MISSING. This is a SIGNIFICANT gap because:
+
+  (1) Error-path and success-path test COMPLETELY DIFFERENT code paths
+  (2) Success-path artifact presence does NOT imply error-path coverage
+  (3) Each error scenario requires INDEPENDENT verification
+  (4) Missing error artifacts cannot be "inherited" from success artifacts
+
+MISSING ERROR ARTIFACTS (11):
+-----------------------------
+
+[MISSING] task-1-hedge-config-error.txt
+  Should cover: Legacy persistence remains valid (non-hedged records)
+  Gap severity: HIGH
+  Impact: No evidence that non-hedged request persistence still works
+          after schema changes to add hedge fields
+
+[MISSING] task-2-hedge-state-error.txt
+  Should cover: Invalid state transitions rejected
+  Gap severity: HIGH
+  Impact: No evidence that invalid hedge state transitions are
+          properly rejected (e.g., winner release before observation)
+
+[MISSING] task-3-candidates-error.txt
+  Should cover: Duplicate and single-candidate pools degrade safely
+  Gap severity: HIGH
+  Impact: No evidence that hedge skips when < 2 distinct candidates
+
+[MISSING] task-4-hedge-coordinator-error.txt
+  Should cover: Dual failure before release re-enters fallback
+  Gap severity: HIGH
+  Impact: No evidence that fallback ordering is preserved when both
+          hedge candidates fail before observation ends
+
+[MISSING] task-5-shadow-error.txt
+  Should cover: Shadow hard deadline terminates zombie stream
+  Gap severity: HIGH
+  Impact: No evidence that 30-minute shadow deadline is enforced and
+          terminates long-running loser streams
+
+[MISSING] task-6-etps-error.txt
+  Should cover: Winner-only delivery metrics avoid double counting
+  Gap severity: HIGH
+  Impact: No evidence that usage/delivery counters only count winner
+          tokens, not loser (shadow) tokens
+
+[MISSING] task-7-observability-error.txt
+  Should cover: Retention-disabled mode suppresses loser text logging
+  Gap severity: HIGH
+  Impact: No evidence that loser response body is NOT logged when
+          retention is disabled
+
+[MISSING] task-8-fallback-error.txt
+  Should cover: Winner failure after release does not leak second stream
+  Gap severity: HIGH
+  Impact: No evidence that post-release winner failure follows existing
+          released-stream semantics (no loser takeover)
+
+[MISSING] task-9-anthropic-error.txt
+  Should cover: Anthropic streaming path remains protocol-correct
+  Gap severity: MEDIUM
+  Impact: No separate evidence for Anthropic-specific streaming path
+          (task-9-eligibility.txt covers eligibility, not protocol)
+
+[MISSING] task-10-probing-error.txt
+  Should cover: Ineligible requests skip hedge path completely
+  Gap severity: HIGH
+  Impact: No evidence that non-streaming, disabled-feature, and
+          single-candidate requests take existing routing path
+
+[MISSING] task-11-tests-error.txt
+  Should cover: Client disconnect path remains safe with shadow
+  Gap severity: HIGH
+  Impact: No evidence that client disconnect doesn't corrupt server
+          state or leave shadow in inconsistent condition
+
+[MISSING] task-12-verification-error.txt
+  Should cover: Failing edge path is fixed without scope creep
+  Gap severity: MEDIUM
+  Impact: If any edge-path bug fixes were needed, no documented
+          regression tests exist for those specific failures
+
+================================================================================
+SECTION 2: NAMING ALIAS DISCREPANCIES (ACCEPTED BUT NOTED)
+================================================================================
+
+The following 4 files have naming mismatches but content was verified as
+sufficient to cover the intended QA scenarios:
+
+[ALIAS-1] task-6-metrics.txt (expected: task-6-etps.txt)
+  Content verified: TestComputeHedgeMetrics_* tests covering TPS/eTPS
+  Accepted: YES
+  Note: "metrics" is acceptable shorthand for "etps"; the tests do
+        cover the eTPS calculation feature
+
+[ALIAS-2] task-9-eligibility.txt (expected: task-9-openai.txt)
+  Content verified: TestIsHedgeEligible_* tests covering OpenAI+Anthropic
+  Accepted: YES
+  Note: Eligibility checks gate both OpenAI and Anthropic paths.
+        The broader filename is actually more accurate.
+
+[ALIAS-3] task-11-coverage.txt (expected: task-11-tests.txt)
+  Content verified: 130+ hedge tests across all components
+  Accepted: YES
+  Note: "coverage" is more accurate than "tests" for this comprehensive
+        multi-component test artifact
+
+[ALIAS-4] task-12-full-verification.txt (expected: task-12-verification.txt)
+  Content verified: Full verification run (root+llm tests, build, gen)
+  Accepted: YES
+  Note: The "full-" prefix appropriately distinguishes from partial runs
+
+================================================================================
+SECTION 3: UNEXPECTED FILE - REQUIRES CLARIFICATION
+================================================================================
+
+[UNEXPECTED] task-pipeline-wiring.txt
+  Size: 406 lines
+  Content: Nearly identical test output to task-11-coverage.txt
+           (same tests, same structure, timestamps differ by ~1 hour)
+
+  Analysis: This file appears to be a duplicate capture from a later
+  test run. It is not referenced by ANY task in the plan as an
+  expected evidence artifact.
+
+  Required action: Either:
+    (a) Confirm this is a duplicate of task-11-coverage.txt and can
+        be deleted, OR
+    (b) Identify which undocumented task/sub-task produced this file
+
+  Risk if kept: Could confuse future audits about which files are
+                actually required vs. extraneous
+
+================================================================================
+SECTION 4: COVERAGE INHERITANCE VIOLATIONS
+================================================================================
+
+The following error-path scenarios CANNOT inherit coverage from their
+corresponding success-path artifacts:
+
+VIOLATION 1: task-11-tests-error.txt
+  Argument some might make: "task-11-coverage.txt is comprehensive,
+  it must cover the client disconnect error path"
+
+  Why this is WRONG:
+    - Success scenario (task-11-tests.txt): Full test wave passes
+    - Error scenario (task-11-tests-error.txt): Client disconnect with
+      retention ON and retention OFF — this tests shadow cancellation
+      behavior under client disconnect, which is DIFFERENT from normal
+      completion
+
+  Evidence: The task-11-coverage.txt file contains
+    TestHedgeIntegration_ContextCancellationDuringObservation which
+    is NOT the same as client disconnect after winner release. The
+    error-path specifically requires testing what happens when the
+    HTTP client disconnects while shadow is still consuming loser.
+
+VIOLATION 2: task-8-fallback-error.txt
+  Argument some might make: "task-8-fallback.txt covers fallback cases"
+
+  Why this is WRONG:
+    - Success scenario: Hedge race reuses fallback ordering correctly
+    - Error scenario: Winner fails AFTER release — loser must NOT
+      take over client path, failure follows existing semantics
+
+  These are fundamentally different: one tests fallback ordering
+  when both hedge candidates fail, the other tests post-release
+  failure semantics when winner fails but shadow is still active.
+
+================================================================================
+SECTION 5: SUMMARY OF GAPS
+================================================================================
+
+| Severity | Count | Description |
+|----------|-------|-------------|
+| CRITICAL  | 11    | Missing error-path artifacts |
+| MEDIUM    | 2     | Unexpected file (task-pipeline-wiring.txt), |
+|          |       | Missing task-9-anthropic-error.txt |
+| LOW       | 4     | Naming aliases (content verified as sufficient) |
+
+TOTAL GAP COUNT: 13 items requiring attention
+
+================================================================================
+SECTION 6: RECOMMENDED ACTIONS
+================================================================================
+
+1. IMMEDIATE: Clarify task-pipeline-wiring.txt origin and disposition
+2. HIGH PRIORITY: Capture error-path evidence for tasks 1-8, 10-12
+3. MEDIUM PRIORITY: Capture error-path evidence for task 9 (Anthropic)
+4. VERIFY: Confirm whether task-11-coverage.txt truly contains no
+   client-disconnect-with-shadow tests (if it does, the gap may be
+   less severe)
+
+================================================================================
+END OF ERROR REPORT
+================================================================================

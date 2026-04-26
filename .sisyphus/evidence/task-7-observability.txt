@@ -1,0 +1,18 @@
+=== RUN   TestLogHedgeObservationStarted
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-12345","first_token_from":"primary"}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-12345","first_token_from":"secondary"}
+--- PASS: TestLogHedgeObservationStarted (0.00s)
+=== RUN   TestLogHedgeObservationEnded
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-12345","primary_tps":50.5,"secondary_tps":45.2,"winner_index":0}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-12345","primary_tps":45.2,"secondary_tps":50.5,"winner_index":1}
+--- PASS: TestLogHedgeObservationEnded (0.00s)
+=== RUN   TestHedgeObservabilityRecorder
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_started","hedge_pair_id":"hp-rec-test","first_token_from":"primary"}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.observation_ended","hedge_pair_id":"hp-rec-test","primary_tps":50,"secondary_tps":45,"winner_index":0}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.winner_chosen","hedge_pair_id":"hp-rec-test","winner_channel_id":100,"winner_tps":50,"loser_channel_id":101,"loser_tps":45}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.shadow_completed","hedge_pair_id":"hp-rec-test","completion_reason":"normal_completion","tokens_consumed":100,"duration_seconds":5}
+{"level":"WARN","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.shadow_deadline_exceeded","hedge_pair_id":"hp-rec-test","loser_channel_id":101}
+{"level":"INFO","time":"2026-04-25T02:56:46-04:00","logger":"global","message":"hedge.fallback_resumed","hedge_pair_id":"hp-rec-test","reason":"winner_released"}
+--- PASS: TestHedgeObservabilityRecorder (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.050s

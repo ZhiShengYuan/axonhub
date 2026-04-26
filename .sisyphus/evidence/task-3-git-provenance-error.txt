@@ -1,0 +1,48 @@
+# Git Provenance Concerns: Advanced Hedge/Shadow Implementation
+
+## Critical Concern: Unrelated Local Commit
+
+### Issue: CI Workflow Removal Misattribution
+
+**Commit**: 8fb51af2 "chore: remove non-essential CI workflows"
+
+**Problem**: This commit is LOCAL ONLY. It does NOT exist on `origin/release/v0.9.x`. However, it IS the current HEAD of the local `release/v0.9.x` branch.
+
+**Risk**: If someone uses `HEAD` or `release/v0.9.x` without specifying the remote (`origin/release/v0.9.x`), they may incorrectly attribute the CI workflow removal to the hedge/shadow feature or use it as a baseline for feature correctness judgment.
+
+**Example of incorrect usage**:
+```bash
+# WRONG - uses local HEAD which includes CI removal
+git diff 79f7b93f..HEAD  # Includes 8fb51af2 CI removal, pollutes results
+
+# CORRECT - uses remote baseline
+git diff 79f7b93f..origin/release/v0.9.x  # Clean feature chain only
+```
+
+## Verified Safe Baselines
+
+| Reference | Safe for Feature Verdict? | Notes |
+|-----------|---------------------------|-------|
+| `origin/release/v0.9.x` | ✅ YES | Contains only feature commits 79f7b93f..c841a8d6 |
+| `HEAD` (local) | ❌ NO | Includes unrelated 8fb51af2 |
+| `c841a8d6` | ✅ YES | Tag v0.9.46, remote HEAD, feature end point |
+| `79f7b93f` | ✅ YES | Feature start point |
+
+## Mitigation
+
+1. Always reference `origin/release/v0.9.x` when evaluating hedge/shadow feature
+2. The remote branch contains exactly the 4 feature commits with NO unrelated changes
+3. The 1 local commit ahead of remote (8fb51af2) is clearly CI workflow cleanup
+
+## Recommendation
+
+The CI workflow removal (8fb51af2) should either:
+- Be pushed to remote to keep branches in sync, OR
+- Be clearly documented as a local-only change that must not influence feature verdicts
+
+## No Other Concerns
+
+The 4 hedge/shadow feature commits (79f7b93f, 757df6c8, 637c334a, c841a8d6) are:
+- All on `origin/release/v0.9.x`
+- Cleanly scoped to their respective implementation areas
+- Properly structured with no cross-contamination of unrelated changes

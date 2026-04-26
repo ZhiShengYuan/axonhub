@@ -1,0 +1,408 @@
+================================================================================
+FINAL VERDICT REPORT: Advanced Hedged Routing & Shadow Execution
+================================================================================
+Plan: .sisyphus/plans/advanced-hedged-routing-shadow-execution.md
+Generated: 2026-04-25
+Consolidated from Tasks 1-7 evidence files
+
+================================================================================
+SECTION 1: EXECUTIVE SUMMARY
+================================================================================
+
+The advanced hedged routing and shadow execution feature was implemented across
+12 tasks and 4 final-review items. Source code exists and is properly wired
+(Task 4). All hedge-specific unit tests pass at runtime (Task 7). The feature
+commit chain exists cleanly on origin/release/v0.9.x (Task 3). However, zero
+Boulder session records exist for any implementation task (Task 1). All 11
+error-path evidence artifacts are missing (Task 2). F1-F4 are checked [x]
+despite an explicit plan policy prohibition at lines 634-641 requiring user
+approval before marking those items complete (Task 6). Task 9 evidence proves
+only eligibility checking, not actual protocol streaming integration (Task 5).
+
+Overall verdict: VERIFIED WITH MATERIAL GAPS. The implementation is real and
+passes tests, but procedural gaps prevent a clean "verified" conclusion.
+
+================================================================================
+SECTION 2: CROSS-SOURCE CONSISTENCY ASSESSMENT
+================================================================================
+
+Plan Checkbox State vs. Boulder Metadata:
+- Plan claims: All 16 items (1-12, F1-F4) are [x] (complete)
+- Boulder reality: ZERO session records for any item
+- Consistency: DIRECTLY CONTRADICTED
+
+Plan Checkbox State vs. Evidence Files:
+- Plan references: 24 expected artifacts (12 success + 12 error)
+- Evidence reality: 13 files exist (10 exact + 4 aliases)
+- Consistency: PARTIALLY CONSISTENT (success-path present, error-path absent)
+
+Plan Checkbox State vs. Git History:
+- Plan claims: Tasks 1-12 implemented
+- Git reality: 4 feature commits on origin/release/v0.9.x
+- Consistency: CONSISTENT (commits exist for hedge/shadow implementation)
+
+Plan Checkbox State vs. Source Code:
+- Plan claims: Tasks 1-12 implemented
+- Source reality: ALL 10 implementation areas present with proper wiring
+- Consistency: CONSISTENT
+
+Plan Checkbox State vs. Test Results:
+- Plan claims: Tasks 1-12 verified
+- Test reality: 150+ hedge tests PASS, all aggregate suites PASS
+- Consistency: CONSISTENT (tests pass)
+
+F1-F4 Checkbox State vs. Plan Policy:
+- Plan claims: F1-F4 are [x] (complete)
+- Plan policy (lines 634-641): "Never mark F1-F4 as checked before getting
+  user's okay"
+- Consistency: DIRECTLY VIOLATED
+
+================================================================================
+SECTION 3: TASK-BY-TASK VERDICT MATRIX
+================================================================================
+
+| ID  | Task Title                              | Chk | Boulder | Source | Evidence | ErrorPath | Tests | Verdict          |
+|-----|----------------------------------------|-----|--------|--------|----------|----------|-------|------------------|
+| 1   | Hedge Config/Persistence                | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 2   | Orchestrator State Lifecycle            | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 3   | Candidate Selection Top-2               | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 4   | Hedge Coordinator/Observation           | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 5   | Shadow Consumer/Loser Detachment       | [x] | NONE   | PRESENT| PARTIAL* | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 6   | Hedge Metrics/eTPS Computation         | [x] | NONE   | PRESENT| PARTIAL**| MISSING  | PASS  | PARTIALLY VERIFIED|
+| 7   | Observability Surfaces                 | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 8   | Retry/Fallback Integration             | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 9   | Protocol Wiring/Eligibility            | [x] | NONE   | PRESENT| INSUFF***| MISSING  | PASS  | unverified     |
+| 10  | Probing Mode/Activation               | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 11  | Unit/Integration Coverage              | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| 12  | Full Backend Verification              | [x] | NONE   | PRESENT| VERIFIED | MISSING  | PASS  | PARTIALLY VERIFIED|
+| F1  | Plan Compliance Audit                  | [x] | NONE   | N/A    | NONE     | N/A      | N/A   | CONTRADICTED     |
+| F2  | Code Quality Review                    | [x] | NONE   | N/A    | NONE     | N/A      | N/A   | CONTRADICTED     |
+| F3  | Real Manual QA                         | [x] | NONE   | N/A    | NONE     | N/A      | N/A   | CONTRADICTED     |
+| F4  | Scope Fidelity Check                   | [x] | NONE   | N/A    | NONE     | N/A      | N/A   | CONTRADICTED     |
+
+VERDICT KEY:
+- verified: All conditions met (source + evidence + tests + error-path + Boulder record)
+- partially verified: Source + evidence + tests present, but error-path missing or partial
+- not verified: Insufficient evidence despite source presence
+- contradicted: Evidence directly contradicts claim or policy violation
+
+FIELD NOTES:
+- Chk: Plan checkbox state
+- Boulder: Session record in boulder.json
+- Source: Source code presence (Task 4)
+- Evidence: Success-path evidence quality (Task 5)
+- ErrorPath: Error-path artifact presence (Task 2)
+- Tests: Runtime test pass status (Task 7)
+
+* Task 5 partial: task-5-shadow.txt is truncated (11 lines, ends mid-output)
+** Task 6 partial: Only TPS calculation covered, not usage attribution or metrics distinction
+*** Task 9 insufficient: Eligibility tests only, no protocol streaming integration evidence
+
+================================================================================
+SECTION 4: DISCREPANCY CATEGORIES
+================================================================================
+
+CATEGORY 1: COMPLETION-CLAIM MISMATCHES
+---------------------------------------
+All 16 items (1-12, F1-F4) are marked [x] in the plan, indicating completion.
+However, boulder.json contains ZERO session records for any implementation task.
+
+Source: Task 1 claim reconciliation
+
+The plan checkbox system tracks task completion via Boulder session IDs. Without
+session records, there is no metadata proof that any task was actually executed
+through the tracking system. The evidence files exist, but they are not linked
+to any session in boulder.json per the task requirements.
+
+Implication: The implementation was likely done without going through the
+tracking system, or session records were not captured.
+
+CATEGORY 2: MISSING ERROR-PATH EVIDENCE (11 ARTIFACTS)
+-------------------------------------------------------
+All 11 error-path artifacts are ABSENT from .sisyphus/evidence/:
+
+- task-1-hedge-config-error.txt      (legacy persistence validation)
+- task-2-hedge-state-error.txt       (invalid state transition rejection)
+- task-3-candidates-error.txt        (single-candidate degradation)
+- task-4-hedge-coordinator-error.txt (dual failure fallback)
+- task-5-shadow-error.txt            (hard deadline enforcement)
+- task-6-etps-error.txt             (winner-only metrics attribution)
+- task-7-observability-error.txt     (retention-disabled suppression)
+- task-8-fallback-error.txt          (post-release winner failure)
+- task-9-anthropic-error.txt         (Anthropic protocol correctness)
+- task-10-probing-error.txt          (ineligible request skip)
+- task-11-tests-error.txt            (client disconnect safety)
+
+Source: Task 2 evidence inventory
+
+Error-path and success-path test COMPLETELY DIFFERENT code paths. Success-path
+coverage does NOT imply error-path coverage. Each error scenario requires
+independent verification.
+
+CATEGORY 3: INSUFFICIENT EVIDENCE (TASK 9)
+-------------------------------------------
+task-9-eligibility.txt contains only eligibility unit tests (14 tests proving
+hedge eligibility conditions are correctly evaluated).
+
+What the plan REQUIRES (line 493-497):
+- OpenAI streaming path releases protocol-correct winner output
+- Anthropic streaming path remains protocol-correct
+
+What Task 9 EVIDENCE PROVES:
+- IsHedgeEligible() returns correct boolean for various conditions
+
+What is MISSING:
+- Actual SSE event emission verification
+- OpenAI streaming handler integration test
+- Anthropic streaming handler integration test
+- Protocol correctness proof
+- Non-streaming behavior unchanged verification
+
+Source: Task 5 evidence validation
+
+The eligibility check is a PREREQUISITE for hedge activation, not the same as
+proving the streaming protocol integration works end-to-end.
+
+CATEGORY 4: POLICY VIOLATIONS (F1-F4)
+-------------------------------------
+Plan lines 634-641 state explicitly:
+
+"Final Verification Wave (MANDATORY — after ALL implementation tasks)
+ > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated
+   results to user and get explicit 'okay' before marking work complete.
+ > Do NOT auto-proceed after verification. Wait for user's explicit approval
+   before marking work complete.
+ > Never mark F1-F4 as checked before getting user's okay."
+
+F1-F4 are all marked [x] (checked) despite:
+- No Boulder session records for any F1-F4 review activity
+- No evidence of 4 parallel review agents having run
+- No user approval record in boulder.json
+- The boulder.json session (ses_23a3584f9ffeGHPpdMsu0sMf5l) belongs to a
+  DIFFERENT plan (verify-advanced-hedged-routing-completion)
+
+Source: Task 1 claim reconciliation, Task 6 final wave review
+
+The checked [x] state for F1-F4 is a DIRECT VIOLATION of the plan's own
+policy. This is not a procedural gap — it is an explicit prohibition that
+was violated.
+
+CATEGORY 5: GIT-PROVENANCE CAVEATS
+----------------------------------
+The hedge/shadow implementation has 4 clean feature commits on
+origin/release/v0.9.x:
+
+1. 79f7b93f - hedge configuration schema and persistence layer
+2. 757df6c8 - hedge lifecycle state, candidate selection, activation
+3. 637c334a - hedge coordinator, shadow consumer, pipeline wiring
+4. c841a8d6 - comprehensive test coverage
+
+However, the LOCAL HEAD commit (8fb51af2) is UNRELATED: "chore: remove
+non-essential CI workflows"
+
+When evaluating hedge/shadow implementation correctness:
+- Use origin/release/v0.9.x (clean feature chain)
+- Do NOT use local HEAD (includes CI removal, pollutes results)
+
+Source: Task 3 git provenance
+
+================================================================================
+SECTION 5: WHAT IS VERIFIED
+================================================================================
+
+POSITIVE FINDING 1: Source Code Exists and is Properly Wired
+-------------------------------------------------------------
+ALL 10 implementation areas are PRESENT in source code with proper wiring:
+
+- Task 1 (Config/Persistence): HedgePolicy struct, ent schema fields, JSON persistence
+- Task 2 (State/Lifecycle): HedgePhase enum, HedgeState struct, state transitions
+- Task 3 (Candidates): SelectHedgeCandidates(), top-2 selection with duplicate elimination
+- Task 4 (Coordinator): HedgeCoordinator, StartRace(), observation window, TPS winner selection
+- Task 5 (Shadow): ShadowConsumer, deadline enforcement, client disconnect tolerance
+- Task 6 (Metrics): ComputeHedgeMetrics(), eTPS computation, Prometheus counters
+- Task 7 (Observability): Structured logs distinguishing winner vs shadow paths
+- Task 8 (Fallback): HedgeFallbackManager integrated with existing retry machinery
+- Task 9 (Protocol): runHedgeRace() wired in orchestrator, hedge eligibility in chat.go
+- Task 10 (Probing): ShouldActivateHedge(), deterministic FNV-1a sampling
+
+Source: Task 4 source map audit
+
+No orphaned components, no absent implementations, no broken wiring detected.
+
+POSITIVE FINDING 2: Evidence Files Contain Real Test Output
+-----------------------------------------------------------
+The evidence files in .sisyphus/evidence/ contain actual test execution output:
+
+- task-1-hedge-config.txt: TestSystemService_HedgePolicyOrDefault_* tests PASS
+- task-2-hedge-state.txt: 30+ HedgeState transition tests PASS
+- task-3-candidates.txt: TestSelectHedgeCandidates_* tests PASS
+- task-4-hedge-coordinator.txt: TestHedgeCoordinator_* tests PASS
+- task-5-shadow.txt: TestShadowConsumer_* tests PASS (file truncated)
+- task-6-metrics.txt: TestComputeHedgeMetrics_* tests PASS
+- task-7-observability.txt: TestLogHedge* and observability tests PASS
+- task-8-fallback.txt: TestHedgeFallbackManager_* tests PASS
+- task-9-eligibility.txt: TestIsHedgeEligible_* tests PASS
+- task-10-probing.txt: TestIsProbingRequest_* and activation tests PASS
+- task-11-coverage.txt: 130+ hedge tests PASS
+- task-12-full-verification.txt: Full verification output PASS
+
+Source: Task 5 evidence validation
+
+POSITIVE FINDING 3: All Hedge Tests Pass at Runtime
+---------------------------------------------------
+Task 7 executed the full test suite and found:
+
+- Total hedge-specific tests: 150+
+- Failed: 0
+- Passed: ALL
+- Root module tests: ALL PASS
+- LLM module tests: ALL PASS
+- make test-backend-all: PASS
+
+Integration tests for OpenAI/Anthropic streaming were SKIPPED due to missing
+TEST_AXONHUB_API_KEY (expected environment configuration, not a code defect).
+
+Source: Task 7 targeted verification
+
+POSITIVE FINDING 4: Feature Commit Chain Exists Cleanly
+--------------------------------------------------------
+The hedge/shadow implementation spans exactly 4 commits on origin/release/v0.9.x:
+
+1. 79f7b93f - hedge configuration schema and persistence layer (21 files, +3196/-56)
+2. 757df6c8 - hedge lifecycle state, candidate selection, activation (11 files, +2077/-6)
+3. 637c334a - hedge coordinator, shadow consumer, pipeline wiring (12 files, +2203/-7)
+4. c841a8d6 - comprehensive test coverage (11 test files, +5218 insertions)
+
+The remote branch contains ONLY these feature commits with no unrelated changes.
+
+Source: Task 3 git provenance
+
+================================================================================
+SECTION 6: WHAT IS NOT VERIFIED / CONTRADICTED
+================================================================================
+
+NEGATIVE FINDING 1: No Boulder Session Records for Implementation Tasks
+---------------------------------------------------------------------
+Zero session records exist in boulder.json for any of tasks 1-12. The plan's
+checkbox tracking system was not used or records were not captured.
+
+This means:
+- No proof of task execution through the tracking system
+- Evidence files exist but are not linked to session IDs
+- Per task requirements, this is classified as "unverified" or "contradicted"
+
+Source: Task 1 claim reconciliation
+
+NEGATIVE FINDING 2: All 11 Error-Path Artifacts Missing
+---------------------------------------------------------
+Each error-path scenario requires independent verification:
+
+- Error-path and success-path test different code paths
+- Success coverage does NOT imply error-path coverage
+- Missing error artifacts cannot be "inherited" from success artifacts
+
+The absence of these files means 11 specific error scenarios were not verified.
+
+Source: Task 2 evidence inventory, Task 5 evidence validation
+
+NEGATIVE FINDING 3: Task 9 Does Not Prove Protocol Streaming Integration
+-------------------------------------------------------------------------
+task-9-eligibility.txt proves eligibility checking works, but does NOT prove:
+- OpenAI streaming handler correctly emits SSE events through hedge path
+- Anthropic streaming handler correctly emits events through hedge path
+- Winner output is protocol-correct for each API format
+
+This is a CRITICAL gap because the plan's definition of done states:
+"Hedged routing is executed only for enabled OpenAI/Anthropic streaming"
+
+Source: Task 5 evidence validation (Task 9 INSUFFICIENT verdict)
+
+NEGATIVE FINDING 4: F1-F4 Review Was Never Substantiated
+---------------------------------------------------------
+All F1-F4 items are [x] despite:
+
+1. No Boulder session records for any F1-F4 review activity
+2. No evidence of 4 parallel review agents having run
+3. The single boulder.json session belongs to a DIFFERENT plan
+4. Policy violation: lines 634-641 prohibit marking F1-F4 before user approval
+
+Specifically:
+- F1 (Plan Compliance Audit): No oracle agent session, no audit output
+- F2 (Code Quality Review): No unspecified-high session, no review output
+- F3 (Real Manual QA): No QA session, no manual test evidence
+- F4 (Scope Fidelity Check): No deep agent session, no scope analysis
+
+Source: Task 6 final wave review
+
+NEGATIVE FINDING 5: F1-F4 Checkbox State Violates Plan Policy
+-------------------------------------------------------------
+The plan's own policy at lines 634-641 states explicitly:
+
+"Never mark F1-F4 as checked before getting user's okay."
+
+F1-F4 are all checked [x] without any evidence of user approval having been
+obtained. This is a DIRECT POLICY VIOLATION, not merely a procedural gap.
+
+Source: Task 1 claim reconciliation (policy violation analysis), Task 6
+
+================================================================================
+SECTION 7: OVERALL VERDICT
+================================================================================
+
+OVERALL VERDICT: VERIFIED WITH MATERIAL GAPS
+
+JUSTIFICATION:
+The implementation exists, is properly wired, and passes all tests. However,
+three material gaps prevent an overall "verified" conclusion:
+
+1. ZERO Boulder session records for implementation tasks
+2. All 11 error-path evidence artifacts missing
+3. F1-F4 policy violation and lack of review substantiation
+
+VERDICT BREAKDOWN BY CATEGORY:
+
+| Category                  | Count | Verdict Impact              |
+|---------------------------|-------|-----------------------------|
+| Tasks 1-12 (implementation)| 12   | PARTIALLY VERIFIED          |
+| F1-F4 (final review)      | 4     | ALL CONTRADICTED            |
+| Source code presence      | 10/10 | VERIFIED                    |
+| Runtime tests             | 150+  | VERIFIED (all pass)        |
+| Error-path evidence       | 0/11  | unverified (all missing) |
+| Boulder session records   | 0/16  | unverified (all absent)  |
+| Policy compliance (F1-F4) | 0/4   | CONTRADICTED (all violate) |
+
+TASK-LEVEL SUMMARY:
+
+| Verdict          | Count | Items                                |
+|------------------|-------|--------------------------------------|
+| verified         | 0     | —                                    |
+| partially verified| 11   | 1, 2, 3, 4, 5*, 6**, 7, 8, 10, 11, 12|
+| not verified     | 1     | 9 (insufficient evidence)            |
+| contradicted     | 4     | F1, F2, F3, F4 (policy violation)   |
+
+* Task 5: Evidence file truncated
+** Task 6: Coverage partial (TPS calculation only, not usage attribution)
+
+================================================================================
+SECTION 8: REQUIRED ACTIONS TO ACHIEVE FULL VERIFICATION
+================================================================================
+
+To upgrade from "VERIFIED WITH MATERIAL GAPS" to "VERIFIED", the following
+gaps must be addressed:
+
+CRITICAL (required for "verified"):
+1. Capture error-path evidence for all 11 missing artifacts
+2. Obtain and document user approval for F1-F4 completion
+
+HIGH PRIORITY (to close gaps):
+3. Capture protocol streaming integration evidence for Task 9 (currently
+   only eligibility checking is proven, not actual SSE event emission)
+4. Establish session records for implementation work through tracking system
+
+MEDIUM PRIORITY (quality improvements):
+5. Complete truncated task-5-shadow.txt evidence file
+6. Add usage attribution tests to task-6 evidence
+
+================================================================================
+END OF FINAL VERDICT REPORT
+================================================================================

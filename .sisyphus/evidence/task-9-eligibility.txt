@@ -1,0 +1,26 @@
+=== RUN   TestIsHedgeEligible_Eligible
+--- PASS: TestIsHedgeEligible_Eligible (0.00s)
+=== RUN   TestIsHedgeEligible_AnthropicEligible
+--- PASS: TestIsHedgeEligible_AnthropicEligible (0.00s)
+=== RUN   TestIsHedgeEligible_NonStreaming
+--- PASS: TestIsHedgeEligible_NonStreaming (0.00s)
+=== RUN   TestIsHedgeEligible_HedgeDisabled
+--- PASS: TestIsHedgeEligible_HedgeDisabled (0.00s)
+=== RUN   TestIsHedgeEligible_NilHedgePolicy
+--- PASS: TestIsHedgeEligible_NilHedgePolicy (0.00s)
+=== RUN   TestIsHedgeEligible_NilCandidateSet
+--- PASS: TestIsHedgeEligible_NilCandidateSet (0.00s)
+=== RUN   TestIsHedgeEligible_NilPrimary
+--- PASS: TestIsHedgeEligible_NilPrimary (0.00s)
+=== RUN   TestIsHedgeEligible_NilSecondary
+--- PASS: TestIsHedgeEligible_NilSecondary (0.00s)
+=== RUN   TestIsHedgeEligible_UnsupportedEndpoint
+--- PASS: TestIsHedgeEligible_UnsupportedEndpoint (0.00s)
+=== RUN   TestIsHedgeEligible_NilRequest
+--- PASS: TestIsHedgeEligible_NilRequest (0.00s)
+=== RUN   TestIsHedgeEligible_OpenAIWithAllConditionsMet
+--- PASS: TestIsHedgeEligible_OpenAIWithAllConditionsMet (0.00s)
+=== RUN   TestIsHedgeEligible_AnthropicWithAllConditionsMet
+--- PASS: TestIsHedgeEligible_AnthropicWithAllConditionsMet (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.051s

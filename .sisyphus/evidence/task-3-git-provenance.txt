@@ -1,0 +1,108 @@
+# Git Provenance Report: Advanced Hedge/Shadow Implementation
+
+## Repository State
+
+| Item | Value |
+|------|-------|
+| Current Branch | release/v0.9.x |
+| Local HEAD | 8fb51af2 "chore: remove non-essential CI workflows" |
+| Remote HEAD (origin/release/v0.9.x) | c841a8d6 "test(routing): add comprehensive hedge and shadow test coverage" |
+| Working Tree | Clean (no uncommitted/untracked changes) |
+| Branch Status | Local ahead of remote by 1 commit |
+
+## Feature Commit Chain
+
+The hedge/shadow implementation spans **4 commits** on `origin/release/v0.9.x`:
+
+### Commit 1: 79f7b93f
+- **Message**: "feat(routing): add hedge configuration schema and persistence layer"
+- **Files**: 21 files changed (+3196/-56)
+- **Scope**: Ent schema, GraphQL mutations, HedgePolicy system config, Prometheus metrics wiring
+- **Classification**: ✅ hedge/shadow implementation
+
+### Commit 2: 757df6c8
+- **Message**: "feat(orchestrator): add hedge lifecycle state, candidate selection, and activation"
+- **Files**: 11 files changed (+2077/-6)
+- **Scope**: PersistenceState, hedge phase tracking, top-two candidate selection, ShouldActivateHedge, HedgeFallbackManager
+- **Classification**: ✅ hedge/shadow implementation
+
+### Commit 3: 637c334a
+- **Message**: "feat(orchestrator): add hedge coordinator, shadow consumer, and pipeline wiring"
+- **Files**: 12 files changed (+2203/-7)
+- **Scope**: HedgeCoordinator, BufferedStreamReader, ShadowConsumer, runHedgeRace, hedge eligibility checks in handlers, llm/streams/buffer.go
+- **Classification**: ✅ hedge/shadow implementation
+
+### Commit 4: c841a8d6
+- **Message**: "test(routing): add comprehensive hedge and shadow test coverage"
+- **Files**: 11 test files (+5218 insertions)
+- **Scope**: Unit tests for hedge activation, coordinator, eligibility, fallback, metrics, observability, shadow consumer; integration tests; stream buffering tests
+- **Classification**: ✅ hedge/shadow implementation (test coverage)
+
+## Feature Commit Range
+
+```
+79f7b93f (start: hedge configuration schema and persistence layer)
+   ↓
+757df6c8 (lifecycle state, candidate selection, activation)
+   ↓
+637c334a (hedge coordinator, shadow consumer, pipeline wiring)
+   ↓
+c841a8d6 (end: comprehensive test coverage)
+```
+
+## Unrelated Local-Only Commit
+
+### Commit 8fb51af2 (LOCAL ONLY - NOT on remote)
+- **Message**: "chore: remove non-essential CI workflows"
+- **Files**: 5 workflow files deleted (-303 lines)
+- **Scope**: .github/workflows/{docker-publish.yml, lint.yml, stale.yml, sync-model-developers.yml, test.yml}
+- **Classification**: ❌ UNRELATED to hedge/shadow feature
+
+**⚠️ WARNING**: This commit is LOCAL ONLY and does NOT exist on `origin/release/v0.9.x`. It must NOT be considered when evaluating hedge/shadow implementation correctness.
+
+## Summary of Feature Files
+
+### Configuration/Persistence (Commit 79f7b93f)
+- `internal/ent/schema/request_execution.go` - hedge fields
+- `internal/ent/mutation.go`, `requestexecution_create.go`, `requestexecution_update.go` - Ent persistence
+- `internal/server/biz/system.go` - HedgePolicy config
+- `internal/server/gql/ent.graphql` - GraphQL mutations
+- `internal/metrics/prometheus.go` - hedge metrics counters
+
+### Lifecycle State (Commit 757df6c8)
+- `internal/server/orchestrator/state.go` - PersistenceState, phase tracking
+- `internal/server/orchestrator/hedge_activation.go` - ShouldActivateHedge
+- `internal/server/orchestrator/hedge_eligibility.go` - eligibility checks
+- `internal/server/orchestrator/hedge_fallback.go` - HedgeFallbackManager
+- `internal/server/orchestrator/candidates.go` - candidate selection
+
+### Coordinator/Shadow Logic (Commit 637c334a)
+- `internal/server/orchestrator/hedge_coordinator.go` - HedgeCoordinator, BufferedStreamReader
+- `internal/server/orchestrator/shadow_consumer.go` - ShadowConsumer
+- `internal/server/orchestrator/hedge_metrics.go` - hedge metrics
+- `internal/server/orchestrator/hedge_observability.go` - observability
+- `internal/server/orchestrator/orchestrator.go` - runHedgeRace wiring
+- `internal/server/orchestrator/outbound.go` - outbound path
+- `llm/streams/buffer.go` - stream buffering primitives
+
+### Test Coverage (Commit c841a8d6)
+- `internal/server/orchestrator/*_test.go` - 10 test files
+- `llm/streams/buffer_test.go` - buffer primitive tests
+
+## Verification Baseline
+
+For verdicts on hedge/shadow implementation correctness, the correct baseline is:
+- **Local HEAD** (8fb51af2) includes an UNRELATED CI workflow removal commit
+- **Remote** (origin/release/v0.9.x at c841a8d6) contains ONLY the hedge/shadow feature commits
+- Feature correctness should be evaluated against `origin/release/v0.9.x` (commits 79f7b93f..c841a8d6)
+
+## Commands Used
+
+```bash
+git status --short                          # Working tree state
+git log --oneline --decorate -12           # Recent commits
+git log --oneline origin/release/v0.9.x -5 # Remote HEAD
+git diff --stat origin/release/v0.9.x...HEAD # Local-only diff
+git show --stat <commit>                    # Per-commit file changes
+git diff origin/release/v0.9.x -- internal/server/orchestrator/ llm/ internal/ent/schema/  # Feature diff
+```

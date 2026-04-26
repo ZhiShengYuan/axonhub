@@ -1,0 +1,122 @@
+FINAL REVIEW WAVE ERRORS AND VIOLATIONS (F1-F4)
+===============================================
+Plan: .sisyphus/plans/advanced-hedged-routing-shadow-execution.md
+Boulder: .sisyphus/boulder.json
+Generated: 2026-04-25
+
+CRITICAL POLICY VIOLATION: F1-F4 EARLY COMPLETION
+=================================================
+Location: Plan lines 634-641
+
+EXPLICIT POLICY TEXT (verbatim):
+"Final Verification Wave (MANDATORY — after ALL implementation tasks)
+ > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated
+   results to user and get explicit "okay" before marking work complete.
+ > Do NOT auto-proceed after verification. Wait for user's explicit approval
+   before marking work complete.
+ > Never mark F1-F4 as checked before getting user's okay. Rejection or
+   user feedback -> fix -> re-run -> present again -> wait for okay."
+
+VIOLATION DETAIL:
+- F1 is checked [x] — VIOLATION of "Never mark F1-F4 as checked before
+  getting user's okay"
+- F2 is checked [x] — VIOLATION of same policy
+- F3 is checked [x] — VIOLATION of same policy
+- F4 is checked [x] — VIOLATION of same policy
+
+No evidence in boulder.json of user approval having been obtained.
+The boulder.json session (ses_23a3584f9ffeGHPpdMsu0sMf5l) belongs to
+the verification plan (verify-advanced-hedged-routing-completion), not the
+implementation plan, and contains no F1-F4 approval records.
+
+VIOLATION TYPE: Plan's own policy explicitly forbids the checked state
+of F1-F4. This is not a missing evidence issue — it is a direct policy
+prohibition violation.
+
+---
+
+SEPARATION OF POLICY VIOLATION VS. EVIDENCE ABSENCE
+====================================================
+These are TWO INDEPENDENT issues that must be evaluated separately:
+
+Issue 1: POLICY VIOLATION (Procedural)
+---------------------------------------
+The checked [x] state of F1-F4 violates the plan's own policy at
+lines 634-641 which explicitly states "Never mark F1-F4 as checked
+before getting user's okay."
+
+This violation exists REGARDLESS of whether review activity occurred.
+Even if oracle/unspecified-high/deep agents had run and produced outputs,
+marking F1-F4 as [x] before presenting to user and getting explicit
+approval would still be a policy violation.
+
+Issue 2: EVIDENCE ABSENCE (Substantive)
+----------------------------------------
+Beyond the policy violation, there is also no evidence that any F1-F4
+review activity actually occurred:
+
+F1: No oracle agent session found, no plan compliance audit output
+F2: No unspecified-high code quality session found, no code review output
+F3: No unspecified-high manual QA session found, no QA evidence
+F4: No deep agent scope fidelity session found, no scope analysis
+
+The evidence directory contains 13 files but all are implementation QA
+(test outputs), not review agent outputs.
+
+If we evaluated WITHOUT the policy violation:
+- F1-F4 would be "unverified" (no evidence) rather than "contradicted"
+- The policy violation is what upgrades the verdict to "contradicted"
+
+---
+
+NO SUBSTITUTION OF ADJACENT EVIDENCE
+====================================
+Some might argue that:
+- task-11-coverage.txt shows comprehensive test results → could substitute for F2?
+- task-12-full-verification.txt shows backend verification → could substitute for F3?
+
+THESE ARGUMENTS ARE REJECTED because:
+
+1. The plan explicitly requires 4 PARALLEL review agents with specific types:
+   - oracle for plan compliance (F1)
+   - unspecified-high for code quality (F2)
+   - unspecified-high for manual QA (F3)
+   - deep for scope fidelity (F4)
+
+2. Test passing ≠ Code quality review. Tests verify correctness; code
+   quality review assesses maintainability, error handling, edge cases,
+   documentation, etc.
+
+3. Automated test passing ≠ Manual QA. Manual QA involves exploratory
+   testing, edge case probing, and human judgment that automated tests
+   cannot replicate.
+
+4. Verification output ≠ Scope fidelity check. Verification shows tests
+   pass; scope fidelity check verifies the implementation stays within
+   the defined plan boundaries.
+
+5. Task 1 claim reconciliation (this session's todo:1) ≠ F1 review.
+   The claim reconciliation is auditing the plan claims, not performing
+   the oracle's plan compliance audit role.
+
+The plan's explicit agent-type requirements cannot be satisfied by
+substitute evidence from other sources.
+
+---
+
+SUMMARY
+=======
+| Violation Type           | Count | Severity |
+|--------------------------|-------|----------|
+| Policy: F1-F4 checked    | 4     | CRITICAL |
+| before user approval     |       |          |
+| Evidence: F1 no oracle   | 1     | HIGH     |
+| Evidence: F2 no code     | 1     | HIGH     |
+| review                   |       |          |
+| Evidence: F3 no manual   | 1     | HIGH     |
+| QA                       |       |          |
+| Evidence: F4 no scope    | 1     | HIGH     |
+| fidelity check          |       |          |
+
+Total violations: 4 policy + 4 evidence = 8 distinct violations
+(4 F1-F4 items × 2 violation types each)

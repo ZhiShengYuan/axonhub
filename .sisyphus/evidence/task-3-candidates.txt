@@ -1,0 +1,29 @@
+=== RUN   TestSelectHedgeCandidates_Top2Ordering
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"loaded channels","count":3}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T04:43:47Z"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+    candidates_loadbalance_test.go:629: Primary: High Weight Channel (id=1), Secondary: Medium Weight Channel (id=2)
+--- PASS: TestSelectHedgeCandidates_Top2Ordering (0.01s)
+=== RUN   TestSelectHedgeCandidates_DuplicateElimination
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"loaded channels","count":2}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T04:43:47Z"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_DuplicateElimination (0.02s)
+=== RUN   TestSelectHedgeCandidates_SingleCandidatePool
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_SingleCandidatePool (0.01s)
+=== RUN   TestSelectHedgeCandidates_RemainingPreservesOrder
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"No request execution data found in the last 6 hours"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"loaded channels","count":3}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-04-25T04:43:47Z"}
+{"level":"INFO","time":"2026-04-25T00:43:47-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSelectHedgeCandidates_RemainingPreservesOrder (0.01s)
+=== RUN   TestSelectHedgeCandidates_NilLoadBalancer
+--- PASS: TestSelectHedgeCandidates_NilLoadBalancer (0.01s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.129s

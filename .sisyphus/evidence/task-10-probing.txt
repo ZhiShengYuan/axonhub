@@ -1,0 +1,54 @@
+=== RUN   TestIsProbingRequest_Deterministic
+=== RUN   TestIsProbingRequest_Deterministic/empty_string
+=== RUN   TestIsProbingRequest_Deterministic/simple_id
+=== RUN   TestIsProbingRequest_Deterministic/uuid_style
+=== RUN   TestIsProbingRequest_Deterministic/complex_id
+--- PASS: TestIsProbingRequest_Deterministic (0.00s)
+    --- PASS: TestIsProbingRequest_Deterministic/empty_string (0.00s)
+    --- PASS: TestIsProbingRequest_Deterministic/simple_id (0.00s)
+    --- PASS: TestIsProbingRequest_Deterministic/uuid_style (0.00s)
+    --- PASS: TestIsProbingRequest_Deterministic/complex_id (0.00s)
+=== RUN   TestIsProbingRequest_PercentageBoundaries
+=== RUN   TestIsProbingRequest_PercentageBoundaries/percentage_0_never_probes
+=== RUN   TestIsProbingRequest_PercentageBoundaries/percentage_100_always_probes
+--- PASS: TestIsProbingRequest_PercentageBoundaries (0.00s)
+    --- PASS: TestIsProbingRequest_PercentageBoundaries/percentage_0_never_probes (0.00s)
+    --- PASS: TestIsProbingRequest_PercentageBoundaries/percentage_100_always_probes (0.00s)
+=== RUN   TestIsProbingRequest_Distribution
+=== RUN   TestIsProbingRequest_Distribution/5_percent_sampling_approximates_5_percent
+--- PASS: TestIsProbingRequest_Distribution (0.00s)
+    --- PASS: TestIsProbingRequest_Distribution/5_percent_sampling_approximates_5_percent (0.00s)
+=== RUN   TestShouldActivateHedge_AllConditionsMet
+--- PASS: TestShouldActivateHedge_AllConditionsMet (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNotStreaming
+--- PASS: TestShouldActivateHedge_ConditionNotStreaming (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNotEnabled
+--- PASS: TestShouldActivateHedge_ConditionNotEnabled (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionNilPolicy
+--- PASS: TestShouldActivateHedge_ConditionNilPolicy (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionInsufficientCandidates
+--- PASS: TestShouldActivateHedge_ConditionInsufficientCandidates (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionOnlyPrimaryCandidate
+--- PASS: TestShouldActivateHedge_ConditionOnlyPrimaryCandidate (0.00s)
+=== RUN   TestShouldActivateHedge_ConditionOnlySecondaryCandidate
+--- PASS: TestShouldActivateHedge_ConditionOnlySecondaryCandidate (0.00s)
+=== RUN   TestShouldActivateHedge_UnsupportedProtocol
+--- PASS: TestShouldActivateHedge_UnsupportedProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_ProbingModeFalse
+--- PASS: TestShouldActivateHedge_ProbingModeFalse (0.00s)
+=== RUN   TestShouldActivateHedge_ProbingPercentageZero
+--- PASS: TestShouldActivateHedge_ProbingPercentageZero (0.00s)
+=== RUN   TestShouldActivateHedge_OpenAIProtocol
+--- PASS: TestShouldActivateHedge_OpenAIProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_AnthropicProtocol
+--- PASS: TestShouldActivateHedge_AnthropicProtocol (0.00s)
+=== RUN   TestShouldActivateHedge_DefaultSampler
+--- PASS: TestShouldActivateHedge_DefaultSampler (0.00s)
+=== RUN   TestShouldActivateHedge_CustomSampler
+--- PASS: TestShouldActivateHedge_CustomSampler (0.00s)
+=== RUN   TestIsProbingRequest_Function
+--- PASS: TestIsProbingRequest_Function (0.00s)
+=== RUN   TestShouldActivateHedge_EmptyRequestID
+--- PASS: TestShouldActivateHedge_EmptyRequestID (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.060s

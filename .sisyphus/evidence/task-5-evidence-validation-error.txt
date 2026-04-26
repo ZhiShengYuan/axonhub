@@ -1,0 +1,120 @@
+TASK-5 EVIDENCE VALIDATION ERRORS
+Generated: Sat Apr 25 04:43:00 AM EDT 2026
+
+================================================================================
+MISSING ERROR-PATH ARTIFACTS (11 files)
+================================================================================
+
+The following error-path evidence files are MISSING from .sisyphus/evidence/:
+
+1. task-1-hedge-config-error.txt
+   - Expected: Legacy persistence remains valid (non-hedged records after schema changes)
+   - Impact: Cannot verify legacy persistence scenario
+
+2. task-2-hedge-state-error.txt
+   - Expected: Invalid state transitions rejected (winner release before observation, shadow completion before loser detachment)
+   - Impact: Cannot verify invalid transition rejection
+
+3. task-3-candidates-error.txt
+   - Expected: Duplicate and single-candidate pools degrade safely
+   - Impact: Cannot verify graceful degradation for edge cases
+
+4. task-4-hedge-coordinator-error.txt
+   - Expected: Dual failure before release re-enters fallback
+   - Impact: Cannot verify fallback behavior on dual failure
+
+5. task-5-shadow-error.txt
+   - Expected: Shadow hard deadline terminates zombie stream
+   - Impact: Cannot verify hard deadline enforcement
+
+6. task-6-etps-error.txt
+   - Expected: Winner-only delivery metrics avoid double counting
+   - Impact: Cannot verify usage attribution correctness
+
+7. task-7-observability-error.txt
+   - Expected: Retention-disabled mode suppresses loser text logging
+   - Impact: Cannot verify retention gate behavior
+
+8. task-8-fallback-error.txt
+   - Expected: Winner failure after release does not leak second stream
+   - Impact: Cannot verify post-release failure semantics
+
+9. task-9-anthropic-error.txt
+   - Expected: Anthropic streaming path remains protocol-correct and scoped
+   - Impact: Cannot verify Anthropic streaming integration
+
+10. task-10-probing-error.txt
+    - Expected: Ineligible requests skip hedge path completely
+    - Impact: Cannot verify ineligible request handling
+
+11. task-11-tests-error.txt
+    - Expected: Client disconnect path remains safe with shadow behavior
+    - Impact: Cannot verify client disconnect scenario
+
+12. task-12-verification-error.txt
+    - Expected: Failing edge path is fixed without scope creep
+    - Impact: Cannot verify regression fixing process
+
+================================================================================
+INSUFFICIENT SUCCESS-PATH ARTIFACTS
+================================================================================
+
+TASK 5 - task-5-shadow.txt: PARTIAL (TRUNCATED)
+- Issue: File ends mid-output after "TestShadowConsumer_ServerShutdown"
+- Missing: Final PASS/FAIL marker and "ok" status line
+- Impact: Cannot confirm all shadow tests actually passed
+
+TASK 6 - task-6-metrics.txt: PARTIAL (COVERAGE GAP)
+- Issue: Only TestComputeHedgeMetrics tests shown (10 tests)
+- Missing evidence for:
+  * Winner-only delivery metrics (usage attribution test)
+  * Non-hedged scoring preservation
+  * Prometheus/internal metrics distinction
+- Plan acceptance requires "Prometheus/internal metrics distinguish winner delivery from shadow consumption"
+- This specific criterion NOT verified by evidence
+
+TASK 9 - task-9-eligibility.txt: INSUFFICIENT (WRONG CONTENT)
+- Issue: File contains eligibility unit tests, NOT streaming protocol integration tests
+- Plan acceptance criteria: "OpenAI-compatible and Anthropic-compatible streaming handlers can invoke hedge-capable orchestration"
+- Plan QA scenario: "OpenAI streaming path releases protocol-correct winner output"
+- Evidence shows: Only TestIsHedgeEligible_* tests (14 unit tests for eligibility checking)
+- Missing:
+  * Actual SSE event emission verification
+  * OpenAI streaming handler integration test
+  * Anthropic streaming handler integration test
+  * Non-streaming behavior unchanged verification
+  * Protocol correctness proof
+
+================================================================================
+UNEXPECTED FILE
+================================================================================
+
+task-pipeline-wiring.txt (406 lines, ASCII)
+- Issue: This file is NOT referenced in the plan's QA scenarios
+- Content: Nearly identical to task-11-coverage.txt (406 lines, same test structure)
+- Possible explanation: May be a duplicate or alternative naming
+- Recommendation: Clarify if this is intentional or should be merged/renamed
+
+================================================================================
+ALIAS MAPPINGS (ACCEPTED)
+================================================================================
+
+Based on inherited wisdom from Task 2 audit:
+- task-6-metrics.txt → task-6-etps.txt (alias accepted)
+- task-9-eligibility.txt → task-9-openai.txt (alias accepted)
+- task-11-coverage.txt → task-11-tests.txt (alias accepted)
+- task-12-full-verification.txt → task-12-verification.txt (alias accepted)
+
+================================================================================
+IMPACT ASSESSMENT
+================================================================================
+
+CRITICAL (blocks acceptance):
+- Task 9: Evidence does not prove protocol streaming integration
+
+HIGH (significant coverage gap):
+- Task 5: Truncated evidence file
+- Task 6: Missing usage attribution verification
+
+MEDIUM (error-path only):
+- All 11 missing error-path artifacts

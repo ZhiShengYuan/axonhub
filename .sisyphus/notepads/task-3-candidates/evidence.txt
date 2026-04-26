@@ -1,0 +1,3 @@
+
+Test output:
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.428s

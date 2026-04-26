@@ -1,0 +1,62 @@
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_BothFailed
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_BothFailed (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_PrimaryFailsDuringObservation
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_PrimaryFailsDuringObservation (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_SecondaryFailsDuringObservation
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_SecondaryFailsDuringObservation (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_WinnerReleased_LoserShadowing
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_WinnerReleased_LoserShadowing (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_LoserFailsDuringShadow
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_LoserFailsDuringShadow (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_NilRaceResult
+{"level":"WARN","time":"2026-04-25T03:09:41-04:00","logger":"global","message":"HandleHedgeFailure called with nil raceResult"}
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_NilRaceResult (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_NilState
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_WithRemaining
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_WithRemaining (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_ReconstructsFromChannelModels
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_ReconstructsFromChannelModels (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_NilState
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_NoHedgeCandidates
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_NoHedgeCandidates (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_MissingPrimary
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_MissingPrimary (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_MissingSecondary
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_MissingSecondary (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_SameChannel
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_SameChannel (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_ValidDistinct
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_ValidDistinct (0.00s)
+=== RUN   TestHedgeFallbackManager_ShouldSkipHedge_NilState
+--- PASS: TestHedgeFallbackManager_ShouldSkipHedge_NilState (0.00s)
+=== RUN   TestHedgeFallbackManager_CanRetrySameChannel
+--- PASS: TestHedgeFallbackManager_CanRetrySameChannel (0.00s)
+=== RUN   TestHedgeFallbackManager_RecordRetry
+--- PASS: TestHedgeFallbackManager_RecordRetry (0.00s)
+=== RUN   TestHedgeFallbackManager_GetRetryCount
+--- PASS: TestHedgeFallbackManager_GetRetryCount (0.00s)
+=== RUN   TestHedgeFallbackManager_Reset
+--- PASS: TestHedgeFallbackManager_Reset (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NoRemaining
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NoRemaining (0.00s)
+=== RUN   TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NilState
+--- PASS: TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NilState (0.00s)
+=== RUN   TestHedgeFallbackAction_String
+--- PASS: TestHedgeFallbackAction_String (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_WinnerAlreadySelected
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_WinnerAlreadySelected (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithWinner
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithWinner (0.00s)
+=== RUN   TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithNoWinner
+--- PASS: TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithNoWinner (0.00s)
+=== RUN   TestHedgeFallbackManager_GetFallbackCandidates_NilHedgeCandidates
+--- PASS: TestHedgeFallbackManager_GetFallbackCandidates_NilHedgeCandidates (0.00s)
+=== RUN   TestLogHedgeFallbackResumed
+{"level":"INFO","time":"2026-04-25T03:09:41-04:00","logger":"global","message":"hedge.fallback_resumed","hedge_pair_id":"hp-12345","reason":"both_streams_failed"}
+--- PASS: TestLogHedgeFallbackResumed (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.054s

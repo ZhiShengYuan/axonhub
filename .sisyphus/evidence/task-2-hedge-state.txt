@@ -1,0 +1,72 @@
+=== RUN   TestHedgePhase_String
+=== RUN   TestHedgePhase_String/HedgeDisabled
+=== RUN   TestHedgePhase_String/HedgePrimaryOnly
+=== RUN   TestHedgePhase_String/HedgeSecondaryLaunched
+=== RUN   TestHedgePhase_String/HedgeObservationActive
+=== RUN   TestHedgePhase_String/HedgeWinnerReleased
+=== RUN   TestHedgePhase_String/HedgeLoserShadowing
+=== RUN   TestHedgePhase_String/HedgeShadowCompleted
+=== RUN   TestHedgePhase_String/HedgeShadowDeadlineExceeded
+=== RUN   TestHedgePhase_String/HedgeFallbackResumed
+=== RUN   TestHedgePhase_String/Unknown
+--- PASS: TestHedgePhase_String (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeDisabled (0.00s)
+    --- PASS: TestHedgePhase_String/HedgePrimaryOnly (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeSecondaryLaunched (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeObservationActive (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeWinnerReleased (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeLoserShadowing (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeShadowCompleted (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeShadowDeadlineExceeded (0.00s)
+    --- PASS: TestHedgePhase_String/HedgeFallbackResumed (0.00s)
+    --- PASS: TestHedgePhase_String/Unknown (0.00s)
+=== RUN   TestHedgeState_InitialState
+--- PASS: TestHedgeState_InitialState (0.00s)
+=== RUN   TestHedgeState_IsHedgeActive
+--- PASS: TestHedgeState_IsHedgeActive (0.00s)
+=== RUN   TestHedgeState_IsObservationActive
+--- PASS: TestHedgeState_IsObservationActive (0.00s)
+=== RUN   TestHedgeState_IsShadowActive
+--- PASS: TestHedgeState_IsShadowActive (0.00s)
+=== RUN   TestHedgeState_TransitionToSecondaryLaunched
+--- PASS: TestHedgeState_TransitionToSecondaryLaunched (0.00s)
+=== RUN   TestHedgeState_TransitionToSecondaryLaunched_InvalidPhase
+--- PASS: TestHedgeState_TransitionToSecondaryLaunched_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToObservationActive
+--- PASS: TestHedgeState_TransitionToObservationActive (0.00s)
+=== RUN   TestHedgeState_TransitionToObservationActive_InvalidPhase
+--- PASS: TestHedgeState_TransitionToObservationActive_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased
+--- PASS: TestHedgeState_TransitionToWinnerReleased (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased_InvalidPhase
+--- PASS: TestHedgeState_TransitionToWinnerReleased_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToWinnerReleased_InvalidWinnerIndex
+--- PASS: TestHedgeState_TransitionToWinnerReleased_InvalidWinnerIndex (0.00s)
+=== RUN   TestHedgeState_TransitionToLoserShadowing
+--- PASS: TestHedgeState_TransitionToLoserShadowing (0.00s)
+=== RUN   TestHedgeState_TransitionToLoserShadowing_InvalidPhase
+--- PASS: TestHedgeState_TransitionToLoserShadowing_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted
+--- PASS: TestHedgeState_TransitionToShadowCompleted (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted_InvalidPhase
+--- PASS: TestHedgeState_TransitionToShadowCompleted_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowCompleted_InvalidReason
+--- PASS: TestHedgeState_TransitionToShadowCompleted_InvalidReason (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowDeadlineExceeded
+--- PASS: TestHedgeState_TransitionToShadowDeadlineExceeded (0.00s)
+=== RUN   TestHedgeState_TransitionToShadowDeadlineExceeded_InvalidPhase
+--- PASS: TestHedgeState_TransitionToShadowDeadlineExceeded_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_TransitionToFallbackResumed
+--- PASS: TestHedgeState_TransitionToFallbackResumed (0.00s)
+=== RUN   TestHedgeState_TransitionToFallbackResumed_InvalidPhase
+--- PASS: TestHedgeState_TransitionToFallbackResumed_InvalidPhase (0.00s)
+=== RUN   TestHedgeState_FullValidLifecycle
+--- PASS: TestHedgeState_FullValidLifecycle (0.00s)
+=== RUN   TestPersistenceState_CanRetryStream_WithHedgeState
+--- PASS: TestPersistenceState_CanRetryStream_WithHedgeState (0.00s)
+=== RUN   TestPersistenceState_ReleaseInvariant_PreserveWithHedge
+--- PASS: TestPersistenceState_ReleaseInvariant_PreserveWithHedge (0.00s)
+=== RUN   TestHedgeState_ThreadSafety
+--- PASS: TestHedgeState_ThreadSafety (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.051s

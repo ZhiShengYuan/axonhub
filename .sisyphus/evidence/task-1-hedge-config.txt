@@ -1,0 +1,14 @@
+=== RUN   TestSystemService_HedgePolicyOrDefault_ReturnsPRDDefaults
+{"level":"INFO","time":"2026-04-25T00:26:58-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSystemService_HedgePolicyOrDefault_ReturnsPRDDefaults (0.01s)
+=== RUN   TestSystemService_HedgePolicy_JSONRoundTrip
+{"level":"INFO","time":"2026-04-25T00:26:58-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSystemService_HedgePolicy_JSONRoundTrip (0.02s)
+=== RUN   TestSystemService_HedgePolicy_OrDefault_WithExistingPolicy
+{"level":"INFO","time":"2026-04-25T00:26:58-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestSystemService_HedgePolicy_OrDefault_WithExistingPolicy (0.01s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/biz	0.096s
+testing: warning: no tests to run
+PASS
+ok  	github.com/looplj/axonhub/internal/server/biz/provider_quota	0.033s [no tests to run]

@@ -1,0 +1,11 @@
+=== RUN   TestShadowConsumer_NormalCompletion_EOF
+--- PASS: TestShadowConsumer_NormalCompletion_EOF (0.00s)
+=== RUN   TestShadowConsumer_NormalCompletion_DONESentinel
+--- PASS: TestShadowConsumer_NormalCompletion_DONESentinel (0.00s)
+=== RUN   TestShadowConsumer_NormalCompletion_DONEType
+--- PASS: TestShadowConsumer_NormalCompletion_DONEType (0.00s)
+=== RUN   TestShadowConsumer_UpstreamError
+--- PASS: TestShadowConsumer_UpstreamError (0.00s)
+=== RUN   TestShadowConsumer_DeadlineExceeded
+--- PASS: TestShadowConsumer_DeadlineExceeded (0.05s)
+=== RUN   TestShadowConsumer_ServerShutdown

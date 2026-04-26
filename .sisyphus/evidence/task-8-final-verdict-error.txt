@@ -1,0 +1,248 @@
+================================================================================
+FINAL VERDICT ERROR FILE: Unresolved Contradictions
+================================================================================
+Plan: .sisyphus/plans/advanced-hedged-routing-shadow-execution.md
+Generated: 2026-04-25
+Consolidated from Tasks 1-7 evidence files
+
+This file lists ALL contradictions and unresolved issues that prevent an
+overall "verified" conclusion for the advanced hedged routing and shadow
+execution implementation.
+
+================================================================================
+CONTRADICTION 1: ALL TASKS [x] WITH ZERO BOULDER SESSION RECORDS
+================================================================================
+
+Severity: CRITICAL
+Category: Completion-Claim Mismatch
+
+Statement: All 16 items (1-12 + F1-F4) are marked [x] (complete) in the plan.
+
+Contradiction: boulder.json contains ZERO session records for any implementation
+task. The only session recorded (ses_23a3584f9ffeGHPpdMsu0sMf5l) belongs to a
+DIFFERENT plan (verify-advanced-hedged-routing-completion), not the
+implementation plan (advanced-hedged-routing-shadow-execution.md).
+
+Evidence:
+- Task 1 claim reconciliation (task-1-claim-reconciliation.txt, lines 17-20)
+- Task 1 claim reconciliation error (task-1-claim-reconciliation-error.txt,
+  lines 33-52)
+
+Impact: The plan checkbox tracking system was not used or records were not
+captured. Without session records, there is no metadata proof that any task
+was executed through the tracking system.
+
+Resolution Required: Establish session records or document why they are absent.
+
+================================================================================
+CONTRADICTION 2: F1-F4 CHECKED [x] BEFORE USER APPROVAL (POLICY VIOLATION)
+================================================================================
+
+Severity: CRITICAL
+Category: Policy Violation
+
+Statement: F1, F2, F3, and F4 are all marked [x] (complete) in the plan.
+
+Plan Policy (lines 634-641, verbatim):
+"Final Verification Wave (MANDATORY — after ALL implementation tasks)
+ > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated
+   results to user and get explicit 'okay' before marking work complete.
+ > Do NOT auto-proceed after verification. Wait for user's explicit approval
+   before marking work complete.
+ > Never mark F1-F4 as checked before getting user's okay."
+
+Contradiction: F1-F4 are checked [x] despite no evidence of:
+1. Four parallel review agents having run
+2. Consolidated results presented to user
+3. User's explicit "okay" approval obtained
+4. Any session records for F1-F4 review activity
+
+Evidence:
+- Task 1 claim reconciliation error (task-1-claim-reconciliation-error.txt,
+  lines 8-32)
+- Task 6 final wave review (task-6-final-wave-review.txt, lines 8-16)
+- Task 6 final wave review error (task-6-final-wave-review-error.txt, lines 7-35)
+
+Specific Policy Violations:
+- F1 [x] checked: VIOLATION of "Never mark F1-F4 as checked before getting
+  user's okay"
+- F2 [x] checked: VIOLATION of same policy
+- F3 [x] checked: VIOLATION of same policy
+- F4 [x] checked: VIOLATION of same policy
+
+Impact: The checked [x] state for F1-F4 is a DIRECT POLICY VIOLATION. This is
+not a procedural gap — it is an explicit prohibition that was violated.
+
+Resolution Required: Either:
+(a) Obtain user's explicit approval and update boulder.json with records, OR
+(b) Uncheck F1-F4 and complete the final verification wave properly
+
+================================================================================
+CONTRADICTION 3: TASK 9 EVIDENCE PROVES ELIGIBILITY, NOT PROTOCOL INTEGRATION
+================================================================================
+
+Severity: HIGH
+Category: Insufficient Evidence
+
+Statement: Task 9 QA scenario claims to verify "OpenAI streaming path releases
+protocol-correct winner output" and "Anthropic streaming path remains
+protocol-correct"
+
+Evidence Available: task-9-eligibility.txt contains only eligibility unit tests
+(TestIsHedgeEligible_* tests, 14 tests total)
+
+Contradiction: Eligibility checking is a PREREQUISITE for hedge activation, not
+the same as proving actual streaming protocol integration. The evidence does
+NOT prove:
+- Actual SSE event emission through hedge path
+- OpenAI streaming handler integration
+- Anthropic streaming handler integration
+- Protocol correctness of winner output
+- Non-streaming behavior unchanged
+
+Evidence:
+- Task 5 evidence validation (task-5-evidence-validation.txt, lines 190-216)
+- Task 5 evidence validation error (task-5-evidence-validation-error.txt,
+  lines 76-87)
+
+Impact: Task 9 is classified as "INSUFFICIENT" — the evidence proves only the
+gating logic, not the actual streaming behavior. This is a material gap in
+proving the feature works end-to-end.
+
+Resolution Required: Capture actual streaming integration test evidence showing
+OpenAI/Anthropic SSE events emitted correctly through the hedge winner path.
+
+================================================================================
+CONTRADICTION 4: ALL 11 ERROR-PATH ARTIFACTS MISSING
+================================================================================
+
+Severity: HIGH
+Category: Missing Evidence
+
+Statement: The plan defines 12 QA scenario pairs (one success + one error per
+task). Each error-path scenario requires independent verification.
+
+Contradiction: All 11 error-path artifacts are ABSENT from .sisyphus/evidence/:
+
+1. task-1-hedge-config-error.txt       (legacy persistence)
+2. task-2-hedge-state-error.txt        (invalid transitions)
+3. task-3-candidates-error.txt        (degraded pools)
+4. task-4-hedge-coordinator-error.txt  (dual failure)
+5. task-5-shadow-error.txt            (deadline enforcement)
+6. task-6-etps-error.txt              (metrics attribution)
+7. task-7-observability-error.txt     (retention suppression)
+8. task-8-fallback-error.txt           (post-release failure)
+9. task-9-anthropic-error.txt         (Anthropic protocol)
+10. task-10-probing-error.txt         (ineligible skip)
+11. task-11-tests-error.txt           (client disconnect)
+12. task-12-verification-error.txt     (edge path fix) [also missing]
+
+Note: The plan defines 12 tasks but Task 2's error artifact is
+task-2-hedge-state-error.txt, making the correct count 11 distinct missing
+error artifacts (not counting task-12-verification-error.txt separately as it
+was aliased).
+
+Evidence:
+- Task 2 evidence inventory (task-2-evidence-inventory.txt, lines 193-217)
+- Task 2 evidence inventory error (task-2-evidence-inventory-error.txt,
+  lines 10-56)
+- Task 5 evidence validation error (task-5-evidence-validation-error.txt,
+  lines 5-56)
+
+Impact: Error-path and success-path test COMPLETELY DIFFERENT code paths.
+Success-path coverage does NOT imply error-path coverage. Each of the 11
+missing scenarios represents an unverified error condition.
+
+Resolution Required: Capture error-path evidence for all 11 artifacts,
+demonstrating each error scenario behaves correctly.
+
+================================================================================
+CONTRADICTION 5: TASK 5 EVIDENCE FILE TRUNCATED
+================================================================================
+
+Severity: MEDIUM
+Category: Partial Evidence
+
+Statement: task-5-shadow.txt should contain test output proving the shadow
+consumer works correctly.
+
+Evidence Available: File contains only 11 lines and ends mid-output after
+"TestShadowConsumer_ServerShutdown" without a final PASS/FAIL marker.
+
+Expected: Complete test output for TestShadowConsumer_NormalCompletion_EOF,
+TestShadowConsumer_NormalCompletion_DONESentinel,
+TestShadowConsumer_NormalCompletion_DONEType,
+TestShadowConsumer_UpstreamError, TestShadowConsumer_DeadlineExceeded,
+TestShadowConsumer_ServerShutdown, and TestShadowConsumer_ClientDisconnect.
+
+Contradiction: Cannot confirm all shadow tests actually passed due to
+truncated evidence file.
+
+Evidence:
+- Task 5 evidence validation (task-5-evidence-validation.txt, lines 93-115)
+- Task 5 evidence validation error (task-5-evidence-validation-error.txt,
+  lines 62-66)
+
+Impact: Task 5 is classified as "PARTIAL" — the evidence is insufficient to
+confirm all shadow tests passed.
+
+Resolution Required: Re-capture complete test output for Task 5 shadow tests.
+
+================================================================================
+CONTRADICTION 6: TASK 6 EVIDENCE COVERS TPS, NOT USAGE ATTRIBUTION
+================================================================================
+
+Severity: MEDIUM
+Category: Partial Evidence
+
+Statement: Task 6 acceptance criteria require "Client-delivered metrics remain
+attributed only to the winner" and "Prometheus/internal metrics distinguish
+winner delivery from shadow consumption."
+
+Evidence Available: task-6-metrics.txt contains only TestComputeHedgeMetrics_*
+tests (10 tests) proving TPS calculation within the observation window.
+
+Contradiction: The evidence does NOT prove:
+- Winner-only delivery metrics (usage attribution)
+- Non-hedged scoring preservation
+- Prometheus/internal metrics distinction between winner and shadow
+
+Evidence:
+- Task 5 evidence validation (task-5-evidence-validation.txt, lines 117-142)
+- Task 5 evidence validation error (task-5-evidence-validation-error.txt,
+  lines 67-75)
+
+Impact: Task 6 is classified as "PARTIAL" — TPS calculation is verified but
+usage attribution and metrics distinction are not.
+
+Resolution Required: Capture evidence proving winner-only usage attribution
+and metrics distinction between winner delivery and shadow consumption.
+
+================================================================================
+SUMMARY OF UNRESOLVED CONTRADICTIONS
+================================================================================
+
+| # | Contradiction                              | Severity | Prevents "verified"? |
+|---|-------------------------------------------|----------|----------------------|
+| 1 | Zero Boulder session records              | CRITICAL | YES                  |
+| 2 | F1-F4 policy violation                    | CRITICAL | YES                  |
+| 3 | Task 9 insufficient (protocol not proven)  | HIGH     | YES                  |
+| 4 | All 11 error-path artifacts missing       | HIGH     | YES                  |
+| 5 | Task 5 evidence truncated                 | MEDIUM   | NO (partial only)    |
+| 6 | Task 6 usage attribution not proven       | MEDIUM   | NO (partial only)    |
+
+BLOCKING ISSUES (prevent overall "verified" conclusion):
+-------------------------------------------------------
+1. Contradiction 1: No Boulder session records for any task
+2. Contradiction 2: F1-F4 policy violation (checked before user approval)
+3. Contradiction 3: Task 9 does not prove protocol streaming integration
+4. Contradiction 4: All 11 error-path artifacts missing
+
+NON-BLOCKING ISSUES (create "partially verified" status):
+---------------------------------------------------------
+5. Contradiction 5: Task 5 evidence truncated
+6. Contradiction 6: Task 6 usage attribution not fully proven
+
+================================================================================
+END OF ERROR FILE
+================================================================================

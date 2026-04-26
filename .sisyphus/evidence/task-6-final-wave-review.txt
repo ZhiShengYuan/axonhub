@@ -1,0 +1,250 @@
+FINAL REVIEW WAVE SUBSTANTIATION (F1-F4)
+=========================================
+Plan: .sisyphus/plans/advanced-hedged-routing-shadow-execution.md
+Boulder: .sisyphus/boulder.json
+Evidence Directory: .sisyphus/evidence/
+Generated: 2026-04-25
+
+EXECUTIVE SUMMARY
+-----------------
+All F1-F4 items are marked [x] (checked) in the plan.
+All F1-F4 verdicts are: CONTRADICTED
+
+No Boulder session records exist for any F1-F4 review activity.
+No evidence artifacts are attributable to F1-F4 review outputs.
+The checked [x] state itself violates plan policy at lines 634-641.
+
+POLICY CONTEXT (Lines 634-641)
+------------------------------
+"Final Verification Wave (MANDATORY — after ALL implementation tasks)
+ > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated
+   results to user and get explicit "okay" before completing.
+ > Do NOT auto-proceed after verification. Wait for user's explicit approval
+   before marking work complete.
+ > Never mark F1-F4 as checked before getting user's okay."
+
+VERDICT VOCABULARY
+-----------------
+verified          = checked + session record exists + attributable output found + scope matches label
+partially verified = checked + some evidence but incomplete
+unverified        = checked + no session record found (but not contradicted)
+contradicted      = checked + evidence directly contradicts claim OR policy forbids checked state
+
+F1 — PLAN COMPLIANCE AUDIT (oracle agent)
+==========================================
+Label in plan: "Plan Compliance Audit — oracle"
+
+VERDICT: CONTRADICTED
+
+EVIDENCE CHECK:
+- Boulder session for oracle review: NONE
+  * boulder.json has only one session: ses_23a3584f9ffeGHPpdMsu0sMf5l
+    for verification plan, not implementation plan
+  * No task_sessions entry for an oracle agent performing F1
+  * No session_id in boulder.json that maps to F1/plan-compliance/audit
+
+- Evidence directory attribution: NONE
+  * task-1-claim-reconciliation.txt documents plan compliance review
+    but is output of the claim reconciliation task (todo:1), not an
+    independent oracle review of implementation vs. plan
+  * No file in evidence/ contains oracle-level analysis of:
+    - 12 implementation tasks vs. plan acceptance criteria
+    - Deviation analysis from plan requirements
+    - Comprehensive plan compliance assessment
+
+SCOPE ANALYSIS:
+Expected scope: Review all 12 implementation tasks against plan for
+compliance, check acceptance criteria fulfillment, identify deviations.
+
+Actual scope found: NONE
+
+CONTRADICTION TYPE: Policy explicit prohibition violated
+- F1 is [x] but plan line 637 says "Never mark F1-F4 as checked before
+  getting user's okay"
+- No user approval record exists in boulder.json
+- The [x] state without user approval directly violates the mandatory
+  review wave policy
+
+---
+
+F2 — CODE QUALITY REVIEW (unspecified-high agent)
+=================================================
+Label in plan: "Code Quality Review — unspecified-high"
+
+VERDICT: CONTRADICTED
+
+EVIDENCE CHECK:
+- Boulder session for code quality review: NONE
+  * No task_sessions entry for unspecified-high agent reviewing code quality
+  * No session_id in boulder.json for F2/code quality/review
+
+- Evidence directory attribution: NONE
+  * Evidence files contain test outputs (task-4-hedge-coordinator.txt,
+    task-11-coverage.txt, etc.) but these are QA test results, NOT
+    code quality review outputs
+  * No evidence file contains:
+    - Static analysis results
+    - Linter output
+    - Code review findings for hedge coordinator, shadow consumer,
+      fallback manager, state machine
+    - Code quality assessment of hedge metrics computation
+    - Assessment of llm/streams/buffer.go quality
+
+SCOPE ANALYSIS:
+Expected scope: Review code quality of hedge coordinator, shadow consumer,
+fallback manager, state machine, hedge metrics computation, stream buffering.
+
+Actual scope found: NONE (test outputs exist, but these are not code quality
+reviews — they are test execution results)
+
+CONTRADICTION TYPE: Policy explicit prohibition violated
+- F2 is [x] but plan line 637 says "Never mark F1-F4 as checked before
+  getting user's okay"
+- No user approval record exists in boulder.json
+- Test passing ≠ Code quality review. The plan calls for a dedicated
+  code quality review, which did not occur.
+
+---
+
+F3 — REAL MANUAL QA (unspecified-high agent + playwright if UI)
+===============================================================
+Label in plan: "Real Manual QA — unspecified-high (+ playwright if UI)"
+
+VERDICT: CONTRADICTED
+
+EVIDENCE CHECK:
+- Boulder session for manual QA: NONE
+  * No task_sessions entry for unspecified-high agent performing manual QA
+  * No session_id in boulder.json for F3/manual QA/testing
+
+- Evidence directory attribution: NONE
+  * Evidence files contain automated test outputs, NOT manual QA evidence
+  * No evidence file contains:
+    - Manual test execution logs
+    - Hands-on QA findings
+    - Exploratory testing results
+    - Manual verification of hedge behavior with actual requests
+
+Note: This is backend-only (no UI), so playwright does not apply.
+But even manual QA via API/CLI is not evidenced.
+
+SCOPE ANALYSIS:
+Expected scope: Real hands-on manual QA testing — probing hedge behavior,
+verifying shadow consumer detachment, checking metrics accuracy with live
+requests, etc.
+
+Actual scope found: NONE
+
+CONTRADICTION TYPE: Policy explicit prohibition violated
+- F3 is [x] but plan line 637 says "Never mark F1-F4 as checked before
+  getting user's okay"
+- Automated test passing ≠ Manual QA. The plan explicitly calls for
+  "Real Manual QA" separate from automated tests.
+
+---
+
+F4 — SCOPE FIDELITY CHECK (deep agent)
+======================================
+Label in plan: "Scope Fidelity Check — deep"
+
+VERDICT: CONTRADICTED
+
+EVIDENCE CHECK:
+- Boulder session for deep scope check: NONE
+  * No task_sessions entry for deep agent performing scope fidelity check
+  * No session_id in boulder.json for F4/scope/fidelity/deep
+
+- Evidence directory attribution: NONE
+  * No evidence file contains scope analysis:
+    - Verification that no non-streaming routing changes were made
+    - Verification that llm/transformer/* was not modified
+    - Verification that existing retry/fallback machinery was not bypassed
+    - Verification that hedge feature stays within plan boundaries
+
+SCOPE ANALYSIS:
+Expected scope: Verify implementation matches original plan boundaries:
+- No streaming-to-non-streaming routing changes
+- No provider transformer modifications (llm/transformer/*)
+- No bypass of existing retry/fallback machinery
+
+Actual scope found: NONE
+
+CONTRADICTION TYPE: Policy explicit prohibition violated
+- F4 is [x] but plan line 637 says "Never mark F1-F4 as checked before
+  getting user's okay"
+- No scope fidelity check evidence exists in evidence/ directory
+
+---
+
+BOULDER.JSON SESSION ANALYSIS
+=============================
+Single session in boulder.json:
+- Session ID: ses_23a3584f9ffeGHPpdMsu0sMf5l
+- Plan: verify-advanced-hedged-routing-completion (NOT the implementation plan)
+- Agent: atlas
+- Started: 2026-04-25T17:57:54.884Z
+- Origin: direct
+- task_sessions contains only:
+  * todo:1 (Sisyphus-Junior, unspecified-high) — claim reconciliation task
+
+This session is for a DIFFERENT plan (the verification plan), not the
+implementation plan (advanced-hedged-routing-shadow-execution.md).
+
+The task_sessions entry for todo:1 is the claim reconciliation work done
+in this very audit session — not F1-F4 review activity.
+
+POLICY-POLICY CONTRADICTION SEPARATION
+=======================================
+The plan policy at lines 634-641 creates a contradiction:
+1. F1-F4 are all marked [x] (completed)
+2. But the same lines say "Never mark F1-F4 as checked before getting
+   user's okay"
+
+This is evaluated as TWO SEPARATE issues:
+
+Issue 1 — POLICY VIOLATION (procedural):
+The checked [x] state without user approval is a policy violation.
+This is documented in task-1-claim-reconciliation-error.txt and is a
+separate finding from whether review activity occurred.
+
+Issue 2 — EVIDENCE ABSENCE (substantive):
+Even if we set aside the policy violation, there is NO evidence that
+any of the F1-F4 review activities actually occurred. The evidence
+directory contains 13 files but none are attributable to:
+- F1: oracle agent plan compliance audit
+- F2: unspecified-high code quality review
+- F3: unspecified-high manual QA
+- F4: deep agent scope fidelity check
+
+The evidence files document implementation QA (test outputs), not the
+four parallel review agent activities described in the Final Verification
+Wave.
+
+VERDICTS SUMMARY
+================
+| Item | Label                     | Checkbox | Boulder Session | Evidence Attribution | Verdict      |
+|------|---------------------------|----------|-----------------|----------------------|--------------|
+| F1   | Plan Compliance Audit     | [x]      | NONE            | NONE                 | CONTRADICTED |
+| F2   | Code Quality Review       | [x]      | NONE            | NONE                 | CONTRADICTED |
+| F3   | Real Manual QA           | [x]      | NONE            | NONE                 | CONTRADICTED |
+| F4   | Scope Fidelity Check     | [x]      | NONE            | NONE                 | CONTRADICTED |
+
+FINAL COUNT
+-----------
+Total F1-F4 items: 4
+verified: 0
+partially verified: 0
+unverified: 0
+contradicted: 4
+
+Policy violations found: 1
+- F1-F4 checked [x] before user approval, per plan lines 634-641
+
+NOTE ON SEPARATION:
+The policy violation (F1-F4 checked without approval) and the evidence
+absence (no review activity occurred) are evaluated independently.
+Even if user approval had been obtained, the lack of attributable review
+outputs would still result in all F1-F4 being classified as "unverified"
+(rather than "contradicted"). The "contradicted" classification is
+solely due to the policy violation making the checked state itself
+illegitimate.

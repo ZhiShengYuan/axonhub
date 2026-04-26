@@ -1,0 +1,317 @@
+# Task 7: Targeted Behavioral Verification Evidence (SUCCESS)
+
+## Summary
+All targeted hedge/shadow tests PASSED. Aggregate backend tests PASSED.
+Integration tests SKIPPED (expected - require API key configuration).
+
+## Phase 1: Targeted Orchestrator Tests
+
+### Command
+```
+go test ./internal/server/orchestrator/... -v -count=1 -run 'Test.*[Hh]edge|Test.*[Cc]andidate|Test.*[Ss]hadow|Test.*[Ff]allback|Test.*[Ss]tream'
+```
+
+### Test Counts
+- **Total Tests**: All orchestrator tests passed
+- **Pass**: All hedge/shadow/stream tests PASSED
+- **Fail**: 0
+- **Skip**: 0
+
+### Full Pass Listing for Hedge-Specific Tests
+
+#### Hedge State Tests (TestHedgeState_*)
+- TestHedgeState_InitialState: PASS
+- TestHedgeState_IsHedgeActive: PASS
+- TestHedgeState_IsObservationActive: PASS
+- TestHedgeState_IsShadowActive: PASS
+- TestHedgeState_TransitionToSecondaryLaunched: PASS
+- TestHedgeState_TransitionToSecondaryLaunched_InvalidPhase: PASS
+- TestHedgeState_TransitionToObservationActive: PASS
+- TestHedgeState_TransitionToObservationActive_InvalidPhase: PASS
+- TestHedgeState_TransitionToWinnerReleased: PASS
+- TestHedgeState_TransitionToWinnerReleased_InvalidPhase: PASS
+- TestHedgeState_TransitionToWinnerReleased_InvalidWinnerIndex: PASS
+- TestHedgeState_TransitionToLoserShadowing: PASS
+- TestHedgeState_TransitionToLoserShadowing_InvalidPhase: PASS
+- TestHedgeState_TransitionToShadowCompleted: PASS
+- TestHedgeState_TransitionToShadowCompleted_InvalidPhase: PASS
+- TestHedgeState_TransitionToShadowCompleted_InvalidReason: PASS
+- TestHedgeState_TransitionToShadowDeadlineExceeded: PASS
+- TestHedgeState_TransitionToShadowDeadlineExceeded_InvalidPhase: PASS
+- TestHedgeState_TransitionToFallbackResumed: PASS
+- TestHedgeState_TransitionToFallbackResumed_InvalidPhase: PASS
+- TestHedgeState_FullValidLifecycle: PASS
+- TestHedgeState_ThreadSafety: PASS
+
+#### Candidate Selection Tests (TestSelectHedgeCandidates_*)
+- TestSelectHedgeCandidates_Top2Ordering: PASS
+- TestSelectHedgeCandidates_DuplicateElimination: PASS
+- TestSelectHedgeCandidates_SingleCandidatePool: PASS
+- TestSelectHedgeCandidates_RemainingPreservesOrder: PASS
+- TestSelectHedgeCandidates_NilLoadBalancer: PASS
+
+#### Hedge Activation Tests (TestShouldActivateHedge_*)
+- TestShouldActivateHedge_AllConditionsMet: PASS
+- TestShouldActivateHedge_ConditionNotStreaming: PASS
+- TestShouldActivateHedge_ConditionNotEnabled: PASS
+- TestShouldActivateHedge_ConditionNilPolicy: PASS
+- TestShouldActivateHedge_ConditionInsufficientCandidates: PASS
+- TestShouldActivateHedge_ConditionOnlyPrimaryCandidate: PASS
+- TestShouldActivateHedge_ConditionOnlySecondaryCandidate: PASS
+- TestShouldActivateHedge_UnsupportedProtocol: PASS
+- TestShouldActivateHedge_ProbingModeFalse: PASS
+- TestShouldActivateHedge_ProbingPercentageZero: PASS
+- TestShouldActivateHedge_OpenAIProtocol: PASS
+- TestShouldActivateHedge_AnthropicProtocol: PASS
+- TestShouldActivateHedge_DefaultSampler: PASS
+- TestShouldActivateHedge_CustomSampler: PASS
+- TestShouldActivateHedge_EmptyRequestID: PASS
+
+#### Hedge Coordinator Tests (TestHedgeCoordinator_*)
+- TestHedgeCoordinator_PrimaryWinsWithHigherTPS: PASS (1.50s)
+- TestHedgeCoordinator_SecondaryWinsWithHigherTPS: PASS (1.50s)
+- TestHedgeCoordinator_SingleActiveStreamWins: PASS (0.60s)
+- TestHedgeCoordinator_DualFailureReturnsBothFailed: PASS (0.00s)
+- TestHedgeCoordinator_ProbingModeLaunchesBothImmediately: PASS (0.30s)
+- TestHedgeCoordinator_ComputeObservationTPS: PASS
+- TestHedgeCoordinator_ComputeObservationTPS_EmptyEvents: PASS
+- TestHedgeCoordinator_ComputeObservationTPS_ZeroDuration: PASS
+- TestHedgeCoordinator_ContextCancellation_CleansUp: PASS (10.00s)
+- TestHedgeCoordinator_BufferFlushExactlyOnce: PASS (0.40s)
+- TestHedgeCoordinator_DefaultConfig: PASS
+- TestHedgeCoordinator_IsObservationActive: PASS (0.30s)
+- TestHedgeCoordinator_GetPrimaryBuffer: PASS (0.30s)
+- TestHedgeCoordinator_GetSecondaryBuffer: PASS (0.30s)
+- TestHedgeCoordinator_Cancel: PASS (10.00s)
+- TestHedgeCoordinator_Err: PASS
+- TestHedgeCoordinator_TPSCalculation_Correct: PASS
+- TestHedgeCoordinator_BothActiveSameTPS_PrimaryWins: PASS (0.50s)
+
+#### Hedge Fallback Tests (TestHedgeFallbackManager_*)
+- TestHedgeFallbackManager_HandleHedgeFailure_BothFailed: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_PrimaryFailsDuringObservation: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_SecondaryFailsDuringObservation: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_WinnerReleased_LoserShadowing: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_LoserFailsDuringShadow: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_NilRaceResult: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_NilState: PASS
+- TestHedgeFallbackManager_GetFallbackCandidates_WithRemaining: PASS
+- TestHedgeFallbackManager_GetFallbackCandidates_ReconstructsFromChannelModels: PASS
+- TestHedgeFallbackManager_GetFallbackCandidates_NilState: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_NoHedgeCandidates: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_MissingPrimary: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_MissingSecondary: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_SameChannel: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_ValidDistinct: PASS
+- TestHedgeFallbackManager_ShouldSkipHedge_NilState: PASS
+- TestHedgeFallbackManager_CanRetrySameChannel: PASS
+- TestHedgeFallbackManager_RecordRetry: PASS
+- TestHedgeFallbackManager_GetRetryCount: PASS
+- TestHedgeFallbackManager_Reset: PASS
+- TestHedgeFallbackManager_AdvanceToNextFallbackCandidate: PASS
+- TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NoRemaining: PASS
+- TestHedgeFallbackManager_AdvanceToNextFallbackCandidate_NilState: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_WinnerAlreadySelected: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithWinner: PASS
+- TestHedgeFallbackManager_HandleHedgeFailure_DefaultWithNoWinner: PASS
+- TestHedgeFallbackManager_GetFallbackCandidates_NilHedgeCandidates: PASS
+
+#### Hedge Integration Tests (TestHedgeIntegration_*)
+- TestHedgeIntegration_PrimaryWinsFullLifecycle: PASS (1.81s)
+- TestHedgeIntegration_SecondaryWinsFullLifecycle: PASS (2.00s)
+- TestHedgeIntegration_BothFailFallbackToRemaining: PASS (0.00s)
+- TestHedgeIntegration_ProbingModeBothLaunchImmediately: PASS (0.30s)
+- TestHedgeIntegration_WinnerPassthroughStream: PASS (1.81s)
+- TestHedgeIntegration_ShadowDeadlineExceeded: PASS (0.05s)
+- TestHedgeIntegration_ObservationWindowWithNoTokens: PASS (0.00s)
+- TestHedgeIntegration_ContextCancellationDuringObservation: PASS (0.20s)
+- TestHedgeIntegration_PrimaryProducesFirstSecondaryNeverStarts: PASS (0.50s)
+- TestHedgeIntegration_SecondaryProducesFirstBeforePrimary: PASS (2.00s)
+- TestHedgeIntegration_BothStreamsProduceTokensSimultaneously: PASS (0.50s)
+- TestHedgeIntegration_AllShadowCompletionReasons: PASS (all subtests)
+- TestHedgeIntegration_AllHedgeFallbackActions: PASS (all subtests)
+- TestHedgeIntegration_AllHedgePhaseTransitions: PASS (all subtests)
+
+#### Hedge Observability Tests (TestLogHedge*, TestComputeHedgeMetrics_*)
+- TestComputeHedgeMetrics_BasicTPSCalculation: PASS
+- TestComputeHedgeMetrics_ZeroEvents: PASS
+- TestComputeHedgeMetrics_DoneSentinelExcluded: PASS
+- TestComputeHedgeMetrics_EmptyDataExcluded: PASS
+- TestComputeHedgeMetrics_TieBreaking: PASS
+- TestComputeHedgeMetrics_SecondaryWins: PASS
+- TestComputeHedgeMetrics_WindowDuration: PASS
+- TestComputeHedgeMetrics_ZeroWindowDuration: PASS
+- TestComputeHedgeMetrics_TypeDoneExcluded: PASS
+- TestComputeHedgeMetrics_TypeDoneEventWithDifferentData: PASS
+- TestLogHedgePrimaryLaunched: PASS
+- TestLogHedgeSecondaryLaunched: PASS
+- TestLogHedgeObservationStarted: PASS
+- TestLogHedgeObservationEnded: PASS
+- TestLogHedgeWinnerChosen: PASS
+- TestLogHedgeLoserShadowed: PASS
+- TestLogHedgeShadowCompleted: PASS
+- TestLogHedgeShadowDeadlineExceeded: PASS
+- TestLogHedgeFallbackResumed: PASS
+- TestHedgeObservabilityRecorder: PASS
+- TestRecordHedgeRaceCompletion: PASS
+- TestRecordShadowCompletion: PASS
+- TestHedgeOutcomeValues: PASS
+- TestShadowCompletionReasonIsValid: PASS
+
+#### Shadow Consumer Tests (TestShadowConsumer_*)
+- TestShadowConsumer_NormalCompletion_EOF: PASS
+- TestShadowConsumer_NormalCompletion_DONESentinel: PASS
+- TestShadowConsumer_NormalCompletion_DONEType: PASS
+- TestShadowConsumer_UpstreamError: PASS
+- TestShadowConsumer_DeadlineExceeded: PASS (0.05s)
+- TestShadowConsumer_ServerShutdown: PASS (0.02s)
+- TestShadowConsumer_ClientDisconnect_ShadowContinues: PASS (0.04s)
+- TestShadowConsumer_FullTextRetention_Enabled: PASS
+- TestShadowConsumer_FullTextRetention_Disabled: PASS
+- TestShadowConsumer_TokenCounting: PASS
+- TestShadowConsumer_DurationTracking: PASS
+- TestShadowConsumer_DefaultDeadline: PASS
+- TestShadowConsumer_AlreadyRunning: PASS
+- TestShadowConsumer_Cancel: PASS
+- TestShadowConsumer_Cancel_InvalidReason: PASS
+- TestShadowConsumer_Cancel_AlreadyCanceled: PASS
+- TestShadowCompletionReason_IsValid: PASS
+- TestShadowConsumer_EmptyStream: PASS
+- TestShadowConsumer_NilEvent: PASS
+- TestShadowConsumer_IsRunning: PASS
+
+#### Stream Tests (TestStream*, TestBufferedStreamReader_*)
+- TestStreamPolicySelector_Select: PASS
+- TestBufferedStreamReader_NextAndCurrent: PASS
+- TestBufferedStreamReader_Close: PASS
+- TestMockStreamForTesting: PASS
+- TestCreateTestStreamEvent: PASS
+- TestIsHedgeError: PASS
+- TestGetHedgeProtocol_OpenAIStreaming: PASS
+- TestGetHedgeProtocol_AnthropicStreaming: PASS
+- TestGetHedgeProtocol_NonStreaming: PASS
+- TestGetHedgeProtocol_NilRequest: PASS
+- TestGetHedgeProtocol_EmptyBody: PASS
+- TestGetHedgeProtocol_UnsupportedFormat: PASS
+- TestGetHedgeProtocol_OpenAIResponsesAPI: PASS
+- TestIsHedgeEligible_Eligible: PASS
+- TestIsHedgeEligible_AnthropicEligible: PASS
+- TestIsHedgeEligible_NonStreaming: PASS
+- TestIsHedgeEligible_HedgeDisabled: PASS
+- TestIsHedgeEligible_NilHedgePolicy: PASS
+- TestIsHedgeEligible_NilCandidateSet: PASS
+- TestIsHedgeEligible_NilPrimary: PASS
+- TestIsHedgeEligible_NilSecondary: PASS
+- TestIsHedgeEligible_UnsupportedEndpoint: PASS
+- TestIsHedgeEligible_NilRequest: PASS
+- TestIsHedgeEligible_OpenAIWithAllConditionsMet: PASS
+- TestIsHedgeEligible_AnthropicWithAllConditionsMet: PASS
+- TestHedgeProtocol_String: PASS
+- TestStreamReleaseState_InitialState: PASS
+- TestStreamReleaseState_NoneToBufferingToEmitted: PASS
+- TestStreamReleaseState_MarkStreamReleasedIdempotent: PASS
+- TestStreamReleaseState_MarkReleaseForbidden: PASS
+- TestStreamReleaseState_ForbiddenFromBuffering: PASS
+- TestStreamReleaseState_ForbiddenFromEmitted: PASS
+- TestStreamReleaseState_FullLifecycle: PASS
+- TestStreamReleaseState_CanRetryStream: PASS
+- TestStreamReleaseState_IsStreamReleased: PASS
+- TestStreamBufferingConfig_DefaultValues: PASS
+- TestStreamBufferingConfig_Disabled: PASS
+- TestStreamReleaseState_ThreadSafety: PASS
+- TestMarkStreamReleased_FromReleaseNone: PASS
+- TestMarkStreamReleased_FromReleaseForbidden: PASS
+- TestStreamBufferingProtocol_OpenAI_EventOrdering: PASS
+- TestStreamBufferingProtocol_OpenAI_ToolCallOrdering: PASS
+- TestStreamBufferingProtocol_Anthropic_EventOrdering: PASS
+- TestStreamBufferingProtocol_Anthropic_ThinkingContentOrdering: PASS
+- TestStreamBufferingProtocol_FIFOInvariant: PASS (0.10s)
+- TestStreamBufferingProtocol_ThresholdFlushOrder: PASS
+- TestStreamBufferingProtocol_NoReorderingAcrossFlush: PASS
+- TestStreamBuffering_DisabledByDefault: PASS
+- TestStreamBuffering_Enabled_PassesThroughWhenNotStreaming: PASS
+- TestStreamBuffering_Enabled_WrapsStreamWithBuffering: PASS
+- TestStreamBuffering_TtftReadyCallback: PASS
+- TestStreamBuffering_Name: PASS
+- TestAnyStreamWrapper: PASS
+- TestLlmResponseStreamWrapper: PASS
+- TestInboundPersistentStream_Close_WithCompleteResponse: PASS (0.03s)
+- TestInboundPersistentStream_Close_WithTerminalEvent: PASS (0.03s)
+- TestInboundPersistentStream_Close_WithAggregationError: PASS (0.03s)
+
+## Phase 2: Integration Test Suites
+
+### OpenAI Streaming Integration Tests
+**Command**: `cd integration_test/openai && go test ./chat/streaming/... -v -count=1 -timeout=120s`
+
+**Result**: SKIPPED (all tests)
+**Reason**: Missing TEST_AXONHUB_API_KEY environment variable
+- TestStreamingChatCompletion: SKIP
+- TestStreamingWithTools: SKIP
+- TestStreamingToolMultipleCallsSingleTurn: SKIP
+- TestStreamingLongResponse: SKIP
+- TestStreamingErrorHandling: SKIP
+
+### Anthropic Streaming Integration Tests
+**Command**: `cd integration_test/anthropic && go test ./streaming/... -v -count=1 -timeout=120s`
+
+**Result**: SKIPPED (all tests)
+**Reason**: Missing TEST_AXONHUB_API_KEY environment variable
+- TestBasicStreamingChatCompletion: SKIP
+- TestLongResponseStreaming: SKIP
+- TestStreamingResponseWithTools: SKIP
+- TestStreamingErrorHandling: SKIP
+- TestStreamingEventHandling: SKIP
+- TestStreamingWithSystemPrompt: SKIP
+
+## Phase 3: Aggregate Regression Cross-Check
+
+### Root Module Tests
+**Command**: `go test ./... -count=1`
+
+**Result**: ALL PASS
+```
+ok  	github.com/looplj/axonhub/internal/pkg/xurl
+ok  	github.com/looplj/axonhub/internal/scopes
+ok  	github.com/looplj/axonhub/internal/server/api
+ok  	github.com/looplj/axonhub/internal/server/backup
+ok  	github.com/looplj/axonhub/internal/server/biz
+ok  	github.com/looplj/axonhub/internal/server/biz/provider_quota
+ok  	github.com/looplj/axonhub/internal/server/gc
+ok  	github.com/looplj/axonhub/internal/server/gql
+ok  	github.com/looplj/axonhub/internal/server/gql/qb
+ok  	github.com/looplj/axonhub/internal/server/middleware
+ok  	github.com/looplj/axonhub/internal/server/orchestrator
+ok  	github.com/looplj/axonhub/internal/server/static
+ok  	github.com/looplj/axonhub/internal/tracing
+```
+
+### LLM Module Tests
+**Command**: `cd llm && go test ./... -count=1`
+
+**Result**: ALL PASS (all transformer packages)
+
+### Make Target: test-backend-all
+**Command**: `make test-backend-all`
+
+**Result**: ALL PASS
+**Output**: "All backend tests completed!"
+
+## Gap Analysis
+
+### Confirmed Coverage
+1. **Hedge State Machine**: Full lifecycle tests covering all 10+ phase transitions
+2. **Candidate Selection**: Top-2 ordering, duplicate elimination, single candidate pool
+3. **Hedge Activation Gates**: Streaming check, enablement check, candidate count check, protocol check, probing mode, sampling
+4. **Hedge Coordinator**: TPS calculation, race lifecycle, buffer management, cancellation, observation window
+5. **Fallback Manager**: All failure scenarios (both failed, primary fails, secondary fails, winner released)
+6. **Shadow Consumer**: All completion reasons (EOF, DONE sentinel, DONE type, error, deadline, disconnect)
+7. **Observability**: All hedge log events and metrics computation
+8. **Stream Buffering**: OpenAI/Anthropic event ordering, FIFO invariant, threshold flush
+
+### Missing Feature-Specific Proof
+1. **Integration Tests**: Skipped due to missing API key - cannot verify end-to-end hedge behavior with real providers
+2. **No gap between aggregate pass and feature-specific coverage**: Aggregate tests pass AND feature-specific tests pass
+
+### Conclusion
+All hedge/shadow feature-specific unit tests PASS. Aggregate regression suite PASSES. The gap is only in integration tests which require API key configuration (not a code issue).

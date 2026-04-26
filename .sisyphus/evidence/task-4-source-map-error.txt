@@ -1,0 +1,83 @@
+# Task 4: Source Code Implementation Coverage - ERRORS/ISSUES
+## Advanced Hedged Routing & Shadow Execution
+## Generated: 2026-04-25
+
+## OVERVIEW
+This file documents orphaned, partially wired, or absent components found during source code audit.
+
+---
+
+## NO CRITICAL ISSUES FOUND
+
+All implementation areas (Tasks 1-10) are PRESENT in the codebase with proper wiring.
+
+---
+
+## OBSERVATIONS (NOT ERRORS)
+
+### Observation 1: System Schema Design Pattern
+**Location**: `internal/ent/schema/system.go`
+**Finding**: The system schema does NOT contain dedicated HedgePolicy fields.
+**Explanation**: This is NOT an error. The system schema follows a key-value storage pattern where policy structs are serialized to JSON and stored in the `value` column with a key lookup. HedgePolicy is stored as `SystemKeyHedgePolicy = "hedge_policy"` in `biz/system.go` line 99.
+**Pattern Consistency**: Same pattern used for RetryPolicy (line 59), StoragePolicy (line 55), WebhookNotifierConfig (line 63), etc.
+**Verdict**: This is correct by design.
+
+### Observation 2: Pipeline Retry Interfaces
+**Location**: `llm/pipeline/pipeline.go`
+**Finding**: Retryable and ChannelRetryable interfaces are defined (lines 15-35) but the hedge retry integration doesn't directly use these interfaces for hedge-specific retry handling. Instead, the HedgeFallbackManager handles hedge-specific retry logic separately.
+**Explanation**: This is NOT an error. The pipeline interfaces are used for non-hedge retry handling. Hedge has its own retry/fallback logic via HedgeFallbackManager which works at a higher level.
+**Verdict**: Correct separation of concerns.
+
+### Observation 3: Deterministic Sampling Without Injection in Production
+**Location**: `internal/server/orchestrator/hedge_activation.go`
+**Finding**: ShouldActivateHedge() uses NewDeterministicHedgeSampler() directly rather than requiring a sampler to be injected.
+**Explanation**: This is NOT an error for production. The default sampler is deterministic and testable. For testing, a mock sampler can be injected via ShouldActivateHedgeWithSampler(). The design allows injection where needed.
+**Verdict**: Acceptable design.
+
+---
+
+## ARCHITECTURE NOTES
+
+### Hedge State Machine Flow
+```
+HedgeDisabled
+    |
+    v (when hedge activated)
+HedgePrimaryOnly
+    |
+    v (secondary launched or probing)
+HedgeSecondaryLaunched
+    |
+    v (first token received)
+HedgeObservationActive
+    |
+    v (observation ends)
+HedgeWinnerReleased
+    |
+    v (loser detached)
+HedgeLoserShadowing
+    |
+    +--> HedgeShadowCompleted (normal completion)
+    +--> HedgeShadowDeadlineExceeded (deadline)
+    +--> (server shutdown or cancel)
+    |
+    v (when hedge fully concluded)
+HedgeFallbackResumed (if fallback needed)
+```
+
+### Release State Machine
+```
+ReleaseNone --> ReleaseBuffering --> ReleaseEmitted --> ReleaseForbidden
+                                    |
+                                    v (first bytes sent to client)
+```
+
+The ReleaseForbidden state (post-release) is what prevents retry after client-visible data.
+
+---
+
+## VERIFICATION COMPLETE
+
+All Tasks 1-10 are implemented with proper code references. No orphaned components, no absent implementations, no broken wiring detected.
+
+**Final Verdict: CLEAN**

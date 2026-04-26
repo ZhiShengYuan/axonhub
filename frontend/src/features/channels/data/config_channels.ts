@@ -523,6 +523,22 @@ export const CHANNEL_CONFIGS: Record<ChannelType, ChannelConfig> = {
     color: 'bg-orange-100 text-orange-800 border-orange-200',
     icon: Fireworks,
   },
+  kimi: {
+    channelType: 'kimi',
+    baseURL: 'https://api.kimi.com/coding/v1',
+    defaultModels: ['kimi-for-coding'],
+    apiFormat: OPENAI_CHAT_COMPLETIONS,
+    color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    icon: Moonshot,
+  },
+  kimi_anthropic: {
+    channelType: 'kimi_anthropic',
+    baseURL: 'https://api.kimi.com/coding/',
+    defaultModels: ['kimi-for-coding'],
+    apiFormat: ANTHROPIC_MESSAGES,
+    color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    icon: Moonshot,
+  },
 };
 
 /**
@@ -550,6 +566,7 @@ export type Provider =
   | 'deepinfra'
   | 'gemini'
   | 'moonshot'
+  | 'kimi'
   | 'zhipu'
   | 'zai'
   | 'doubao'
@@ -625,6 +642,8 @@ export const CHANNEL_TYPE_TO_PROVIDER: Record<ChannelType, Provider> = {
   nanogpt: 'nanogpt',
   nanogpt_responses: 'nanogpt',
   fireworks: 'fireworks',
+  kimi: 'kimi',
+  kimi_anthropic: 'kimi',
 };
 
 /**

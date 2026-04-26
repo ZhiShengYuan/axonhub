@@ -1128,6 +1128,8 @@ enum ChannelType @goModel(model: "github.com/looplj/axonhub/internal/ent/channel
   longcat_anthropic
   minimax
   minimax_anthropic
+  kimi
+  kimi_anthropic
   aihubmix
   burncloud
   modelscope
@@ -3273,6 +3275,7 @@ enum ProviderQuotaStatusProviderType @goModel(model: "github.com/looplj/axonhub/
   codex
   minimax
   zhipu
+  kimi
 }
 """
 ProviderQuotaStatusStatus is enum for the field status

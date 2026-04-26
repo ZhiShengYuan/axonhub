@@ -231,6 +231,12 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     color: 'bg-orange-100 text-orange-800 border-orange-200',
     channelTypes: ['fireworks'],
   },
+  kimi: {
+    provider: 'kimi',
+    icon: Moonshot,
+    color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    channelTypes: ['kimi_anthropic', 'kimi'],
+  },
 };
 
 /**

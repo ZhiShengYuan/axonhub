@@ -82,6 +82,8 @@
   "channels.types.nanogpt": "NanoGPT",
   "channels.types.nanogpt_responses": "NanoGPT (Responses)",
   "channels.types.fireworks": "Fireworks",
+  "channels.types.kimi": "KIMI",
+  "channels.types.kimi_anthropic": "KIMI (Anthropic)",
   "channels.providers.openai": "OpenAI",
   "channels.providers.anthropic": "Anthropic",
   "channels.providers.deepseek": "DeepSeek",
@@ -113,6 +115,7 @@
   "channels.providers.cerebras": "Cerebras",
   "channels.providers.nanogpt": "NanoGPT",
   "channels.providers.fireworks": "Fireworks",
+  "channels.providers.kimi": "月之暗面",
   "channels.actions.test": "测试",
   "channels.actions.bulkTest": "健康检查",
   "channels.actions.settings": "设置",
@@ -615,5 +618,6 @@
   "channels.quota.periodType.Hourly": "按小时",
   "channels.quota.periodType.Weekly": "按周",
   "channels.quota.periodType.tokens_limit": "Token 限额",
-  "channels.quota.periodType.usage_only": "仅用量"
+  "channels.quota.periodType.usage_only": "仅用量",
+  "channels.quota.periodType.coding_plan": "编程计划"
 }

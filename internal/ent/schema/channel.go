@@ -70,6 +70,8 @@ func (Channel) Fields() []ent.Field {
 				"longcat_anthropic",
 				"minimax",
 				"minimax_anthropic",
+				"kimi",
+				"kimi_anthropic",
 				"aihubmix",
 				"burncloud",
 				"modelscope",

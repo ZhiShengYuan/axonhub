@@ -66,6 +66,8 @@ export const channelTypeSchema = z.enum([
   'nanogpt',
   'nanogpt_responses',
   'fireworks',
+  'kimi',
+  'kimi_anthropic',
 ]);
 export type ChannelType = z.infer<typeof channelTypeSchema>;
 

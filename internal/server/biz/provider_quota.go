@@ -121,6 +121,7 @@ func NewProviderQuotaService(params ProviderQuotaServiceParams) *ProviderQuotaSe
 	svc.registerCodexSupport()
 	svc.registerMiniMaxSupport()
 	svc.registerZhipuSupport()
+	svc.registerKimiSupport()
 
 	return svc
 }
@@ -139,6 +140,10 @@ func (svc *ProviderQuotaService) registerMiniMaxSupport() {
 
 func (svc *ProviderQuotaService) registerZhipuSupport() {
 	svc.checkers["zhipu"] = provider_quota.NewZhipuQuotaChecker(svc.httpClient)
+}
+
+func (svc *ProviderQuotaService) registerKimiSupport() {
+	svc.checkers["kimi"] = provider_quota.NewKimiQuotaChecker(svc.httpClient)
 }
 
 func (svc *ProviderQuotaService) Start(ctx context.Context) error {
@@ -227,7 +232,7 @@ func (svc *ProviderQuotaService) runQuotaCheck(ctx context.Context, force bool) 
 	q := svc.db.Channel.Query().
 		Where(
 			channel.StatusEQ(channel.StatusEnabled),
-			channel.TypeIn(channel.TypeClaudecode, channel.TypeCodex, channel.TypeMinimax, channel.TypeMinimaxAnthropic, channel.TypeZhipu, channel.TypeZhipuAnthropic),
+			channel.TypeIn(channel.TypeClaudecode, channel.TypeCodex, channel.TypeMinimax, channel.TypeMinimaxAnthropic, channel.TypeZhipu, channel.TypeZhipuAnthropic, channel.TypeKimi, channel.TypeKimiAnthropic),
 		)
 
 	if !force {
@@ -428,7 +433,7 @@ func (svc *ProviderQuotaService) saveQuotaError(
 }
 
 func isApiKeyOnlyProvider(providerType string) bool {
-	return providerType == "minimax" || providerType == "zhipu"
+	return providerType == "minimax" || providerType == "zhipu" || providerType == "kimi"
 }
 
 func (svc *ProviderQuotaService) getProviderType(ch *ent.Channel) string {
@@ -442,6 +447,8 @@ func (svc *ProviderQuotaService) getProviderType(ch *ent.Channel) string {
 		return "minimax"
 	case channel.TypeZhipu, channel.TypeZhipuAnthropic:
 		return "zhipu"
+	case channel.TypeKimi, channel.TypeKimiAnthropic:
+		return "kimi"
 	default:
 		return ""
 	}

@@ -17,8 +17,15 @@ env:
 
 jobs:
   build-backend:
-    name: Build Backend
+    name: Build Backend (${{ matrix.goos }}-${{ matrix.goarch }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,15 +40,31 @@ jobs:
           cache: true
 
       - name: Build main binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: go build -ldflags "-s -w" -tags=nomsgpack -o axonhub ./cmd/axonhub
 
       - name: Build schema generator
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: cd cmd/schema && go build -o schema
 
       - name: Build llm module packages
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: cd llm && go build ./...
 
       - name: Verify all packages compile
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: go build ./...
 
   build-frontend:

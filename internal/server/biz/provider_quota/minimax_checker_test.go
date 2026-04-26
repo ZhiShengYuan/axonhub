@@ -25,18 +25,22 @@ func TestMiniMaxQuotaChecker_Success(t *testing.T) {
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
 				Body: io.NopCloser(strings.NewReader(`{
-					"interval": {
-						"current_interval_total_count": 100,
-						"current_interval_usage_count": 30,
-						"start_time": "2024-01-01T00:00:00Z",
-						"end_time": "2024-01-02T00:00:00Z"
-					},
-					"weekly": {
-						"weekly_total_count": 500,
-						"weekly_usage_count": 150,
-						"start_time": "2024-01-01T00:00:00Z",
-						"end_time": "2024-01-07T00:00:00Z"
-					}
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"remains_time": 5225062,
+							"current_interval_total_count": 4500,
+							"current_interval_usage_count": 4393,
+							"model_name": "MiniMax-M2.5",
+							"current_weekly_total_count": 0,
+							"current_weekly_usage_count": 0,
+							"weekly_start_time": 1776614400000,
+							"weekly_end_time": 1777219200000,
+							"weekly_remains_time": 5225062
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
 				}`)),
 			}, nil
 		}),
@@ -55,16 +59,44 @@ func TestMiniMaxQuotaChecker_Success(t *testing.T) {
 	require.Equal(t, "minimax", quota.ProviderType)
 	require.True(t, quota.Ready)
 	require.NotNil(t, quota.Summary)
-	require.Equal(t, 0.3, *quota.Summary.UsageRatio)
+
+	// UsageRatio should be ~0.0238 (107/4500 = 2.38%)
+	// Used = total - remaining = 4500 - 4393 = 107
+	// UsageRatio = 107/4500 = 0.02378
+	require.InDelta(t, 0.0238, *quota.Summary.UsageRatio, 0.001)
 	require.Equal(t, "Interval", quota.Summary.PeriodLabel)
 	require.False(t, quota.Summary.Partial)
+
+	// Verify ProviderUsedCount = total - remaining = 107 (NOT the usage_count field directly)
+	require.NotNil(t, quota.Summary.ProviderUsedCount)
+	require.Equal(t, int64(107), *quota.Summary.ProviderUsedCount)
+
+	// Verify ProviderTotalCount = 4500
+	require.NotNil(t, quota.Summary.ProviderTotalCount)
+	require.Equal(t, int64(4500), *quota.Summary.ProviderTotalCount)
+
+	// Verify ProviderRemainingCount = usage_count field directly = 4393
+	require.NotNil(t, quota.Summary.ProviderRemainingCount)
+	require.Equal(t, int64(4393), *quota.Summary.ProviderRemainingCount)
+
+	// Verify ProviderUsedPercentage = 2.38% (107/4500*100)
+	require.NotNil(t, quota.Summary.ProviderUsedPercentage)
+	require.InDelta(t, 2.38, *quota.Summary.ProviderUsedPercentage, 0.1)
+
+	// Verify timestamps are correctly converted from milliseconds
 	require.NotNil(t, quota.NextResetAt)
-	expectedReset, _ := time.Parse(time.RFC3339, "2024-01-02T00:00:00Z")
+	expectedReset := time.Unix(0, 1777219200000*int64(time.Millisecond))
 	require.Equal(t, expectedReset, *quota.NextResetAt)
+
+	require.NotNil(t, quota.Summary.PeriodStartAt)
+	expectedStart := time.Unix(0, 1777204800000*int64(time.Millisecond))
+	require.Equal(t, expectedStart, *quota.Summary.PeriodStartAt)
+
 	require.NotNil(t, quota.RawData)
-	require.Contains(t, quota.RawData, "interval")
-	require.Contains(t, quota.RawData, "weekly")
+	require.Contains(t, quota.RawData, "matched_model")
+	require.Equal(t, "MiniMax-M2.5", quota.RawData["matched_model"])
 	require.Contains(t, quota.RawData, "remains")
+	require.Contains(t, quota.RawData, "interval")
 }
 
 func TestMiniMaxQuotaChecker_Warning(t *testing.T) {
@@ -74,11 +106,17 @@ func TestMiniMaxQuotaChecker_Warning(t *testing.T) {
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
 				Body: io.NopCloser(strings.NewReader(`{
-					"interval": {
-						"current_interval_total_count": 100,
-						"current_interval_usage_count": 85,
-						"end_time": "2024-01-02T00:00:00Z"
-					}
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"remains_time": 5225062,
+							"current_interval_total_count": 100,
+							"current_interval_usage_count": 15,
+							"model_name": "MiniMax-M*"
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
 				}`)),
 			}, nil
 		}),
@@ -96,7 +134,14 @@ func TestMiniMaxQuotaChecker_Warning(t *testing.T) {
 	require.Equal(t, "warning", quota.Status)
 	require.True(t, quota.Ready)
 	require.NotNil(t, quota.Summary)
-	require.Equal(t, 0.85, *quota.Summary.UsageRatio)
+
+	// Used = 100 - 15 = 85, UsageRatio = 85/100 = 0.85
+	require.InDelta(t, 0.85, *quota.Summary.UsageRatio, 0.001)
+
+	// Verify ProviderUsedCount = used = 85
+	require.Equal(t, int64(85), *quota.Summary.ProviderUsedCount)
+	// Verify ProviderRemainingCount = remaining = 15
+	require.Equal(t, int64(15), *quota.Summary.ProviderRemainingCount)
 }
 
 func TestMiniMaxQuotaChecker_Exhausted(t *testing.T) {
@@ -106,11 +151,16 @@ func TestMiniMaxQuotaChecker_Exhausted(t *testing.T) {
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
 				Body: io.NopCloser(strings.NewReader(`{
-					"interval": {
-						"current_interval_total_count": 100,
-						"current_interval_usage_count": 100,
-						"end_time": "2024-01-02T00:00:00Z"
-					}
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 100,
+							"current_interval_usage_count": 0,
+							"model_name": "MiniMax-M*"
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
 				}`)),
 			}, nil
 		}),
@@ -128,7 +178,9 @@ func TestMiniMaxQuotaChecker_Exhausted(t *testing.T) {
 	require.Equal(t, "exhausted", quota.Status)
 	require.False(t, quota.Ready)
 	require.NotNil(t, quota.Summary)
-	require.Equal(t, 1.0, *quota.Summary.UsageRatio)
+
+	// Used = 100 - 0 = 100, UsageRatio = 100/100 = 1.0
+	require.InDelta(t, 1.0, *quota.Summary.UsageRatio, 0.001)
 }
 
 func TestMiniMaxQuotaChecker_MissingCredentials(t *testing.T) {
@@ -220,13 +272,13 @@ func TestMiniMaxQuotaChecker_HTTPError429(t *testing.T) {
 	require.Contains(t, err.Error(), "quota request failed")
 }
 
-func TestMiniMaxQuotaChecker_UnknownStatus(t *testing.T) {
+func TestMiniMaxQuotaChecker_EmptyModelRemains(t *testing.T) {
 	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
 		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
-				Body:       io.NopCloser(strings.NewReader(`{}`)),
+				Body:       io.NopCloser(strings.NewReader(`{"model_remains": [], "base_resp": {"status_code": 0, "status_msg": "success"}}`)),
 			}, nil
 		}),
 	})
@@ -252,7 +304,7 @@ func TestMiniMaxQuotaChecker_SupportsChannel(t *testing.T) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
-				Body:       io.NopCloser(strings.NewReader(`{}`)),
+				Body:       io.NopCloser(strings.NewReader(`{"model_remains": [], "base_resp": {"status_code": 0, "status_msg": "success"}}`)),
 			}, nil
 		}),
 	})
@@ -265,23 +317,37 @@ func TestMiniMaxQuotaChecker_SupportsChannel(t *testing.T) {
 	require.False(t, checker.SupportsChannel(&ent.Channel{Type: channel.TypeClaudecode}))
 }
 
-func TestMiniMaxQuotaChecker_WeeklyNotUsedForSummary(t *testing.T) {
+func TestMiniMaxQuotaChecker_MultipleModelsMatchesMiniMaxMFirst(t *testing.T) {
 	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
 		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Header:     make(http.Header),
 				Body: io.NopCloser(strings.NewReader(`{
-					"interval": {
-						"current_interval_total_count": 100,
-						"current_interval_usage_count": 20,
-						"end_time": "2024-01-02T00:00:00Z"
-					},
-					"weekly": {
-						"weekly_total_count": 500,
-						"weekly_usage_count": 400,
-						"end_time": "2024-01-07T00:00:00Z"
-					}
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 19000,
+							"current_interval_usage_count": 19000,
+							"model_name": "speech-hd"
+						},
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 4500,
+							"current_interval_usage_count": 4393,
+							"model_name": "MiniMax-M2.5"
+						},
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 500,
+							"current_interval_usage_count": 200,
+							"model_name": "coding-plan-vlm"
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
 				}`)),
 			}, nil
 		}),
@@ -297,6 +363,182 @@ func TestMiniMaxQuotaChecker_WeeklyNotUsedForSummary(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Equal(t, "available", quota.Status)
-	require.Equal(t, "Interval", quota.Summary.PeriodLabel)
-	require.Equal(t, 0.2, *quota.Summary.UsageRatio)
+
+	// Verify MiniMax-M* is matched first (not speech-hd or coding-plan-vlm)
+	require.Equal(t, "MiniMax-M2.5", quota.RawData["matched_model"])
+
+	// Verify we got the MiniMax-M2.5 data (107 used out of 4500)
+	require.Equal(t, int64(107), *quota.Summary.ProviderUsedCount)
+	require.Equal(t, int64(4500), *quota.Summary.ProviderTotalCount)
+	require.Equal(t, int64(4393), *quota.Summary.ProviderRemainingCount)
+}
+
+func TestMiniMaxQuotaChecker_CodingPlanFallback(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 500,
+							"current_interval_usage_count": 200,
+							"model_name": "coding-plan-vlm"
+						},
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 19000,
+							"current_interval_usage_count": 19000,
+							"model_name": "speech-hd"
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewMiniMaxQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeMinimax,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "available", quota.Status)
+
+	// Verify coding-plan is matched (no MiniMax-M* exists)
+	require.Equal(t, "coding-plan-vlm", quota.RawData["matched_model"])
+}
+
+func TestMiniMaxQuotaChecker_FirstEntryFallback(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 19000,
+							"current_interval_usage_count": 19000,
+							"model_name": "speech-hd"
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewMiniMaxQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeMinimax,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "available", quota.Status)
+
+	// Verify first entry is matched (no MiniMax-M* or coding-plan)
+	require.Equal(t, "speech-hd", quota.RawData["matched_model"])
+}
+
+func TestMiniMaxQuotaChecker_NonZeroBaseRespStatus(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 4500,
+							"current_interval_usage_count": 4393,
+							"model_name": "MiniMax-M2.5"
+						}
+					],
+					"base_resp": {"status_code": 1, "status_msg": "some warning"}
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewMiniMaxQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeMinimax,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	// Should still parse model data if available
+	require.Equal(t, "available", quota.Status)
+	require.Equal(t, "MiniMax-M2.5", quota.RawData["matched_model"])
+}
+
+func TestMiniMaxQuotaChecker_WeeklyDataIncluded(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"model_remains": [
+						{
+							"start_time": 1777204800000,
+							"end_time": 1777219200000,
+							"current_interval_total_count": 4500,
+							"current_interval_usage_count": 4393,
+							"model_name": "MiniMax-M2.5",
+							"current_weekly_total_count": 10000,
+							"current_weekly_usage_count": 9500,
+							"weekly_start_time": 1776614400000,
+							"weekly_end_time": 1777219200000,
+							"weekly_remains_time": 5225062
+						}
+					],
+					"base_resp": {"status_code": 0, "status_msg": "success"}
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewMiniMaxQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeMinimax,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "available", quota.Status)
+
+	// Weekly data should be included in rawData
+	require.Contains(t, quota.RawData, "weekly")
+	weekly := quota.RawData["weekly"].(map[string]any)
+	require.Equal(t, int64(10000), weekly["current_weekly_total_count"])
+	require.Equal(t, int64(9500), weekly["current_weekly_usage_count"])
+}
+
+func TestMsToTime(t *testing.T) {
+	// Test millisecond to time.Time conversion
+	ms := int64(1777219200000)
+	result := msToTime(ms)
+	expected := time.Unix(0, ms*int64(time.Millisecond))
+	require.Equal(t, expected, result)
 }

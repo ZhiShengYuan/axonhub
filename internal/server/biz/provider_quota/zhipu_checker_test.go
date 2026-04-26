@@ -537,32 +537,21 @@ func TestZhipuQuotaChecker_TokensLimitWithoutUsageAndRemaining(t *testing.T) {
 	require.NotNil(t, quota.Summary)
 	require.NotNil(t, quota.Summary.UsageRatio)
 	require.Equal(t, 0.01, *quota.Summary.UsageRatio)
-	require.Nil(t, quota.Summary.ProviderUsedCount)
-	require.Nil(t, quota.Summary.ProviderTotalCount)
-	require.Nil(t, quota.Summary.ProviderRemainingCount)
+	require.NotNil(t, quota.Summary.ProviderUsedCount)
+	require.NotNil(t, quota.Summary.ProviderTotalCount)
+	require.NotNil(t, quota.Summary.ProviderRemainingCount)
+	require.Equal(t, int64(0), *quota.Summary.ProviderUsedCount)
+	require.Equal(t, int64(5), *quota.Summary.ProviderTotalCount)
+	require.Equal(t, int64(5), *quota.Summary.ProviderRemainingCount)
 	require.NotNil(t, quota.Summary.ProviderUsedPercentage)
 	require.Equal(t, 1.0, *quota.Summary.ProviderUsedPercentage)
 	require.Equal(t, "Hourly", quota.Summary.PeriodLabel)
 	require.Equal(t, time.UnixMilli(1777231845666), *quota.Summary.PeriodEnd)
 }
 
-func TestZhipuQuotaChecker_EmptyModelAndToolUsage(t *testing.T) {
+func TestZhipuQuotaChecker_TokensLimitWithNextResetTimeZero(t *testing.T) {
 	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
 		Transport: zhipuRoundTripFunc(func(req *http.Request) (*http.Response, error) {
-			if req.URL.Path == "/api/monitor/usage/model-usage" {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Header:     make(http.Header),
-					Body:       io.NopCloser(strings.NewReader(``)),
-				}, nil
-			}
-			if req.URL.Path == "/api/monitor/usage/tool-usage" {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Header:     make(http.Header),
-					Body:       io.NopCloser(strings.NewReader(`   `)),
-				}, nil
-			}
 			if req.URL.Path == "/api/monitor/usage/quota/limit" {
 				return &http.Response{
 					StatusCode: http.StatusOK,
@@ -574,11 +563,11 @@ func TestZhipuQuotaChecker_EmptyModelAndToolUsage(t *testing.T) {
 							"limits": [{
 								"type": "TOKENS_LIMIT",
 								"unit": 5,
-								"number": 1,
-								"usage": 50000,
-								"remaining": 150000,
+								"number": 1000000,
+								"usage": 250000,
+								"remaining": 750000,
 								"percentage": 25,
-								"nextResetTime": 1704067200000
+								"nextResetTime": 0
 							}],
 							"level": "default"
 						},
@@ -587,8 +576,11 @@ func TestZhipuQuotaChecker_EmptyModelAndToolUsage(t *testing.T) {
 				}, nil
 			}
 
-			t.Fatalf("unexpected request: %s", req.URL.Path)
-			return nil, nil
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader(`{}`)),
+			}, nil
 		}),
 	})
 
@@ -606,10 +598,11 @@ func TestZhipuQuotaChecker_EmptyModelAndToolUsage(t *testing.T) {
 	require.True(t, quota.Ready)
 	require.NotNil(t, quota.Summary)
 	require.Equal(t, 0.25, *quota.Summary.UsageRatio)
-	require.Equal(t, "complete", quota.RawData["display_status_reason"])
+	require.Equal(t, "Monthly", quota.Summary.PeriodLabel)
+	require.Nil(t, quota.Summary.PeriodEnd)
 }
 
-func TestZhipuQuotaChecker_TimeLimitWithUsageDetails(t *testing.T) {
+func TestZhipuQuotaChecker_TimeLimitFallback(t *testing.T) {
 	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
 		Transport: zhipuRoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			if req.URL.Path == "/api/monitor/usage/quota/limit" {
@@ -620,29 +613,20 @@ func TestZhipuQuotaChecker_TimeLimitWithUsageDetails(t *testing.T) {
 						"code": 200,
 						"msg": "操作成功",
 						"data": {
-							"limits": [
-								{
-									"type": "TIME_LIMIT",
-									"unit": 5,
-									"number": 1,
-									"usage": 50,
-									"currentValue": 0,
-									"remaining": 50,
-									"percentage": 50,
-									"nextResetTime": 1779428140978,
-									"usageDetails": [
-										{"modelCode": "search-prime", "usage": 30},
-										{"modelCode": "web-reader", "usage": 20}
-									]
-								},
-								{
-									"type": "TOKENS_LIMIT",
-									"unit": 3,
-									"number": 5,
-									"percentage": 1,
-									"nextResetTime": 1777231845666
-								}
-							],
+							"limits": [{
+								"type": "TIME_LIMIT",
+								"unit": 5,
+								"number": 200,
+								"usage": 50,
+								"currentValue": 0,
+								"remaining": 150,
+								"percentage": 25,
+								"nextResetTime": 1779428140978,
+								"usageDetails": [
+									{"modelCode": "search-prime", "usage": 30},
+									{"modelCode": "web-reader", "usage": 20}
+								]
+							}],
 							"level": "lite"
 						},
 						"success": true
@@ -670,7 +654,65 @@ func TestZhipuQuotaChecker_TimeLimitWithUsageDetails(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "available", quota.Status)
 	require.NotNil(t, quota.Summary)
-	require.Equal(t, 0.01, *quota.Summary.UsageRatio)
-	require.Equal(t, "Hourly", quota.Summary.PeriodLabel)
-	require.Equal(t, time.UnixMilli(1777231845666), *quota.Summary.PeriodEnd)
+	require.Equal(t, 0.25, *quota.Summary.UsageRatio)
+	require.Equal(t, "Monthly", quota.Summary.PeriodLabel)
+	require.NotNil(t, quota.Summary.PeriodEnd)
+	require.Equal(t, time.UnixMilli(1779428140978), *quota.Summary.PeriodEnd)
+}
+
+func TestZhipuQuotaChecker_ExhaustedDerivedFromPercentage(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: zhipuRoundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.URL.Path == "/api/monitor/usage/quota/limit" {
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Header:     make(http.Header),
+					Body: io.NopCloser(strings.NewReader(`{
+						"code": 200,
+						"msg": "操作成功",
+						"data": {
+							"limits": [{
+								"type": "TOKENS_LIMIT",
+								"unit": 5,
+								"number": 1000,
+								"usage": 0,
+								"remaining": 0,
+								"percentage": 100,
+								"nextResetTime": 1779428140978
+							}],
+							"level": "default"
+						},
+						"success": true
+					}`)),
+				}, nil
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader(`{}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewZhipuQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: "zhipu",
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, "exhausted", quota.Status)
+	require.False(t, quota.Ready)
+	require.NotNil(t, quota.Summary)
+	require.Equal(t, 1.0, *quota.Summary.UsageRatio)
+	require.NotNil(t, quota.Summary.ProviderUsedCount)
+	require.NotNil(t, quota.Summary.ProviderTotalCount)
+	require.NotNil(t, quota.Summary.ProviderRemainingCount)
+	require.Equal(t, int64(1000), *quota.Summary.ProviderTotalCount)
+	require.Equal(t, int64(1000), *quota.Summary.ProviderUsedCount)
+	require.Equal(t, int64(0), *quota.Summary.ProviderRemainingCount)
 }

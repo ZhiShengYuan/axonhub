@@ -17,10 +17,10 @@ const STATUS_LABELS = {
   unknown: 'quota.status.unknown',
 } as const;
 
-const MINIMAX_ZHIPU_TYPES = ['minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic'];
+const SUMMARY_TYPES = ['minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic', 'kimi', 'kimi_anthropic'];
 
-function isMinimaxOrZhipuType(type: string): boolean {
-  return MINIMAX_ZHIPU_TYPES.includes(type);
+function isSummaryType(type: string): boolean {
+  return SUMMARY_TYPES.includes(type);
 }
 
 type QuotaData = {
@@ -86,7 +86,7 @@ function getChannelPercentage(channel: ProviderQuotaChannel, quotaData: QuotaDat
     percentage = Math.max(util5h, util7d) * 100;
   } else if (channel.type === 'codex') {
     percentage = quotaData.rate_limit?.primary_window?.used_percent || 0;
-  } else if (isMinimaxOrZhipuType(channel.type)) {
+  } else if (isSummaryType(channel.type)) {
     const summary = quotaData?.summary;
     const usageRatio = summary?.usage_ratio;
     const providerUsedPercentage = summary?.provider_used_percentage;
@@ -221,7 +221,7 @@ function QuotaRow({ channel }: { channel: ProviderQuotaChannel }) {
         </div>
       )}
 
-      {isMinimaxOrZhipuType(channel.type) && (
+      {isSummaryType(channel.type) && (
         <div className="ml-6 mt-2">
           {(() => {
             const summary = quotaData?.summary;
@@ -329,7 +329,7 @@ export function QuotaBadges({ isRefreshing, onRefresh }: { isRefreshing: boolean
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" className="p-2 hover:bg-muted rounded-md transition-colors relative">
+        <button type="button" data-testid="quota-badge-trigger" className="p-2 hover:bg-muted rounded-md transition-colors relative">
           <QuotaBadgeTrigger channels={channels} />
         </button>
       </PopoverTrigger>

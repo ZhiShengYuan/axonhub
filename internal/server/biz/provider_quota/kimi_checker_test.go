@@ -343,3 +343,89 @@ func TestKimiQuotaChecker_KimiAnthropic(t *testing.T) {
 	require.Equal(t, "available", quota.Status)
 	require.True(t, checker.SupportsChannel(&ent.Channel{Type: channel.TypeKimiAnthropic}))
 }
+
+func TestKimiQuotaChecker_PartialMissingLimit(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"user": {"userId": "test", "region": "REGION_CN", "membership": {"level": "LEVEL_INTERMEDIATE"}, "businessId": ""},
+					"usage": {
+						"limit": "",
+						"remaining": "",
+						"resetTime": "2026-05-03T11:03:48.011825Z"
+					},
+					"limits": [],
+					"parallel": {"limit": "20"},
+					"totalQuota": {"limit": "", "remaining": ""},
+					"authentication": {"method": "METHOD_API_KEY", "scope": "FEATURE_CODING"},
+					"subType": "TYPE_PURCHASE"
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewKimiQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeKimi,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "unknown", quota.Status)
+	require.False(t, quota.Ready)
+	require.NotNil(t, quota.Summary)
+	require.True(t, quota.Summary.Partial)
+	require.Nil(t, quota.Summary.UsageRatio)
+	require.Nil(t, quota.Summary.ProviderUsedCount)
+	require.Nil(t, quota.Summary.ProviderTotalCount)
+	require.Nil(t, quota.Summary.ProviderRemainingCount)
+	require.Nil(t, quota.Summary.ProviderUsedPercentage)
+}
+
+func TestKimiQuotaChecker_MalformedNumeric(t *testing.T) {
+	httpClient := httpclient.NewHttpClientWithClient(&http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(`{
+					"user": {"userId": "test", "region": "REGION_CN", "membership": {"level": "LEVEL_INTERMEDIATE"}, "businessId": ""},
+					"usage": {
+						"limit": "not-a-number",
+						"remaining": "also-bad",
+						"resetTime": "2026-05-03T11:03:48.011825Z"
+					},
+					"limits": [],
+					"parallel": {"limit": "20"},
+					"totalQuota": {"limit": "not-a-number", "remaining": "also-bad"},
+					"authentication": {"method": "METHOD_API_KEY", "scope": "FEATURE_CODING"},
+					"subType": "TYPE_PURCHASE"
+				}`)),
+			}, nil
+		}),
+	})
+
+	checker := NewKimiQuotaChecker(httpClient)
+
+	quota, err := checker.CheckQuota(context.Background(), &ent.Channel{
+		Type: channel.TypeKimi,
+		Credentials: objects.ChannelCredentials{
+			APIKey: "test-api-key",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, "unknown", quota.Status)
+	require.False(t, quota.Ready)
+	require.NotNil(t, quota.Summary)
+	require.True(t, quota.Summary.Partial)
+	require.Nil(t, quota.Summary.UsageRatio)
+	require.Nil(t, quota.Summary.ProviderUsedCount)
+	require.Nil(t, quota.Summary.ProviderTotalCount)
+	require.Nil(t, quota.Summary.ProviderRemainingCount)
+	require.Nil(t, quota.Summary.ProviderUsedPercentage)
+}

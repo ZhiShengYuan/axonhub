@@ -130,6 +130,8 @@ func (c *KimiQuotaChecker) parseResponse(body []byte) (QuotaData, error) {
 			normalizedStatus = "available"
 			usageRatio = &intervalUsageRatio
 		}
+	} else {
+		partial = true
 	}
 
 	// Parse reset time from RFC3339 format

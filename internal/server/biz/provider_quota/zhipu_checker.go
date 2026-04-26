@@ -273,11 +273,23 @@ func (c *ZhipuQuotaChecker) buildQuotaData(
 func (c *ZhipuQuotaChecker) buildSummaryFromLimit(limitResp *ZhipuQuotaLimitData, displayStatusReason string) (*QuotaSummary, *time.Time, string) {
 	var tokensLimit *ZhipuQuotaLimitEntry
 
+	// First pass: look for TOKENS_LIMIT with Percentage >= 0 (accept NextResetMs == 0)
 	for i := range limitResp.Limits {
 		rec := &limitResp.Limits[i]
-		if rec.Type == "TOKENS_LIMIT" && rec.Percentage >= 0 && rec.NextResetMs > 0 {
+		if rec.Type == "TOKENS_LIMIT" && rec.Percentage >= 0 && rec.NextResetMs >= 0 {
 			tokensLimit = rec
 			break
+		}
+	}
+
+	// Fallback: if no TOKENS_LIMIT found, look for TIME_LIMIT with Percentage >= 0 and NextResetMs >= 0
+	if tokensLimit == nil {
+		for i := range limitResp.Limits {
+			rec := &limitResp.Limits[i]
+			if rec.Type == "TIME_LIMIT" && rec.Percentage >= 0 && rec.NextResetMs >= 0 {
+				tokensLimit = rec
+				break
+			}
 		}
 	}
 
@@ -308,17 +320,29 @@ func (c *ZhipuQuotaChecker) buildSummaryFromLimit(limitResp *ZhipuQuotaLimitData
 	}
 
 	normalizedStatus := "available"
+	// Exhausted when Remaining <= 0 and Usage > 0, OR when Remaining == 0 && Usage == 0 && Percentage >= 100
 	if tokensLimit.Remaining <= 0 && tokensLimit.Usage > 0 {
+		normalizedStatus = "exhausted"
+	} else if tokensLimit.Remaining == 0 && tokensLimit.Usage == 0 && tokensLimit.Percentage >= 100 {
 		normalizedStatus = "exhausted"
 	} else if tokensLimit.Percentage >= 80 {
 		normalizedStatus = "warning"
 	}
 
 	var usedCount, totalCount, remainingCount *int64
+	// Derive counts from Usage/Remaining if available
 	if tokensLimit.Usage > 0 || tokensLimit.Remaining > 0 {
 		uc := int64(tokensLimit.Usage)
 		tc := int64(tokensLimit.Number)
 		rc := int64(tokensLimit.Remaining)
+		usedCount = &uc
+		totalCount = &tc
+		remainingCount = &rc
+	} else if tokensLimit.Number > 0 && tokensLimit.Percentage >= 0 {
+		// Derive counts from Number and Percentage when Usage/Remaining are both zero/missing
+		tc := int64(tokensLimit.Number)
+		uc := int64(float64(tokensLimit.Number) * float64(tokensLimit.Percentage) / 100.0)
+		rc := tc - uc
 		usedCount = &uc
 		totalCount = &tc
 		remainingCount = &rc

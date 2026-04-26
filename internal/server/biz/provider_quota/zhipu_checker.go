@@ -1,6 +1,7 @@
 package provider_quota
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -35,17 +36,37 @@ type ZhipuToolUsageResponse struct {
 	} `json:"totalUsage,omitempty"`
 }
 
-type ZhipuQuotaLimitResponse struct {
-	Limits []struct {
-		Type        string `json:"type,omitempty"`
-		Unit        int    `json:"unit,omitempty"`
-		Number      int    `json:"number,omitempty"`
-		Usage       int    `json:"usage,omitempty"`
-		Remaining   int    `json:"remaining,omitempty"`
-		Percentage  int    `json:"percentage,omitempty"`
-		NextResetMs int64  `json:"nextResetTime,omitempty"`
-	} `json:"limits,omitempty"`
-	Level string `json:"level,omitempty"`
+// ZhipuQuotaLimitAPIResponse is the outer wrapper returned by the quota/limit endpoint.
+type ZhipuQuotaLimitAPIResponse struct {
+	Code    int                       `json:"code"`
+	Msg     string                    `json:"msg"`
+	Data    ZhipuQuotaLimitData       `json:"data"`
+	Success bool                      `json:"success"`
+}
+
+// ZhipuQuotaLimitData contains the actual quota limit data (inside the "data" wrapper).
+type ZhipuQuotaLimitData struct {
+	Limits []ZhipuQuotaLimitEntry `json:"limits"`
+	Level  string                 `json:"level"`
+}
+
+// ZhipuQuotaLimitEntry represents a single quota limit entry (TIME_LIMIT or TOKENS_LIMIT).
+type ZhipuQuotaLimitEntry struct {
+	Type         string              `json:"type"`
+	Unit         int                 `json:"unit"`
+	Number       int                 `json:"number"`
+	Usage        int                 `json:"usage"`               // may be 0/missing for TOKENS_LIMIT
+	CurrentValue int                 `json:"currentValue"`        // present in TIME_LIMIT
+	Remaining    int                 `json:"remaining"`           // may be 0/missing for TOKENS_LIMIT
+	Percentage   int                 `json:"percentage"`
+	NextResetMs  int64               `json:"nextResetTime"`
+	UsageDetails []ZhipuUsageDetail  `json:"usageDetails,omitempty"` // present in TIME_LIMIT
+}
+
+// ZhipuUsageDetail is the per-model usage breakdown in TIME_LIMIT.
+type ZhipuUsageDetail struct {
+	ModelCode string `json:"modelCode"`
+	Usage     int    `json:"usage"`
 }
 
 type ZhipuQuotaChecker struct {
@@ -120,6 +141,10 @@ func (c *ZhipuQuotaChecker) callModelUsage(ctx context.Context, httpClient *http
 		return nil, fmt.Errorf("model-usage HTTP %d: %s", resp.StatusCode, string(resp.Body))
 	}
 
+	if len(bytes.TrimSpace(resp.Body)) == 0 {
+		return nil, nil
+	}
+
 	var result ZhipuModelUsageResponse
 	if err := json.Unmarshal(resp.Body, &result); err != nil {
 		return nil, fmt.Errorf("model-usage parse failed: %w", err)
@@ -147,6 +172,10 @@ func (c *ZhipuQuotaChecker) callToolUsage(ctx context.Context, httpClient *httpc
 		return nil, fmt.Errorf("tool-usage HTTP %d: %s", resp.StatusCode, string(resp.Body))
 	}
 
+	if len(bytes.TrimSpace(resp.Body)) == 0 {
+		return nil, nil
+	}
+
 	var result ZhipuToolUsageResponse
 	if err := json.Unmarshal(resp.Body, &result); err != nil {
 		return nil, fmt.Errorf("tool-usage parse failed: %w", err)
@@ -155,7 +184,7 @@ func (c *ZhipuQuotaChecker) callToolUsage(ctx context.Context, httpClient *httpc
 	return &result, nil
 }
 
-func (c *ZhipuQuotaChecker) callQuotaLimit(ctx context.Context, httpClient *httpclient.HttpClient, baseURL, apiKey string) (*ZhipuQuotaLimitResponse, error) {
+func (c *ZhipuQuotaChecker) callQuotaLimit(ctx context.Context, httpClient *httpclient.HttpClient, baseURL, apiKey string) (*ZhipuQuotaLimitData, error) {
 	url := baseURL + "/api/monitor/usage/quota/limit"
 
 	httpReq := httpclient.NewRequestBuilder().
@@ -174,18 +203,18 @@ func (c *ZhipuQuotaChecker) callQuotaLimit(ctx context.Context, httpClient *http
 		return nil, fmt.Errorf("quota-limit HTTP %d: %s", resp.StatusCode, string(resp.Body))
 	}
 
-	var result ZhipuQuotaLimitResponse
-	if err := json.Unmarshal(resp.Body, &result); err != nil {
+	var apiResp ZhipuQuotaLimitAPIResponse
+	if err := json.Unmarshal(resp.Body, &apiResp); err != nil {
 		return nil, fmt.Errorf("quota-limit parse failed: %w", err)
 	}
 
-	return &result, nil
+	return &apiResp.Data, nil
 }
 
 func (c *ZhipuQuotaChecker) buildQuotaData(
 	modelUsage *ZhipuModelUsageResponse, modelErr error,
 	toolUsage *ZhipuToolUsageResponse, toolErr error,
-	quotaLimit *ZhipuQuotaLimitResponse, limitErr error,
+	quotaLimit *ZhipuQuotaLimitData, limitErr error,
 ) (QuotaData, error) {
 	rawData := map[string]any{}
 
@@ -240,29 +269,13 @@ func (c *ZhipuQuotaChecker) buildQuotaData(
 	}, nil
 }
 
-func (c *ZhipuQuotaChecker) buildSummaryFromLimit(limitResp *ZhipuQuotaLimitResponse, displayStatusReason string) (*QuotaSummary, *time.Time, string) {
-	var tokensLimit *struct {
-		Type        string
-		Unit        int
-		Number      int
-		Usage       int
-		Remaining   int
-		Percentage  int
-		NextResetMs int64
-	}
+func (c *ZhipuQuotaChecker) buildSummaryFromLimit(limitResp *ZhipuQuotaLimitData, displayStatusReason string) (*QuotaSummary, *time.Time, string) {
+	var tokensLimit *ZhipuQuotaLimitEntry
 
 	for i := range limitResp.Limits {
 		rec := &limitResp.Limits[i]
-		if rec.Type == "TOKENS_LIMIT" && rec.Remaining >= 0 && rec.Percentage >= 0 && rec.NextResetMs > 0 {
-			tokensLimit = (*struct {
-				Type        string
-				Unit        int
-				Number      int
-				Usage       int
-				Remaining   int
-				Percentage  int
-				NextResetMs int64
-			})(rec)
+		if rec.Type == "TOKENS_LIMIT" && rec.Percentage >= 0 && rec.NextResetMs > 0 {
+			tokensLimit = rec
 			break
 		}
 	}
@@ -294,23 +307,29 @@ func (c *ZhipuQuotaChecker) buildSummaryFromLimit(limitResp *ZhipuQuotaLimitResp
 	}
 
 	normalizedStatus := "available"
-	if tokensLimit.Remaining <= 0 {
+	if tokensLimit.Remaining <= 0 && tokensLimit.Usage > 0 {
 		normalizedStatus = "exhausted"
 	} else if tokensLimit.Percentage >= 80 {
 		normalizedStatus = "warning"
 	}
 
-	usedCount := int64(tokensLimit.Usage)
-	totalCount := int64(tokensLimit.Number)
-	remainingCount := int64(tokensLimit.Remaining)
+	var usedCount, totalCount, remainingCount *int64
+	if tokensLimit.Usage > 0 || tokensLimit.Remaining > 0 {
+		uc := int64(tokensLimit.Usage)
+		tc := int64(tokensLimit.Number)
+		rc := int64(tokensLimit.Remaining)
+		usedCount = &uc
+		totalCount = &tc
+		remainingCount = &rc
+	}
 	usedPercentage := float64(tokensLimit.Percentage)
 
 	summary := &QuotaSummary{
 		WindowKind:              "tokens_limit",
 		PeriodEnd:               periodEnd,
-		ProviderUsedCount:       &usedCount,
-		ProviderTotalCount:      &totalCount,
-		ProviderRemainingCount:   &remainingCount,
+		ProviderUsedCount:       usedCount,
+		ProviderTotalCount:      totalCount,
+		ProviderRemainingCount:   remainingCount,
 		ProviderUsedPercentage:  &usedPercentage,
 		DisplayStatusReason:      displayStatusReason,
 		UsageRatio:              &usageRatio,

@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useRef, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { graphqlRequest } from '@/gql/graphql';
 
 const CHECK_PROVIDER_QUOTAS_QUERY = `
@@ -44,6 +45,9 @@ export type ProviderQuotaChannel = {
 };
 
 export function useProviderQuotaStatuses() {
+  const queryClient = useQueryClient();
+  const hasTriggeredRefresh = useRef(false);
+
   const { data, error } = useQuery({
     queryKey: ['provider-quotas'],
     queryFn: async () => {
@@ -57,6 +61,16 @@ export function useProviderQuotaStatuses() {
     refetchInterval: 60000, // Refetch every minute
   });
 
+  const refreshMutation = useMutation({
+    mutationFn: checkProviderQuotas,
+    onSuccess: () => {
+      void queryClient.refetchQueries({ queryKey: ['provider-quotas'] });
+    },
+    onError: (err) => {
+      console.error('[ProviderQuota] Auto-refresh failed:', err);
+    },
+  });
+
   const channels = data?.queryChannels?.edges?.map((e: any) => e.node) || [];
 
   // Filter for OAuth channels (claudecode, codex, minimax, zhipu) - check both lowercase and PascalCase
@@ -67,7 +81,7 @@ export function useProviderQuotaStatuses() {
   });
 
   // Map to standard format - providerQuotaStatus is a single object, not an edge/node structure
-  return oauthChannels.map((channel: any): ProviderQuotaChannel => {
+  const result = oauthChannels.map((channel: any): ProviderQuotaChannel => {
     const quotaStatus = channel.providerQuotaStatus;
     return {
       id: channel.id,
@@ -76,4 +90,20 @@ export function useProviderQuotaStatuses() {
       quotaStatus,
     };
   });
+
+  const hasUnavailable = result.some(c =>
+    !c.quotaStatus || c.quotaStatus.status === 'unknown' || c.quotaStatus.ready === false
+  );
+
+  useEffect(() => {
+    if (hasUnavailable && !hasTriggeredRefresh.current && !refreshMutation.isPending) {
+      hasTriggeredRefresh.current = true;
+      refreshMutation.mutate();
+    }
+    if (!hasUnavailable) {
+      hasTriggeredRefresh.current = false;
+    }
+  }, [hasUnavailable, refreshMutation.isPending]);
+
+  return result;
 }

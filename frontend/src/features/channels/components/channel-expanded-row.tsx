@@ -1,9 +1,11 @@
-import { memo } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { CHANNEL_CONFIGS } from '../data/config_channels';
 import { Channel } from '../data/schema';
+import { checkProviderQuotas } from '@/features/system/data/quotas';
 
 const MINIMAX_ZHIPU_TYPES = ['minimax', 'minimax_anthropic', 'zhipu', 'zhipu_anthropic'];
 
@@ -115,8 +117,31 @@ interface QuotaSummarySectionProps {
 
 const QuotaSummarySection = memo(({ channel }: QuotaSummarySectionProps) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const hasTriggeredRefresh = useRef(false);
   const quotaStatus = channel.providerQuotaStatus;
   const summary = quotaStatus?.quotaData?.summary;
+
+  const refreshMutation = useMutation({
+    mutationFn: checkProviderQuotas,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['channels'] });
+    },
+    onError: (err) => {
+      console.error('[QuotaSummary] Auto-refresh failed:', err);
+    },
+  });
+
+  useEffect(() => {
+    const isUnavailable = !quotaStatus || quotaStatus.status === 'unknown' || quotaStatus.ready === false;
+    if (isUnavailable && !hasTriggeredRefresh.current && !refreshMutation.isPending) {
+      hasTriggeredRefresh.current = true;
+      refreshMutation.mutate();
+    }
+    if (quotaStatus && quotaStatus.ready !== false && quotaStatus.status !== 'unknown') {
+      hasTriggeredRefresh.current = false;
+    }
+  }, [quotaStatus, refreshMutation.isPending]);
 
   if (!quotaStatus) {
     return (

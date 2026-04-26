@@ -200,7 +200,7 @@ func TestMiniMaxQuotaChecker_MissingCredentials(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "no credentials")
+	require.Contains(t, err.Error(), "no API key")
 }
 
 func TestMiniMaxQuotaChecker_MalformedResponse(t *testing.T) {

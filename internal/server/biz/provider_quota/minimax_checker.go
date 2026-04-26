@@ -49,10 +49,11 @@ func NewMiniMaxQuotaChecker(httpClient *httpclient.HttpClient) *MiniMaxQuotaChec
 }
 
 func (c *MiniMaxQuotaChecker) CheckQuota(ctx context.Context, ch *ent.Channel) (QuotaData, error) {
-	apiKey := ch.Credentials.APIKey
-	if apiKey == "" {
-		return QuotaData{}, fmt.Errorf("channel has no credentials")
+	keys := ch.Credentials.GetAllAPIKeys()
+	if len(keys) == 0 {
+		return QuotaData{}, fmt.Errorf("channel has no API key")
 	}
+	apiKey := keys[0]
 
 	httpRequest := httpclient.NewRequestBuilder().
 		WithMethod("GET").

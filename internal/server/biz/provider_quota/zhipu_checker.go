@@ -99,10 +99,11 @@ func getBaseURL(ch *ent.Channel) string {
 }
 
 func (c *ZhipuQuotaChecker) CheckQuota(ctx context.Context, ch *ent.Channel) (QuotaData, error) {
-	apiKey := strings.TrimSpace(ch.Credentials.APIKey)
-	if apiKey == "" {
+	keys := ch.Credentials.GetAllAPIKeys()
+	if len(keys) == 0 {
 		return QuotaData{}, fmt.Errorf("channel has no API key")
 	}
+	apiKey := strings.TrimSpace(keys[0])
 
 	baseURL := getBaseURL(ch)
 

@@ -276,7 +276,9 @@ func (svc *ProviderQuotaService) checkChannelQuota(ctx context.Context, ch *ent.
 	}
 
 	// MiniMax and Zhipu use plain API keys, not OAuth
-	if ch.Credentials.OAuth == nil && !isOAuthJSON(ch.Credentials.APIKey) && !isApiKeyOnlyProvider(providerType) {
+	// Check if channel has any API key (either singular APIKey or plural APIKeys list)
+	hasAPIKey := ch.Credentials.APIKey != "" || len(ch.Credentials.APIKeys) > 0
+	if ch.Credentials.OAuth == nil && !hasAPIKey && !isApiKeyOnlyProvider(providerType) {
 		log.Debug(ctx, "channel does not support check quota", log.Int("channel_id", ch.ID), log.String("channel_name", ch.Name))
 		return
 	}

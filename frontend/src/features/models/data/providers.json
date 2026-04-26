@@ -45,7 +45,13 @@
           "display_name": "Qwen3.6 Plus",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -87,7 +93,13 @@
           "display_name": "Qwen3.5 397B-A17B",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -129,7 +141,13 @@
           "display_name": "Qwen3.5 Plus",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -140,7 +158,7 @@
           "family": "qwen",
           "attachment": false,
           "reasoning": {
-            "supported": false
+            "supported": true
           },
           "tool_call": true,
           "temperature": true,
@@ -165,6 +183,17 @@
             "output": 65536
           },
           "display_name": "Qwen3 Max",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -206,6 +235,17 @@
             "output": 32768
           },
           "display_name": "Qwen3 VL Plus",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -285,6 +325,17 @@
             "output": 16384
           },
           "display_name": "Qwen3-Omni Flash",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -398,7 +449,13 @@
           "display_name": "Qwen3 Next 80B A3B Thinking",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -473,6 +530,17 @@
             "output": 32768
           },
           "display_name": "Qwen Flash",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "search": {
             "supported": true,
             "default": false,
@@ -623,6 +691,17 @@
             "output": 32768
           },
           "display_name": "Qwen3 235B A22B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -663,6 +742,17 @@
             "output": 8192
           },
           "display_name": "Qwen3 8B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -703,6 +793,17 @@
             "output": 16384
           },
           "display_name": "Qwen3 32B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -739,6 +840,17 @@
             "output": 32768
           },
           "display_name": "Qwen3-VL 235B-A22B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -775,6 +887,17 @@
             "output": 32768
           },
           "display_name": "Qwen3-VL 30B-A3B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -881,6 +1004,17 @@
             "output": 8192
           },
           "display_name": "Qwen3 14B",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -955,6 +1089,17 @@
             "output": 8192
           },
           "display_name": "QwQ Plus",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "search": {
             "supported": true,
             "default": false,
@@ -1144,6 +1289,17 @@
             "output": 16384
           },
           "display_name": "Qwen Turbo",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "search": {
             "supported": true,
             "default": false,
@@ -1531,6 +1687,17 @@
             "output": 32768
           },
           "display_name": "Qwen Plus",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "search": {
             "supported": true,
             "default": false,
@@ -1734,6 +1901,17 @@
             "forced_search": false,
             "search_strategy": "turbo"
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -1794,6 +1972,17 @@
             "forced_search": false,
             "search_strategy": "turbo"
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -1829,6 +2018,17 @@
             "default": false,
             "forced_search": false,
             "search_strategy": "turbo"
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
           },
           "type": "chat"
         },
@@ -1890,6 +2090,17 @@
             "forced_search": false,
             "search_strategy": "turbo"
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -1925,6 +2136,17 @@
             "default": false,
             "forced_search": false,
             "search_strategy": "turbo"
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
           },
           "type": "chat"
         },
@@ -2116,13 +2338,24 @@
             "output": 65536
           },
           "reasoning": {
-            "supported": false
+            "supported": true
           },
           "search": {
             "supported": true,
             "default": false,
             "forced_search": false,
             "search_strategy": "turbo"
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
           },
           "type": "chat"
         },
@@ -2156,7 +2389,13 @@
           },
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -2237,6 +2476,17 @@
               "default": 81920
             }
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -2265,6 +2515,17 @@
               "min": 0,
               "max": 81920,
               "default": 81920
+            }
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -2297,6 +2558,17 @@
               "default": 38912
             }
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -2325,6 +2597,17 @@
               "min": 0,
               "max": 30720,
               "default": 30720
+            }
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -2357,6 +2640,17 @@
               "default": 30720
             }
           },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          },
           "type": "chat"
         },
         {
@@ -2386,6 +2680,17 @@
               "min": 0,
               "max": 81920,
               "default": 81920
+            }
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           },
           "type": "chat"
@@ -2420,6 +2725,17 @@
           },
           "search": {
             "supported": false
+          },
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
           },
           "type": "chat"
         },
@@ -2555,9 +2871,129 @@
       "id": "deepseek",
       "api": "https://api.deepseek.com",
       "name": "DeepSeek",
-      "doc": "https://platform.deepseek.com/api-docs/pricing",
+      "doc": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
       "display_name": "DeepSeek",
       "models": [
+        {
+          "id": "deepseek-v4-flash",
+          "name": "DeepSeek V4 Flash",
+          "family": "deepseek",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "structured_output": true,
+          "temperature": true,
+          "knowledge": "2025-05",
+          "release_date": "2026-04-24",
+          "last_updated": "2026-04-24",
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "open_weights": true,
+          "cost": {
+            "input": 0.14,
+            "output": 0.28,
+            "cache_read": 0.028
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 393216
+          },
+          "display_name": "DeepSeek V4 Flash",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ],
+              "effort_options": [
+                "high",
+                "max"
+              ],
+              "notes": [
+                "Thinking mode is controlled through the thinking parameter; non-thinking mode disables reasoning."
+              ],
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "high"
+            }
+          },
+          "type": "chat"
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "name": "DeepSeek V4 Pro",
+          "family": "deepseek",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "structured_output": true,
+          "temperature": true,
+          "knowledge": "2025-05",
+          "release_date": "2026-04-24",
+          "last_updated": "2026-04-24",
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "open_weights": true,
+          "cost": {
+            "input": 1.74,
+            "output": 3.48,
+            "cache_read": 0.145
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 393216
+          },
+          "display_name": "DeepSeek V4 Pro",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ],
+              "effort_options": [
+                "high",
+                "max"
+              ],
+              "notes": [
+                "Thinking mode is controlled through the thinking parameter; non-thinking mode disables reasoning."
+              ],
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "high"
+            }
+          },
+          "type": "chat"
+        },
         {
           "id": "deepseek-reasoner",
           "name": "DeepSeek Reasoner",
@@ -2571,10 +3007,10 @@
           "interleaved": {
             "field": "reasoning_content"
           },
-          "temperature": true,
-          "knowledge": "2024-07",
+          "temperature": false,
+          "knowledge": "2025-09",
           "release_date": "2025-01-20",
-          "last_updated": "2025-08-21",
+          "last_updated": "2026-04-24",
           "modalities": {
             "input": [
               "text"
@@ -2583,17 +3019,22 @@
               "text"
             ]
           },
-          "open_weights": false,
+          "open_weights": true,
           "cost": {
-            "input": 0.57,
-            "output": 1.68,
-            "cache_read": 0.07
+            "input": 0.14,
+            "output": 0.28,
+            "cache_read": 0.028
           },
           "limit": {
-            "context": 128000,
-            "output": 64000
+            "context": 1048576,
+            "output": 393216
           },
           "display_name": "DeepSeek Reasoner",
+          "metadata": {
+            "alias_of": "deepseek-v4-flash",
+            "mode": "thinking",
+            "lifecycle": "compatibility"
+          },
           "extra_capabilities": {
             "reasoning": {
               "supported": true,
@@ -2602,9 +3043,20 @@
               "visibility": "summary",
               "continuation": [
                 "thinking_blocks"
-              ]
+              ],
+              "effort_options": [
+                "high",
+                "max"
+              ],
+              "notes": [
+                "Compatibility alias for deepseek-v4-flash thinking mode."
+              ],
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "high"
             }
           },
+          "structured_output": true,
           "type": "chat"
         },
         {
@@ -2617,9 +3069,9 @@
           },
           "tool_call": true,
           "temperature": true,
-          "knowledge": "2024-07",
+          "knowledge": "2025-09",
           "release_date": "2024-12-26",
-          "last_updated": "2025-08-21",
+          "last_updated": "2026-04-24",
           "modalities": {
             "input": [
               "text"
@@ -2628,17 +3080,23 @@
               "text"
             ]
           },
-          "open_weights": false,
+          "open_weights": true,
           "cost": {
-            "input": 0.57,
-            "output": 1.68,
-            "cache_read": 0.07
+            "input": 0.14,
+            "output": 0.28,
+            "cache_read": 0.028
           },
           "limit": {
-            "context": 128000,
-            "output": 8192
+            "context": 1048576,
+            "output": 393216
           },
           "display_name": "DeepSeek Chat",
+          "metadata": {
+            "alias_of": "deepseek-v4-flash",
+            "mode": "non-thinking",
+            "lifecycle": "compatibility"
+          },
+          "structured_output": true,
           "type": "chat"
         }
       ]
@@ -3358,9 +3816,61 @@
       "display_name": "Moonshot AI (China)",
       "models": [
         {
+          "id": "kimi-k2.6",
+          "name": "Kimi K2.6",
+          "family": "kimi-k2.6",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "structured_output": true,
+          "temperature": true,
+          "knowledge": "2025-01",
+          "release_date": "2026-04-21",
+          "last_updated": "2026-04-21",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "open_weights": true,
+          "cost": {
+            "input": 0.95,
+            "output": 4,
+            "cache_read": 0.16
+          },
+          "limit": {
+            "context": 262144,
+            "output": 262144
+          },
+          "display_name": "Kimi K2.6",
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "continuation": [
+                "thinking_blocks"
+              ],
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary"
+            }
+          }
+        },
+        {
           "id": "kimi-k2.5",
           "name": "Kimi K2.5",
-          "family": "kimi",
+          "family": "kimi-k2.5",
           "attachment": false,
           "reasoning": {
             "supported": true,
@@ -4675,13 +5185,94 @@
       "display_name": "OpenAI",
       "models": [
         {
+          "id": "gpt-5.5",
+          "name": "GPT-5.5",
+          "family": "gpt",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "structured_output": true,
+          "temperature": false,
+          "knowledge": "2025-12-01",
+          "release_date": "2026-04-23",
+          "last_updated": "2026-04-23",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "open_weights": false,
+          "cost": {
+            "input": 5,
+            "output": 30,
+            "cache_read": 0.5,
+            "context_over_200k": {
+              "input": 10,
+              "output": 45,
+              "cache_read": 1
+            }
+          },
+          "limit": {
+            "context": 1050000,
+            "input": 920000,
+            "output": 130000
+          },
+          "experimental": {
+            "modes": {
+              "fast": {
+                "cost": {
+                  "input": 12.5,
+                  "output": 75,
+                  "cache_read": 1.25
+                },
+                "provider": {
+                  "body": {
+                    "service_tier": "priority"
+                  }
+                }
+              }
+            }
+          },
+          "display_name": "GPT-5.5",
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
+            }
+          }
+        },
+        {
           "id": "gpt-5.4-mini",
           "name": "GPT-5.4 mini",
           "family": "gpt-mini",
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -4726,7 +5317,29 @@
             }
           },
           "display_name": "GPT-5.4 mini",
-          "type": "chat"
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "default_enabled": false,
+              "mode": "effort",
+              "effort": "none",
+              "effort_options": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
+            }
+          }
         },
         {
           "id": "gpt-5.4-nano",
@@ -4735,7 +5348,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -4767,7 +5380,24 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": false,
+              "mode": "effort",
+              "effort": "none",
+              "effort_options": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -4813,7 +5443,22 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "high",
+              "effort_options": [
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -4824,7 +5469,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -4878,7 +5523,24 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": false,
+              "mode": "effort",
+              "effort": "none",
+              "effort_options": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -4958,7 +5620,23 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -4999,7 +5677,28 @@
             "output": 32000
           },
           "display_name": "GPT-5.3 Codex Spark",
-          "type": "chat"
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
+            }
+          }
         },
         {
           "id": "chatgpt-image-latest",
@@ -5070,7 +5769,22 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "high",
+              "effort_options": [
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -5081,7 +5795,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -5113,7 +5827,24 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": false,
+              "mode": "effort",
+              "effort": "none",
+              "effort_options": [
+                "none",
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -5157,7 +5888,23 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ],
+              "verbosity": "medium",
+              "verbosity_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -5236,7 +5983,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -5295,7 +6042,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -5354,7 +6101,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -5441,28 +6188,7 @@
             "output": 16384
           },
           "display_name": "GPT-5.1 Chat",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "effort",
-              "effort": "none",
-              "effort_options": [
-                "none",
-                "low",
-                "medium",
-                "high"
-              ],
-              "verbosity": "medium",
-              "verbosity_options": [
-                "low",
-                "medium",
-                "high"
-              ],
-              "visibility": "hidden"
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "gpt-5.1-codex",
@@ -5471,7 +6197,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "structured_output": true,
@@ -5877,28 +6603,7 @@
             "output": 128000
           },
           "display_name": "GPT-5 Chat (latest)",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": true,
-              "mode": "effort",
-              "effort": "medium",
-              "effort_options": [
-                "minimal",
-                "low",
-                "medium",
-                "high"
-              ],
-              "verbosity": "medium",
-              "verbosity_options": [
-                "low",
-                "medium",
-                "high"
-              ],
-              "visibility": "hidden"
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "gpt-oss-120b",
@@ -5995,44 +6700,14 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
-        },
-        {
-          "id": "codex-mini-latest",
-          "name": "Codex Mini",
-          "family": "gpt-codex-mini",
-          "attachment": true,
-          "reasoning": {
-            "supported": true,
-            "default": true
-          },
-          "tool_call": true,
-          "temperature": false,
-          "knowledge": "2024-04",
-          "release_date": "2025-05-16",
-          "last_updated": "2025-05-16",
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          },
-          "open_weights": false,
-          "cost": {
-            "input": 1.5,
-            "output": 6,
-            "cache_read": 0.375
-          },
-          "limit": {
-            "context": 200000,
-            "output": 100000
-          },
-          "display_name": "Codex Mini",
-          "type": "chat"
         },
         {
           "id": "gpt-image-1",
@@ -6106,6 +6781,11 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
@@ -6153,6 +6833,11 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
@@ -6304,7 +6989,16 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -6349,6 +7043,11 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
@@ -6392,7 +7091,16 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -6466,7 +7174,21 @@
             "output": 65536
           },
           "display_name": "o1-mini",
-          "type": "chat"
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
+            }
+          }
         },
         {
           "id": "o1-preview",
@@ -6504,7 +7226,16 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "default_enabled": true,
+              "mode": "effort",
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "visibility": "hidden"
             }
           }
         },
@@ -6622,6 +7353,11 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
@@ -6667,6 +7403,11 @@
               "default_enabled": true,
               "mode": "effort",
               "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high"
+              ],
               "visibility": "hidden"
             }
           }
@@ -8025,7 +8766,13 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
             }
           }
         },
@@ -8062,7 +8809,18 @@
             "output": 131072
           },
           "display_name": "MiniMax-M2.7-highspeed",
-          "type": "chat"
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "summary",
+              "continuation": [
+                "thinking_blocks"
+              ]
+            }
+          }
         },
         {
           "id": "MiniMax-M2.5-highspeed",
@@ -8260,7 +9018,7 @@
           "type": "chat"
         },
         {
-          "id": "gemma-4-26b-it",
+          "id": "gemma-4-26b-a4b-it",
           "name": "Gemma 4 26B",
           "family": "gemma",
           "attachment": false,
@@ -9032,7 +9790,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "temperature": true,
@@ -9432,7 +10190,8 @@
           "family": "gemini-flash",
           "attachment": false,
           "reasoning": {
-            "supported": true
+            "supported": true,
+            "default": true
           },
           "tool_call": false,
           "temperature": false,
@@ -9570,7 +10329,12 @@
           "cost": {
             "input": 1.25,
             "output": 10,
-            "cache_read": 0.31
+            "cache_read": 0.125,
+            "context_over_200k": {
+              "input": 2.5,
+              "output": 15,
+              "cache_read": 0.25
+            }
           },
           "limit": {
             "context": 1048576,
@@ -9635,7 +10399,7 @@
           "cost": {
             "input": 0.3,
             "output": 2.5,
-            "cache_read": 0.075,
+            "cache_read": 0.03,
             "input_audio": 1
           },
           "limit": {
@@ -10410,17 +11174,81 @@
       "display_name": "Anthropic",
       "models": [
         {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": false
+          },
+          "tool_call": true,
+          "temperature": false,
+          "knowledge": "2026-01-31",
+          "release_date": "2026-04-16",
+          "last_updated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "open_weights": false,
+          "cost": {
+            "input": 5,
+            "output": 25,
+            "cache_read": 0.5,
+            "cache_write": 6.25
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 128000
+          },
+          "display_name": "Claude Opus 4.7",
+          "type": "chat",
+          "extra_capabilities": {
+            "reasoning": {
+              "supported": true,
+              "default_enabled": false,
+              "mode": "effort",
+              "effort": "high",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max"
+              ],
+              "interleaved": true,
+              "summaries": true,
+              "visibility": "omitted",
+              "continuation": [
+                "thinking_blocks"
+              ],
+              "notes": [
+                "Claude Opus 4.7 requires thinking.type = \"adaptive\" to enable thinking explicitly.",
+                "Manual budget_tokens requests return 400 on Claude Opus 4.7.",
+                "task_budget is separate from thinking control and should not be treated as a thinking budget."
+              ]
+            }
+          }
+        },
+        {
           "id": "claude-sonnet-4-6",
           "name": "Claude Sonnet 4.6",
           "family": "claude-sonnet",
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "temperature": true,
-          "knowledge": "2025-08",
+          "knowledge": "2025-08-31",
           "release_date": "2026-02-17",
           "last_updated": "2026-03-13",
           "modalities": {
@@ -10450,11 +11278,18 @@
             "reasoning": {
               "supported": true,
               "default_enabled": false,
-              "mode": "budget",
+              "mode": "mixed",
               "budget": {
                 "min": 1024,
                 "unit": "tokens"
               },
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "max"
+              ],
               "interleaved": true,
               "summaries": true,
               "visibility": "summary",
@@ -10462,7 +11297,7 @@
                 "thinking_blocks"
               ],
               "notes": [
-                "Anthropic uses thinking budget tokens"
+                "Anthropic recommends adaptive thinking with effort for Claude 4.6; budget_tokens remains a deprecated compatibility path."
               ]
             }
           }
@@ -10474,11 +11309,11 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "temperature": true,
-          "knowledge": "2025-05",
+          "knowledge": "2025-05-31",
           "release_date": "2026-02-05",
           "last_updated": "2026-03-13",
           "modalities": {
@@ -10528,11 +11363,18 @@
             "reasoning": {
               "supported": true,
               "default_enabled": false,
-              "mode": "budget",
+              "mode": "mixed",
               "budget": {
                 "min": 1024,
                 "unit": "tokens"
               },
+              "effort": "medium",
+              "effort_options": [
+                "low",
+                "medium",
+                "high",
+                "max"
+              ],
               "interleaved": true,
               "summaries": true,
               "visibility": "summary",
@@ -10540,7 +11382,7 @@
                 "thinking_blocks"
               ],
               "notes": [
-                "Anthropic uses thinking budget tokens"
+                "Anthropic recommends adaptive thinking with effort for Claude 4.6; budget_tokens remains a deprecated compatibility path."
               ]
             }
           }
@@ -10584,22 +11426,7 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
+              "supported": true
             }
           }
         },
@@ -10639,27 +11466,7 @@
             "output": 64000
           },
           "display_name": "Claude Opus 4.5",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-haiku-4-5",
@@ -10778,27 +11585,7 @@
             "output": 64000
           },
           "display_name": "Claude Sonnet 4.5",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-sonnet-4-5",
@@ -10839,22 +11626,7 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
+              "supported": true
             }
           }
         },
@@ -10897,22 +11669,7 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
+              "supported": true
             }
           }
         },
@@ -10952,27 +11709,7 @@
             "output": 32000
           },
           "display_name": "Claude Opus 4.1",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-opus-4-0",
@@ -11010,27 +11747,7 @@
             "output": 32000
           },
           "display_name": "Claude Opus 4 (latest)",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-sonnet-4-0",
@@ -11071,22 +11788,7 @@
           "type": "chat",
           "extra_capabilities": {
             "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
+              "supported": true
             }
           }
         },
@@ -11126,27 +11828,7 @@
             "output": 64000
           },
           "display_name": "Claude Sonnet 4",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-opus-4-20250514",
@@ -11184,27 +11866,7 @@
             "output": 32000
           },
           "display_name": "Claude Opus 4",
-          "type": "chat",
-          "extra_capabilities": {
-            "reasoning": {
-              "supported": true,
-              "default_enabled": false,
-              "mode": "budget",
-              "budget": {
-                "min": 1024,
-                "unit": "tokens"
-              },
-              "interleaved": true,
-              "summaries": true,
-              "visibility": "summary",
-              "continuation": [
-                "thinking_blocks"
-              ],
-              "notes": [
-                "Anthropic uses thinking budget tokens"
-              ]
-            }
-          }
+          "type": "chat"
         },
         {
           "id": "claude-3-7-sonnet-20250219",
@@ -11213,7 +11875,7 @@
           "attachment": true,
           "reasoning": {
             "supported": true,
-            "default": true
+            "default": false
           },
           "tool_call": true,
           "temperature": true,
@@ -11689,122 +12351,1640 @@
       "id": "bytedance",
       "name": "ByteDance",
       "display_name": "ByteDance",
+      "doc": "https://www.volcengine.com/docs/82379/1330310?lang=zh",
+      "updated_at": "2026-04-23T03:40:04Z",
       "metadata": {
-        "source": "public-provider-conf-template"
+        "source": "volcengine-docs",
+        "doc_detail_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=82379&DocumentID=1330310&lang=zh"
       },
       "models": [
         {
-          "id": "doubao-seed-1-6-vision-250815",
-          "name": "Doubao Seed 1.6 Vision",
-          "display_name": "Doubao Seed 1.6 Vision",
+          "id": "doubao-1-5-lite-32k-250115",
+          "name": "doubao-1-5-lite-32k-250115",
+          "display_name": "doubao-1-5-lite-32k-250115",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": false,
           "reasoning": {
-            "supported": true,
-            "default": true
+            "supported": false
           },
           "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
-            "context": 256000,
-            "output": 32000
+            "context": 32000,
+            "output": 12000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-1-5-lite-32k",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-1-5-lite-32k",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "工具调用",
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 32k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):12k",
+              "最大思维链: -",
+              "最大输入: -"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-1-5-pro-32k-250115",
+          "name": "doubao-1-5-pro-32k-250115",
+          "display_name": "doubao-1-5-pro-32k-250115",
+          "type": "chat",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 128000,
+            "output": 16000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-1-5-pro-32k",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-1-5-pro-32k",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "工具调用",
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 128k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):16k",
+              "最大思维链: -",
+              "最大输入: -"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-1-5-pro-32k-character-250228",
+          "name": "doubao-1-5-pro-32k-character-250228",
+          "display_name": "doubao-1-5-pro-32k-character-250228",
+          "type": "chat",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 32000,
+            "output": 12000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-1-5-pro-32k",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-1-5-pro-32k",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 32k",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):12k",
+              "最大思维链: -",
+              "最大输入: -"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-1-5-pro-32k-character-250715",
+          "name": "doubao-1-5-pro-32k-character-250715",
+          "display_name": "doubao-1-5-pro-32k-character-250715",
+          "type": "chat",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 32000,
+            "output": 12000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-1-5-pro-32k",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-1-5-pro-32k",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 32k",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):12k",
+              "最大思维链: -",
+              "最大输入: -"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-1-5-vision-pro-32k-250115",
+          "name": "doubao-1-5-vision-pro-32k-250115",
+          "display_name": "doubao-1-5-vision-pro-32k-250115",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 32000,
+            "output": 12000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-1-5-vision-pro-32k",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-1-5-vision-pro-32k",
+            "section_titles": [
+              "工具调用能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "工具调用"
+            ],
+            "raw_limits": [
+              "上下文窗口: 32k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):12k",
+              "最大思维链: -",
+              "最大输入: -"
+            ]
+          }
+        },
+        {
+          "id": "doubao-embedding-vision-250615",
+          "name": "doubao-embedding-vision-250615",
+          "display_name": "doubao-embedding-vision-250615",
+          "type": "embedding",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "embedding"
+            ]
+          },
+          "limit": {
+            "context": 128000,
+            "requests_per_minute": 15000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "vector_dimension": 2048,
+            "canonical_id": "doubao-embedding-vision",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-embedding-vision",
+            "section_titles": [
+              "向量化能力"
+            ],
+            "capabilities": [
+              "多模态向量化"
+            ],
+            "raw_limits": [
+              "最大 RPM: 15000",
+              "最大 TPM: 1200000"
+            ]
+          }
+        },
+        {
+          "id": "doubao-embedding-vision-251215",
+          "name": "doubao-embedding-vision-251215",
+          "display_name": "doubao-embedding-vision-251215",
+          "type": "embedding",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "embedding"
+            ]
+          },
+          "limit": {
+            "context": 128000,
+            "requests_per_minute": 15000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "vector_dimension": 2048,
+            "canonical_id": "doubao-embedding-vision",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-embedding-vision",
+            "section_titles": [
+              "向量化能力"
+            ],
+            "capabilities": [
+              "多模态向量化"
+            ],
+            "raw_limits": [
+              "最大 RPM: 15000",
+              "最大 TPM: 1200000"
+            ]
           }
         },
         {
           "id": "doubao-seed-1-6-250615",
-          "name": "Doubao Seed 1.6",
-          "display_name": "Doubao Seed 1.6",
+          "name": "doubao-seed-1-6-250615",
+          "display_name": "doubao-seed-1-6-250615",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": true,
           "reasoning": {
             "supported": true,
             "default": true
           },
           "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 256000,
-            "output": 32000
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 32k",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
           }
         },
         {
-          "id": "doubao-seed-1-6-flash-250715",
-          "name": "Doubao Seed 1.6 Flash",
-          "display_name": "Doubao Seed 1.6 Flash",
+          "id": "doubao-seed-1-6-251015",
+          "name": "doubao-seed-1-6-251015",
+          "display_name": "doubao-seed-1-6-251015",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": true,
           "reasoning": {
             "supported": true,
             "default": true
           },
           "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 256000,
-            "output": 32000
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
           }
         },
         {
           "id": "doubao-seed-1-6-flash-250615",
-          "name": "Doubao Seed 1.6 Flash (250615)",
-          "display_name": "Doubao Seed 1.6 Flash (250615)",
+          "name": "doubao-seed-1-6-flash-250615",
+          "display_name": "doubao-seed-1-6-flash-250615",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": true,
           "reasoning": {
             "supported": true,
             "default": true
           },
           "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 256000,
-            "output": 32000
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6-flash",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6-flash",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
           }
         },
         {
-          "id": "doubao-seed-1-6-thinking-250715",
-          "name": "Doubao Seed 1.6 Thinking",
-          "display_name": "Doubao Seed 1.6 Thinking",
+          "id": "doubao-seed-1-6-flash-250828",
+          "name": "doubao-seed-1-6-flash-250828",
+          "display_name": "doubao-seed-1-6-flash-250828",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": true,
           "reasoning": {
             "supported": true,
             "default": true
           },
           "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 256000,
-            "output": 32000
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6-flash",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6-flash",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
           }
         },
         {
-          "id": "doubao-seed-1-6-thinking-250615",
-          "name": "Doubao Seed 1.6 Thinking (250615)",
-          "display_name": "Doubao Seed 1.6 Thinking (250615)",
+          "id": "doubao-seed-1-6-lite-251015",
+          "name": "doubao-seed-1-6-lite-251015",
+          "display_name": "doubao-seed-1-6-lite-251015",
           "type": "chat",
-          "metadata": {
-            "source": "public-provider-conf-template"
-          },
-          "vision": true,
+          "attachment": true,
           "reasoning": {
             "supported": true,
             "default": true
           },
           "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 256000,
-            "output": 32000
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6-lite",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6-lite",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-1-6-vision-250815",
+          "name": "doubao-seed-1-6-vision-250815",
+          "display_name": "doubao-seed-1-6-vision-250815",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-6-vision",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-6-vision",
+            "section_titles": [
+              "GUI 任务处理能力",
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-1-8-251228",
+          "name": "doubao-seed-1-8-251228",
+          "display_name": "doubao-seed-1-8-251228",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-1-8",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-1-8",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 32k",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-2-0-code-preview-260215",
+          "name": "doubao-seed-2-0-code-preview-260215",
+          "display_name": "doubao-seed-2-0-code-preview-260215",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 128000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 256000,
+            "max_thinking_tokens": 128000,
+            "canonical_id": "doubao-seed-2-0-code",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-2-0-code",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 128k",
+              "最大思维链: 128k",
+              "最大输入: 256k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-2-0-lite-260215",
+          "name": "doubao-seed-2-0-lite-260215",
+          "display_name": "doubao-seed-2-0-lite-260215",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 128000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 256000,
+            "max_thinking_tokens": 128000,
+            "canonical_id": "doubao-seed-2-0-lite",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-2-0-lite",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 128k",
+              "最大思维链: 128k",
+              "最大输入: 256k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-2-0-mini-260215",
+          "name": "doubao-seed-2-0-mini-260215",
+          "display_name": "doubao-seed-2-0-mini-260215",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "structured_output": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 128000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 256000,
+            "max_thinking_tokens": 128000,
+            "canonical_id": "doubao-seed-2-0-mini",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-2-0-mini",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "结构化输出能力(beta)",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "结构化输出",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 128k",
+              "最大思维链: 128k",
+              "最大输入: 256k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-2-0-pro-260215",
+          "name": "doubao-seed-2-0-pro-260215",
+          "display_name": "doubao-seed-2-0-pro-260215",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 128000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 256000,
+            "max_thinking_tokens": 128000,
+            "canonical_id": "doubao-seed-2-0-pro",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-2-0-pro",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k): 128k",
+              "最大思维链: 128k",
+              "最大输入: 256k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-character-251128",
+          "name": "doubao-seed-character-251128",
+          "display_name": "doubao-seed-character-251128",
+          "type": "chat",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 128000,
+            "output": 32000,
+            "requests_per_minute": 30000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 96000,
+            "canonical_id": "doubao-seed-character",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-character",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "工具调用",
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 128k",
+              "最大 RPM: 30000",
+              "最大 TPM: 5000000",
+              "最大回答(默认 4k):32k",
+              "最大输入: 96k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-code-preview-251028",
+          "name": "doubao-seed-code-preview-251028",
+          "display_name": "doubao-seed-code-preview-251028",
+          "type": "chat",
+          "attachment": true,
+          "reasoning": {
+            "supported": true,
+            "default": true
+          },
+          "tool_call": true,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 256000,
+            "output": 32000,
+            "requests_per_minute": 5000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 224000,
+            "max_thinking_tokens": 32000,
+            "canonical_id": "doubao-seed-code",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-code",
+            "section_titles": [
+              "上下文缓存能力",
+              "工具调用能力",
+              "文本生成能力",
+              "深度思考能力",
+              "视觉理解能力"
+            ],
+            "capabilities": [
+              "多模态理解",
+              "工具调用",
+              "文本生成",
+              "深度思考",
+              "视觉定位"
+            ],
+            "raw_limits": [
+              "上下文窗口: 256k",
+              "最大 RPM: 5000",
+              "最大 TPM: 1200000",
+              "最大回答(默认 4k): 32k",
+              "最大回答(默认 4k):32k",
+              "最大思维链: 32k",
+              "最大输入: 224k"
+            ],
+            "features": [
+              "context-cache"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seed-translation-250915",
+          "name": "doubao-seed-translation-250915",
+          "display_name": "doubao-seed-translation-250915",
+          "type": "chat",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 4000,
+            "output": 3000,
+            "requests_per_minute": 5000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "max_input_tokens": 1000,
+            "canonical_id": "doubao-seed-translation",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seed-translation",
+            "section_titles": [
+              "文本生成能力"
+            ],
+            "capabilities": [
+              "文本生成"
+            ],
+            "raw_limits": [
+              "上下文窗口: 4k",
+              "最大 RPM: 5000",
+              "最大回答(默认 3k):3k",
+              "最大思维链: -",
+              "最大输入: 1k"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-1-0-lite-i2v-250428",
+          "name": "doubao-seedance-1-0-lite-i2v-250428",
+          "display_name": "doubao-seedance-1-0-lite-i2v-250428",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 300,
+            "requests_per_day": 250000000000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-1-0-lite-i2v",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-1-0-lite-i2v&projectName=default",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频"
+            ],
+            "raw_limits": [
+              "最大 RPM: 300",
+              "最大 TPD: 2500亿"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-1-0-lite-t2v-250428",
+          "name": "doubao-seedance-1-0-lite-t2v-250428",
+          "display_name": "doubao-seedance-1-0-lite-t2v-250428",
+          "type": "video",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 300,
+            "requests_per_day": 250000000000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-1-0-lite-t2v",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-1-0-lite-t2v&projectName=default",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "文生视频"
+            ],
+            "raw_limits": [
+              "最大 RPM: 300",
+              "最大 TPD: 2500亿"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-1-0-pro-250528",
+          "name": "doubao-seedance-1-0-pro-250528",
+          "display_name": "doubao-seedance-1-0-pro-250528",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 600,
+            "requests_per_day": 500000000000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-1-0-pro",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-1-0-pro&projectName=default",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频",
+              "文生视频"
+            ],
+            "raw_limits": [
+              "最大 RPM: 600",
+              "最大 TPD: 5000亿"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-1-0-pro-fast-251015",
+          "name": "doubao-seedance-1-0-pro-fast-251015",
+          "display_name": "doubao-seedance-1-0-pro-fast-251015",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 600,
+            "requests_per_day": 500000000000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-1-0-pro-fast",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-1-0-pro-fast&projectName=default",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频",
+              "文生视频"
+            ],
+            "raw_limits": [
+              "最大 RPM: 600",
+              "最大 TPD: 5000亿"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-1-5-pro-251215",
+          "name": "doubao-seedance-1-5-pro-251215",
+          "display_name": "doubao-seedance-1-5-pro-251215",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "audio",
+              "image",
+              "text"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 600,
+            "requests_per_day": 500000000000
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-1-5-pro",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-1-5-pro",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频",
+              "文生视频",
+              "音画同生"
+            ],
+            "raw_limits": [
+              "最大 RPM: 600",
+              "最大 TPD: 5000亿"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-2-0-260128",
+          "name": "doubao-seedance-2-0-260128",
+          "display_name": "doubao-seedance-2-0-260128",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "audio",
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-2-0",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-2-0&projectName=default",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频",
+              "延长视频",
+              "文生视频",
+              "编辑视频",
+              "音画同生"
+            ],
+            "raw_limits": [
+              "最大 RPM:"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedance-2-0-fast-260128",
+          "name": "doubao-seedance-2-0-fast-260128",
+          "display_name": "doubao-seedance-2-0-fast-260128",
+          "type": "video",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "audio",
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "video"
+            ]
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedance-2-0-fast",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedance-2-0-fast",
+            "section_titles": [
+              "视频生成能力"
+            ],
+            "capabilities": [
+              "图生视频",
+              "延长视频",
+              "文生视频",
+              "编辑视频",
+              "音画同生"
+            ],
+            "raw_limits": [
+              "最大 RPM:"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedream-3-0-t2i-250415",
+          "name": "doubao-seedream-3-0-t2i-250415",
+          "display_name": "doubao-seedream-3-0-t2i-250415",
+          "type": "image-generation",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "image"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 500
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedream-3-0-t2i",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedream-3-0-t2i",
+            "section_titles": [
+              "图片生成能力"
+            ],
+            "capabilities": [
+              "文生图"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedream-4-0-250828",
+          "name": "doubao-seedream-4-0-250828",
+          "display_name": "doubao-seedream-4-0-250828",
+          "type": "image-generation",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "output": [
+              "image"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 500
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedream-4-0",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedream-4-0",
+            "section_titles": [
+              "图片生成能力"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedream-4-5-251128",
+          "name": "doubao-seedream-4-5-251128",
+          "display_name": "doubao-seedream-4-5-251128",
+          "type": "image-generation",
+          "attachment": false,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": false,
+          "modalities": {
+            "output": [
+              "image"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 500
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedream-4-5",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedream-4-5",
+            "section_titles": [
+              "图片生成能力"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedream-5-0-260128",
+          "name": "doubao-seedream-5-0-260128",
+          "display_name": "doubao-seedream-5-0-260128",
+          "type": "image-generation",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image",
+              "text"
+            ],
+            "output": [
+              "image"
+            ]
+          },
+          "limit": {
+            "requests_per_minute": 500
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedream-5-0",
+            "detail_url": "https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-seedream-5-0",
+            "section_titles": [
+              "图片生成能力"
+            ],
+            "capabilities": [
+              "图生图",
+              "文生图",
+              "生成组图"
+            ]
+          }
+        },
+        {
+          "id": "doubao-seedream-5-0-lite-260128",
+          "name": "doubao-seedream-5-0-lite-260128",
+          "display_name": "doubao-seedream-5-0-lite-260128",
+          "type": "image-generation",
+          "attachment": true,
+          "reasoning": {
+            "supported": false
+          },
+          "tool_call": false,
+          "last_updated": "2026-04-23T03:40:04Z",
+          "vision": true,
+          "modalities": {
+            "input": [
+              "image"
+            ],
+            "output": [
+              "image"
+            ]
+          },
+          "metadata": {
+            "source": "volcengine-docs",
+            "canonical_id": "doubao-seedream-5-0-lite",
+            "section_titles": [
+              "图片生成能力"
+            ],
+            "capabilities": [
+              "图生图",
+              "生成组图"
+            ]
           }
         },
         {

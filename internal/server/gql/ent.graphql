@@ -3271,6 +3271,8 @@ ProviderQuotaStatusProviderType is enum for the field provider_type
 enum ProviderQuotaStatusProviderType @goModel(model: "github.com/looplj/axonhub/internal/ent/providerquotastatus.ProviderType") {
   claudecode
   codex
+  minimax
+  zhipu
 }
 """
 ProviderQuotaStatusStatus is enum for the field status

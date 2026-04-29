@@ -22,9 +22,10 @@ type Config struct {
 	Trace     tracing.Config `conf:"trace" yaml:"trace" json:"trace"`
 	Dashboard Dashboard      `conf:"dashboard" yaml:"dashboard" json:"dashboard"`
 
-	Debug            bool `conf:"debug" yaml:"debug" json:"debug"`
-	DisableSSLVerify bool `conf:"disable_ssl_verify" yaml:"disable_ssl_verify" json:"disable_ssl_verify"`
-	CORS             CORS `conf:"cors" yaml:"cors" json:"cors"`
+	Debug            bool   `conf:"debug" yaml:"debug" json:"debug"`
+	DisableSSLVerify bool   `conf:"disable_ssl_verify" yaml:"disable_ssl_verify" json:"disable_ssl_verify"`
+	TrustedProxies   []string `conf:"trusted_proxies" yaml:"trusted_proxies" json:"trusted_proxies"`
+	CORS             CORS    `conf:"cors" yaml:"cors" json:"cors"`
 	API              API  `conf:"api" yaml:"api" json:"api"`
 }
 

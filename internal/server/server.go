@@ -31,6 +31,7 @@ func New(config Config) *Server {
 
 	engine := gin.New()
 	engine.Use(middleware.Recovery())
+	engine.SetTrustedProxies(config.TrustedProxies)
 
 	return &Server{
 		Config: config,

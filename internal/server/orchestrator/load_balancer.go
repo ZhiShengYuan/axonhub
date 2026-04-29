@@ -42,6 +42,15 @@ type LoadBalanceStrategy interface {
 	Name() string
 }
 
+// CandidateAwareStrategy is an optional interface for strategies that need
+// to see all candidates before scoring. Implement this interface when a strategy
+// requires knowledge of the complete candidate set (e.g., for consistent hashing).
+type CandidateAwareStrategy interface {
+	// PrepareCandidates is called before scoring with the full candidate set.
+	// Strategies can use this to build internal structures that require all candidates.
+	PrepareCandidates(candidates []*ChannelModelsCandidate)
+}
+
 // StrategyScore holds the detailed scoring information from a single strategy.
 type StrategyScore struct {
 	// StrategyName is the name of the strategy
@@ -161,6 +170,8 @@ func (lb *LoadBalancer) Sort(ctx context.Context, candidates []*ChannelModelsCan
 	// Add model information to context for circuit-breaker strategy
 	ctx = contextWithRequestedModel(ctx, model)
 	ctx = contextWithRequestStream(ctx, stream)
+
+	lb.prepareCandidates(candidates)
 
 	// Calculate topK based on retry policy
 	topK := lb.calculateTopK(ctx, candidates)
@@ -326,6 +337,14 @@ func (lb *LoadBalancer) calculateTopK(ctx context.Context, candidates []*Channel
 	}
 
 	return topK
+}
+
+func (lb *LoadBalancer) prepareCandidates(candidates []*ChannelModelsCandidate) {
+	for _, strategy := range lb.strategies {
+		if aware, ok := strategy.(CandidateAwareStrategy); ok {
+			aware.PrepareCandidates(candidates)
+		}
+	}
 }
 
 // logDecision logs the complete load balancing decision.

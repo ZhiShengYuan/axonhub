@@ -19,6 +19,10 @@ server:
     codex_trace_enabled: false # Enable extracting trace IDs from Codex Session_id header (env: AXONHUB_SERVER_TRACE_CODEX_TRACE_ENABLED)
   debug: false                  # Enable debug mode (env: AXONHUB_SERVER_DEBUG)
   disable_ssl_verify: false     # Disable SSL certificate verification for self-signed certificates (env: AXONHUB_SERVER_DISABLE_SSL_VERIFY)
+  trusted_proxies:              # Trusted proxy IPs/CIDRs (env: AXONHUB_SERVER_TRUSTED_PROXIES)
+    - "127.0.0.1"              #   Leave empty to trust all proxies (default)
+    - "10.0.0.0/8"             #   Supports IP and CIDR notation
+    - "172.16.0.0/12"
   cors:
     enabled: true               # Enable CORS middleware (env: AXONHUB_SERVER_CORS_ENABLED)
     debug: false                # Enable CORS debug logging (env: AXONHUB_SERVER_CORS_DEBUG)
@@ -41,6 +45,7 @@ server:
       - "X-Project-ID"
       - "AH-Thread-Id"
       - "AH-Trace-Id"
+      - "AH-Sticky-Key"
       # Add any other headers your frontend sends
     exposed_headers: []         # Exposed headers (env: AXONHUB_SERVER_CORS_EXPOSED_HEADERS)
     allow_credentials: true     # Allow credentials (env: AXONHUB_SERVER_CORS_ALLOW_CREDENTIALS)

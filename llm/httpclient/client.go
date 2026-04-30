@@ -346,7 +346,7 @@ func BuildHttpRequest(
 	// Handle User-Agent header - only set default if not already present
 	if httpReq.Header.Get("User-Agent") == "" {
 		// No User-Agent set, use default
-		httpReq.Header.Set("User-Agent", "axonhub/1.0")
+		httpReq.Header.Set("User-Agent", "opencode/1.14.30 ai-sdk/provider-utils/4.0.23 runtime/bun/1.3.13")
 	}
 
 	for k := range libManagedHeaders {

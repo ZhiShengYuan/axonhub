@@ -101,7 +101,6 @@ func (User) Policy() ent.Policy {
 		Mutation: scopes.MutationPolicy{
 			scopes.OwnerRule(),
 			scopes.UserWriteScopeRule(scopes.ScopeWriteUsers),
-			scopes.UserOwnedMutationRule(),
 		},
 	}
 }

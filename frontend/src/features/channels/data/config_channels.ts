@@ -1,5 +1,35 @@
 import type { ComponentType } from 'react';
-import { OpenAI, Anthropic, Google, DeepSeek, Doubao, Moonshot, Zhipu, OpenRouter, XAI, Volcengine, SiliconCloud, PPIO, ZAI, LongCat, Minimax, BurnCloud, Vercel, ModelScope, Bailian, Jina, DeepInfra, Github, Claude, Cerebras, XiaomiMiMo, Fireworks, Ollama } from '@lobehub/icons';
+import {
+  OpenAI,
+  Anthropic,
+  Google,
+  DeepSeek,
+  Doubao,
+  Moonshot,
+  Zhipu,
+  OpenRouter,
+  XAI,
+  Volcengine,
+  SiliconCloud,
+  PPIO,
+  ZAI,
+  LongCat,
+  Minimax,
+  BurnCloud,
+  Vercel,
+  ModelScope,
+  Bailian,
+  Jina,
+  DeepInfra,
+  Github,
+  Claude,
+  Cerebras,
+  Qiniu,
+  XiaomiMiMo,
+  Fireworks,
+  Ollama,
+  AiHubMix,
+} from '@lobehub/icons';
 import { NanoGPTIcon } from '../components/nanogpt-icon';
 import { BURNCLOUD_DEFAULT_MODELS } from './burncloud-models';
 import { ApiFormat, ChannelType } from './schema';

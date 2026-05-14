@@ -28,6 +28,7 @@ type AnthropicHandlersParams struct {
 	QuotaService    *biz.QuotaService
 	HttpClient      *httpclient.HttpClient
 	LiveStreamRegistry *biz.LiveStreamRegistry
+	SessionAffinitySvc *orchestrator.SessionAffinityService
 }
 
 type AnthropicHandlers struct {
@@ -52,6 +53,7 @@ func NewAnthropicHandlers(params AnthropicHandlersParams) *AnthropicHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		ChannelService: params.ChannelService,

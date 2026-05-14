@@ -24,6 +24,7 @@ type JinaHandlersParams struct {
 	QuotaService    *biz.QuotaService
 	HttpClient      *httpclient.HttpClient
 	LiveStreamRegistry *biz.LiveStreamRegistry
+	SessionAffinitySvc *orchestrator.SessionAffinityService
 }
 
 func NewJinaHandlers(params JinaHandlersParams) *JinaHandlers {
@@ -41,6 +42,7 @@ func NewJinaHandlers(params JinaHandlersParams) *JinaHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		EmbeddingHandlers: &ChatCompletionHandlers{
@@ -56,6 +58,7 @@ func NewJinaHandlers(params JinaHandlersParams) *JinaHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 	}

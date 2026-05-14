@@ -6,6 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/looplj/axonhub/internal/contexts"
 	"github.com/looplj/axonhub/internal/log"
 	"github.com/looplj/axonhub/internal/server/biz"
 	"github.com/looplj/axonhub/llm"
@@ -92,11 +93,38 @@ func selectCandidates(inbound *PersistentInboundTransformer) pipeline.Middleware
 			)
 		}
 
-		if len(candidates) == 0 {
+if len(candidates) == 0 {
 			return nil, fmt.Errorf("%w: %s", biz.ErrInvalidModel, llmRequest.Model)
 		}
 
-		// Store candidates directly (no need to extract channels)
+		sessionAffinity, hasAffinity := contexts.GetSessionAffinity(ctx)
+
+		if hasAffinity && len(candidates) > 0 && inbound.state.SessionAffinityService != nil {
+			projectID := 0
+			apiKeyID := 0
+			if inbound.state.APIKey != nil {
+				apiKeyID = inbound.state.APIKey.ID
+				if inbound.state.APIKey.Edges.Project != nil {
+					projectID = inbound.state.APIKey.Edges.Project.ID
+				}
+			}
+
+			firstCandidate := candidates[0]
+			resolvedProvider := string(firstCandidate.Channel.Type)
+
+			scope := BuildAffinityScope(projectID, apiKeyID, llmRequest.Model, resolvedProvider, sessionAffinity)
+			inbound.state.AffinityScope = scope
+
+			candidates, inbound.state.AffinityPreferredChannelID, _ = ApplyAffinityPreference(candidates, inbound.state.SessionAffinityService, scope)
+
+			if log.DebugEnabled(ctx) {
+				log.Debug(ctx, "applied session affinity preference",
+					log.String("model", llmRequest.Model),
+					log.Int("preferred_channel", inbound.state.AffinityPreferredChannelID),
+				)
+			}
+		}
+
 		inbound.state.ChannelModelsCandidates = candidates
 
 		return llmRequest, nil

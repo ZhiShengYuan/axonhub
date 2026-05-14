@@ -170,6 +170,13 @@ func (m *persistRequestExecutionMiddleware) OnOutboundLlmResponse(ctx context.Co
 		log.Warn(persistCtx, "Failed to update request execution status to completed", log.Cause(err))
 	}
 
+	if state.Perf != nil && !state.Perf.Stream {
+		channel := m.outbound.GetCurrentChannel()
+		if channel != nil && state.SessionAffinityService != nil && state.AffinityScope.SessionAffinity != "" {
+			UpdateAffinityOnSuccess(persistCtx, state.SessionAffinityService, state.AffinityScope, channel.ID, state.AffinityPreferredChannelID)
+		}
+	}
+
 	return llmResp, nil
 }
 

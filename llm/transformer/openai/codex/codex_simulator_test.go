@@ -71,7 +71,7 @@ func TestCodexOutbound_MinimalIdentityHeaders(t *testing.T) {
 	assert.Equal(t, "9.9.9", finalReq.Header.Get("Version"))
 }
 
-func TestCodexOutbound_AllowsInboundIdentityOverrides(t *testing.T) {
+func TestCodexOutbound_BlocksInboundOriginatorPreservesUserAgent(t *testing.T) {
 	ctx := context.Background()
 	sim := newCodexSimulator(t)
 	req := newCodexChatCompletionRequest(t)
@@ -81,7 +81,9 @@ func TestCodexOutbound_AllowsInboundIdentityOverrides(t *testing.T) {
 	finalReq, err := sim.Simulate(ctx, req)
 	require.NoError(t, err)
 
-	assert.Equal(t, legacyCodexOriginator(), finalReq.Header.Get("Originator"))
+	// Originator must always be AxonHub-controlled; user-provided value is blocked.
+	assert.Equal(t, AxonHubOriginator, finalReq.Header.Get("Originator"))
+	// User-Agent passthrough is still allowed (not a user metadata/billing header).
 	assert.Equal(t, legacyCodexUserAgent(), finalReq.Header.Get("User-Agent"))
 	assert.Contains(t, strings.ToLower(finalReq.Header.Get("User-Agent")), legacyCodexOriginator())
 }

@@ -74,4 +74,16 @@ type PersistenceState struct {
 	// captureRawProviderStream. Must be called in PrepareForRetry and NextChannel so the
 	// abandoned goroutine exits promptly and releases its upstream HTTP connection.
 	RawStreamCancel context.CancelFunc
+
+	// SessionAffinityService is the service for session affinity routing.
+	// It is set by the orchestrator on request start.
+	SessionAffinityService *SessionAffinityService
+
+	// AffinityScope is the built affinity scope for this request.
+	// It is populated after candidates are selected.
+	AffinityScope affinityScope
+
+	// AffinityPreferredChannelID is the channel ID preferred by affinity.
+	// It is set after ApplyAffinityPreference is called.
+	AffinityPreferredChannelID int
 }

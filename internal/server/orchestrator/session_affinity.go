@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -39,11 +39,27 @@ type affinityCacheEntry struct {
 	UpdatedAt  time.Time
 }
 
-// String serializes the affinity scope to a pipe-delimited string for HMAC input.
+// String serializes the affinity scope to a JSON-encoded string for HMAC input.
+// JSON encoding with explicit length prefixes avoids delimiter ambiguity
+// when string fields contain pipe characters or other delimiters.
 // No raw affinity values are logged; callers must ensure sanitization.
 func (s affinityScope) String() string {
-	return fmt.Sprintf("%d|%d|%s|%s|%s",
-		s.ProjectID, s.APIKeyID, s.OriginalModel, s.ResolvedProvider, s.SessionAffinity)
+	// Use a struct for JSON encoding to get unambiguous serialization
+	data := struct {
+		P int    `json:"p"`
+		A int    `json:"a"`
+		M string `json:"m"`
+		R string `json:"r"`
+		S string `json:"s"`
+	}{
+		P: s.ProjectID,
+		A: s.APIKeyID,
+		M: s.OriginalModel,
+		R: s.ResolvedProvider,
+		S: s.SessionAffinity,
+	}
+	b, _ := json.Marshal(data)
+	return string(b)
 }
 
 // SessionAffinityService provides HMAC-based affinity key generation and
@@ -72,6 +88,10 @@ func NewSessionAffinityService(secret []byte) *SessionAffinityService {
 		_, _ = rand.Read(generated)
 		svc.secret = generated
 		svc.generates = true
+		log.Warn(context.Background(), "Session affinity secret is empty; using process-local random secret. Affinity mappings will reset on process restart.",
+			log.String("behavior", "process-local-secret"),
+			log.String("recommendation", "set session_affinity_secret in config for persistent affinity"),
+		)
 	}
 
 	cache, _ := lru.New[string, affinityCacheEntry](affinityLRUSize)

@@ -29,6 +29,7 @@ type GeminiHandlersParams struct {
 	QuotaService    *biz.QuotaService
 	HttpClient      *httpclient.HttpClient
 	LiveStreamRegistry *biz.LiveStreamRegistry
+	SessionAffinitySvc *orchestrator.SessionAffinityService
 }
 
 type GeminiHandlers struct {
@@ -52,6 +53,7 @@ func NewGeminiHandlers(params GeminiHandlersParams) *GeminiHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		),
 		ChannelService: params.ChannelService,

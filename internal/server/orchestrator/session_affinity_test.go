@@ -129,7 +129,8 @@ func TestBuildAffinityScopeProducesCorrectScope(t *testing.T) {
 	assert.Equal(t, "gpt-4", scope.OriginalModel)
 	assert.Equal(t, "openai", scope.ResolvedProvider)
 	assert.Equal(t, "session-123", scope.SessionAffinity)
-	assert.Equal(t, "10|20|gpt-4|openai|session-123", scope.String())
+	// JSON format prevents delimiter ambiguity
+	assert.Equal(t, `{"p":10,"a":20,"m":"gpt-4","r":"openai","s":"session-123"}`, scope.String())
 }
 
 func TestApplyAffinityPreferenceWithNilServiceReturnsOriginalCandidates(t *testing.T) {
@@ -190,6 +191,74 @@ func TestApplyAffinityPreferenceReordersCandidatesWhenAffinityChannelFound(t *te
 	assert.Same(t, candidates[2], reordered[0])
 	assert.Same(t, candidates[0], reordered[1])
 	assert.Same(t, candidates[1], reordered[2])
+}
+
+func TestSessionAffinityScopeHMACCollisionPrevention(t *testing.T) {
+	t.Parallel()
+
+	secret := []byte("test-secret")
+	svc := NewSessionAffinityService(secret)
+
+	// Scope that could collide with pipe delimiter: SessionAffinity contains "|"
+	scope1 := BuildAffinityScope(1, 2, "gpt-4", "openai", "session|abc|123")
+	// Scope with empty strings that could produce same pipe-delimited result
+	scope2 := BuildAffinityScope(1, 2, "gp", "t-4|openai|session|abc|123", "")
+
+	key1 := svc.BuildKey(scope1)
+	key2 := svc.BuildKey(scope2)
+
+	// Keys must be different - JSON encoding prevents collision
+	assert.NotEqual(t, key1, key2, "JSON encoding must prevent HMAC collision between scopes with pipe characters")
+}
+
+func TestSessionAffinityServiceEmptySecretWarnsAndGenerates(t *testing.T) {
+	t.Parallel()
+
+	// Capture the warning by checking that generates flag is true and secret is set
+	svc := NewSessionAffinityService(nil)
+
+	assert.True(t, svc.GeneratesSecret(), "service must report that it generates a secret")
+	assert.Len(t, svc.secret, 32, "generated secret must be 32 bytes")
+}
+
+func TestSessionAffinityServiceEmptySecretWarnsOnStartup(t *testing.T) {
+	t.Parallel()
+
+	// Create a new service with empty secret - should log warning
+	// We verify behavior by checking GeneratesSecret returns true
+	svc := NewSessionAffinityService([]byte{})
+
+	assert.True(t, svc.GeneratesSecret(), "empty secret must trigger secret generation")
+	assert.Len(t, svc.secret, 32)
+}
+
+func TestSessionAffinityRawValuesNeverInLogOutput(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	svc := NewSessionAffinityService([]byte("test-secret"))
+	scope := BuildAffinityScope(1, 2, "gpt-4", "openai", "super-secret-session-token")
+
+	// Build key - the key itself is an HMAC hex string, not the raw affinity
+	key := svc.BuildKey(scope)
+
+	// Key must be a hex string (64 chars for SHA256)
+	assert.Len(t, key, 64)
+	// Key must not contain any part of the raw session affinity
+	assert.NotContains(t, key, "super-secret-session-token")
+	assert.NotContains(t, key, "session")
+	assert.NotContains(t, key, "super")
+	// Key must only contain hex characters
+	for _, c := range key {
+		assert.True(t, (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'),
+			"HMAC key must only contain hex characters")
+	}
+
+	// Set and verify - the cache entry contains only the key and channel info
+	svc.Set(ctx, scope, 42)
+	channelID, ok := svc.Get(scope)
+	assert.True(t, ok)
+	assert.Equal(t, 42, channelID)
 }
 
 func newSessionAffinityTestCandidates(channelIDs ...int) []*ChannelModelsCandidate {

@@ -88,7 +88,6 @@ func (t *OutboundTransformer) TransformRequest(ctx context.Context, llmReq *llm.
 	}
 
 	rawSessionID := ""
-	rawOriginator := ""
 	rawUserAgent := ""
 	rawTurnMetadata := ""
 	var rawHeaders http.Header
@@ -96,7 +95,6 @@ func (t *OutboundTransformer) TransformRequest(ctx context.Context, llmReq *llm.
 	if llmReq.RawRequest != nil && llmReq.RawRequest.Headers != nil {
 		rawHeaders = llmReq.RawRequest.Headers
 		rawSessionID = llmReq.RawRequest.Headers.Get(SessionHeader)
-		rawOriginator = llmReq.RawRequest.Headers.Get("Originator")
 		rawUserAgent = llmReq.RawRequest.Headers.Get("User-Agent")
 		rawTurnMetadata = llmReq.RawRequest.Headers.Get(TurnMetadataHeader)
 	}
@@ -159,11 +157,9 @@ func (t *OutboundTransformer) TransformRequest(ctx context.Context, llmReq *llm.
 		hreq.Headers.Set("Accept", "text/event-stream")
 	}
 	hreq.Headers.Del("User-Agent")
-	if rawOriginator != "" {
-		hreq.Headers.Set("Originator", rawOriginator)
-	} else {
-		hreq.Headers.Set("Originator", AxonHubOriginator)
-	}
+	// Always set a safe, AxonHub-controlled Originator.
+	// User-provided Originator is blocked from merge to prevent upstream misidentification.
+	hreq.Headers.Set("Originator", AxonHubOriginator)
 	if rawUserAgent != "" {
 		hreq.Headers.Set("User-Agent", rawUserAgent)
 	}

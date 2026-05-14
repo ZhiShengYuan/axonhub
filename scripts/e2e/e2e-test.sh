@@ -131,9 +131,14 @@ cd "$FRONTEND_DIR"
 echo "🧪 Running Playwright tests..."
 echo ""
 
-PNPM_BIN="$HOME/.local/bin/pnpm"
-if [ ! -x "$PNPM_BIN" ] && command -v pnpm &> /dev/null; then
+# Find pnpm - check PATH first, then local bin (for corepack-managed installs)
+if command -v pnpm > /dev/null 2>&1; then
     PNPM_BIN="pnpm"
+elif [ -x "$HOME/.local/bin/pnpm" ]; then
+    PNPM_BIN="$HOME/.local/bin/pnpm"
+else
+    echo "❌ pnpm not found in PATH or $HOME/.local/bin"
+    exit 1
 fi
 
 # Pass remaining arguments to playwright

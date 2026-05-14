@@ -39,6 +39,7 @@ type OpenAIHandlersParams struct {
 	HttpClient                  *httpclient.HttpClient
 	LiveStreamRegistry          *biz.LiveStreamRegistry
 	Client                      *ent.Client
+	SessionAffinitySvc          *orchestrator.SessionAffinityService
 }
 
 type OpenAIHandlers struct {
@@ -75,6 +76,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		ResponseCompletionHandlers: &ChatCompletionHandlers{
@@ -90,6 +92,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		CompactHandlers: &ChatCompletionHandlers{
@@ -105,6 +108,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		EmbeddingHandlers: &ChatCompletionHandlers{
@@ -120,6 +124,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		ImageGenerationHandlers: &ChatCompletionHandlers{
@@ -135,6 +140,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		ImageEditHandlers: &ChatCompletionHandlers{
@@ -150,6 +156,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		ImageVariationHandlers: &ChatCompletionHandlers{
@@ -165,6 +172,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		VideoHandlers: &ChatCompletionHandlers{
@@ -180,6 +188,7 @@ func NewOpenAIHandlers(params OpenAIHandlersParams) *OpenAIHandlers {
 				params.QuotaService,
 				params.PromptProtectionRuleService,
 				params.LiveStreamRegistry,
+				params.SessionAffinitySvc,
 			),
 		},
 		VideoInboundTransformer: videoInbound,

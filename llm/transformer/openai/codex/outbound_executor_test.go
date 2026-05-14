@@ -69,7 +69,7 @@ func TestCodexOutbound_StreamAcceptHeader(t *testing.T) {
 	assert.Equal(t, "Bearer "+accessToken, headers.Get("Authorization"))
 }
 
-func TestCodexOutbound_StreamAllowsDownstreamIdentityOverrides(t *testing.T) {
+func TestCodexOutbound_StreamBlocksInboundOriginatorPreservesUserAgent(t *testing.T) {
 	ctx := context.Background()
 	accessToken := testAccessTokenWithAccountID(t)
 	capturedHeaders := make(chan http.Header, 1)
@@ -108,7 +108,9 @@ func TestCodexOutbound_StreamAllowsDownstreamIdentityOverrides(t *testing.T) {
 		t.Fatal("timed out waiting for captured stream request")
 	}
 
-	assert.Equal(t, legacyCodexOriginator(), headers.Get("Originator"))
+	// Originator is always AxonHub-controlled; user-provided inbound value is blocked.
+	assert.Equal(t, AxonHubOriginator, headers.Get("Originator"))
+	// User-Agent passthrough is still allowed (not a billing/identity header).
 	assert.Equal(t, legacyCodexUserAgent(), headers.Get("User-Agent"))
 	assert.Contains(t, strings.ToLower(headers.Get("User-Agent")), legacyCodexOriginator())
 	assert.Equal(t, testChatAccountID, headers.Get("Chatgpt-Account-Id"))

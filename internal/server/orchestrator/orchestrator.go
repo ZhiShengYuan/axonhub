@@ -29,6 +29,7 @@ func NewChatCompletionOrchestrator(
 	quotaService *biz.QuotaService,
 	promptProtectionRuleService *biz.PromptProtectionRuleService,
 	liveStreamRegistry *biz.LiveStreamRegistry,
+	sessionAffinityService *SessionAffinityService,
 ) *ChatCompletionOrchestrator {
 	connectionTracker := NewDefaultConnectionTracker(256)
 	rateLimitTracker := NewChannelRequestTracker()
@@ -62,6 +63,7 @@ func NewChatCompletionOrchestrator(
 		LiveStreamRegistry: liveStreamRegistry,
 		PromptProvider:     promptService,
 		PromptProtecter:    promptProtectionRuleService,
+		SessionAffinityService: sessionAffinityService,
 		Middlewares: []pipeline.Middleware{
 			cc.StripBillingHeaderCCH(),
 			stream.EnsureUsage(),
@@ -141,8 +143,11 @@ type ChatCompletionResult struct {
 }
 
 func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, request *httpclient.Request) (ChatCompletionResult, error) {
-	// The context is system bypassed to allow the orchestrator to access the system settings.
+	affinity, _ := contexts.GetSessionAffinity(ctx)
 	ctx = authz.WithSystemBypass(ctx, "process-chat-completion")
+	if affinity != "" {
+		ctx = contexts.WithSessionAffinity(ctx, affinity)
+	}
 
 	apiKey, _ := contexts.GetAPIKey(ctx)
 
@@ -186,6 +191,7 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 		ModelMapper:           processor.ModelMapper,
 		Proxy:                 processor.proxy,
 		CurrentCandidateIndex: 0,
+		SessionAffinityService: processor.SessionAffinityService,
 	}
 
 	var pipelineOpts []pipeline.Option

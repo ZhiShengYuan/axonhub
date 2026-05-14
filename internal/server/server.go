@@ -32,10 +32,25 @@ func New(config Config) (*Server, error) {
 	engine := gin.New()
 	engine.Use(middleware.Recovery())
 
+	// Apply trusted proxy configuration
+	if err := engine.SetTrustedProxies(config.TrustedProxies); err != nil {
+		return nil, fmt.Errorf("failed to set trusted proxies: %w", err)
+	}
+
+	// Apply trusted platform header when non-empty (e.g., Cloudflare uses CF-Connecting-IP)
+	if config.TrustedPlatform != "" {
+		engine.TrustedPlatform = config.TrustedPlatform
+	}
+
 	return &Server{
 		Config: config,
 		Engine: engine,
 	}, nil
+}
+
+// sessionAffinitySecretProvider extracts the session affinity secret from server config
+func sessionAffinitySecretProvider(config Config) string {
+	return config.SessionAffinitySecret
 }
 
 type Server struct {
@@ -83,6 +98,7 @@ func Run(opts ...fx.Option) {
 		gql.NewGraphqlHandlers,
 		gc.NewWorker,
 		New,
+		fx.Annotate(sessionAffinitySecretProvider, fx.ResultTags(`name:"session_affinity_secret"`)),
 	}
 
 	app := fx.New(

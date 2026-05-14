@@ -282,3 +282,11 @@ func (l *Logger) Panic(ctx context.Context, msg string, fields ...zap.Field) {
 	fields = l.executeHooks(ctx, msg, fields...)
 	l.logger.Panic(msg, fields...)
 }
+
+func (l *Logger) GetZapLogger() *zap.Logger {
+	return l.logger
+}
+
+func (l *Logger) ReplaceZapLogger(zl *zap.Logger) {
+	l.logger = zl
+}

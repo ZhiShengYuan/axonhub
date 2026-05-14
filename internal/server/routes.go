@@ -53,6 +53,7 @@ func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services
 	server.Use(middleware.WithEntClient(client))
 	server.Use(middleware.WithLoggingTracing(server.Config.Trace))
 	server.Use(middleware.WithMetrics())
+	server.Use(middleware.WithSessionAffinity())
 
 	// Setup CORS middleware at server level if enabled
 	if server.Config.CORS.Enabled {

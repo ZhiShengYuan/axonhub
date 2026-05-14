@@ -86,8 +86,9 @@ type ChatCompletionOrchestrator struct {
 	SystemService      *biz.SystemService
 	UsageLogService    *biz.UsageLogService
 	QuotaService       *biz.QuotaService
-	LiveStreamRegistry *biz.LiveStreamRegistry
-	PromptProvider     PromptProvider
+	LiveStreamRegistry      *biz.LiveStreamRegistry
+	SessionAffinityService *SessionAffinityService
+	PromptProvider         PromptProvider
 	PromptProtecter    PromptProtecter
 	Middlewares        []pipeline.Middleware
 	PipelineFactory    *pipeline.Factory

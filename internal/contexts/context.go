@@ -143,6 +143,24 @@ func GetProjectID(ctx context.Context) (int, bool) {
 	return 0, false
 }
 
+// WithSessionAffinity stores the session affinity value in the context.
+func WithSessionAffinity(ctx context.Context, affinity string) context.Context {
+	container := getContainer(ctx)
+	container.SessionAffinity = &affinity
+
+	return withContainer(ctx, container)
+}
+
+// GetSessionAffinity retrieves the session affinity value from the context.
+func GetSessionAffinity(ctx context.Context) (string, bool) {
+	container := getContainer(ctx)
+	if container.SessionAffinity != nil {
+		return *container.SessionAffinity, true
+	}
+
+	return "", false
+}
+
 // AddError appends an error to the context's error list.
 // Will do nothing if the context is not initialized.
 // But in real world, it should be initialized.

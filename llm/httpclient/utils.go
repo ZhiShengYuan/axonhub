@@ -104,6 +104,7 @@ var blockedHeaders = map[string]bool{
 	"Accept-Language":    true,
 	"Dnt":                true,
 	"Origin":             true,
+	"Originator":         true,
 	"Referer":            true,
 	"Sec-Fetch-Dest":     true,
 	"Sec-Fetch-Mode":     true,
@@ -117,6 +118,7 @@ var blockedHeaders = map[string]bool{
 	// NOTE: user customized trace/thread headers will be sent to upstream.
 	"Ah-Trace-Id":  true,
 	"Ah-Thread-Id": true,
+	"X-Session-Affinity": true,
 
 	// X-Initiator is used by specific channels (e.g. Copilot) for billing control.
 	// Block from auto-merge so it is only forwarded by the channel that explicitly needs it.
@@ -157,6 +159,7 @@ var sensitiveHeaders = map[string]bool{
 	"Set-Cookie":          true,
 	"Proxy-Authorization": true,
 	"Www-Authenticate":    true,
+	"X-Session-Affinity":  true,
 }
 
 var mergeWithAppendHeaders = map[string]bool{}

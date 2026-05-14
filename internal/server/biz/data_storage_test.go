@@ -46,7 +46,9 @@ func setupDataStorageTest(t *testing.T) (*ent.Client, *DataStorageService, conte
 		SystemService: systemService,
 		CacheConfig:   cacheConfig,
 		Executor:      executor,
-		Client:        client,
+		ConfigEntClient: ConfigEntClient{
+			Client: client,
+		},
 	})
 
 	ctx := context.Background()
@@ -84,7 +86,9 @@ func setupDataStorageTestWithRedis(t *testing.T) (*ent.Client, *DataStorageServi
 		SystemService: systemService,
 		CacheConfig:   cacheConfig,
 		Executor:      executor,
-		Client:        client,
+		ConfigEntClient: ConfigEntClient{
+			Client: client,
+		},
 	})
 
 	ctx := context.Background()
@@ -698,6 +702,9 @@ func TestDataStorageService_CacheExpiration(t *testing.T) {
 	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=1")
 	defer client.Close()
 
+	executor := executors.NewPoolScheduleExecutor(executors.WithMaxConcurrent(1))
+	defer executor.Shutdown(context.Background())
+
 	// Setup cache with very short expiration for testing
 	cacheConfig := xcache.Config{
 		Mode: xcache.ModeMemory,
@@ -714,8 +721,10 @@ func TestDataStorageService_CacheExpiration(t *testing.T) {
 	service := NewDataStorageService(DataStorageServiceParams{
 		SystemService: systemService,
 		CacheConfig:   cacheConfig,
-		Executor:      executors.NewPoolScheduleExecutor(),
-		Client:        client,
+		Executor:      executor,
+		ConfigEntClient: ConfigEntClient{
+			Client: client,
+		},
 	})
 
 	ctx := context.Background()

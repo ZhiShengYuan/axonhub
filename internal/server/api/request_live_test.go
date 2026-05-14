@@ -180,18 +180,18 @@ func newRequestPreviewTestSetup(t *testing.T) requestPreviewTestSetup {
 	ctx = authz.WithTestBypass(ctx)
 
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{Mode: xcache.ModeMemory},
-		Ent:         client,
+		CacheConfig:     xcache.Config{Mode: xcache.ModeMemory},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 	channelService := biz.NewChannelServiceForTest(client)
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 	dataStorageService := &biz.DataStorageService{
 		AbstractService: &biz.AbstractService{},
 		SystemService:   systemService,
 		Cache:           xcache.NewFromConfig[ent.DataStorage](xcache.Config{Mode: xcache.ModeMemory}),
 	}
 	liveStreamRegistry := biz.NewLiveStreamRegistry()
-	requestService := biz.NewRequestService(client, systemService, usageLogService, dataStorageService, liveStreamRegistry)
+	requestService := biz.NewRequestService(biz.LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, liveStreamRegistry)
 	handlers := NewRequestPreviewHandlers(RequestPreviewHandlersParams{
 		RequestService:     requestService,
 		LiveStreamRegistry: liveStreamRegistry,

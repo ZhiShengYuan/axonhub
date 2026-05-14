@@ -29,8 +29,10 @@ func newTestChannelServiceForChannels(client *ent.Client) *biz.ChannelService {
 	systemService := newTestSystemService(client)
 
 	return biz.NewChannelService(biz.ChannelServiceParams{
-		Executor:      executors.NewPoolScheduleExecutor(),
-		Ent:           client,
+		Executor: executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: biz.ConfigEntClient{
+			Client: client,
+		},
 		SystemService: systemService,
 	})
 }
@@ -38,7 +40,7 @@ func newTestChannelServiceForChannels(client *ent.Client) *biz.ChannelService {
 // newTestModelService creates a minimal model service for testing.
 func newTestModelService(client *ent.Client) *biz.ModelService {
 	return biz.NewModelService(biz.ModelServiceParams{
-		Ent: client,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 }
 
@@ -67,8 +69,8 @@ func newTestLoadBalancedSelector(
 // newTestSystemService creates a minimal system service for testing.
 func newTestSystemService(client *ent.Client) *biz.SystemService {
 	return biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{Mode: xcache.ModeMemory},
-		Ent:         client,
+		CacheConfig:     xcache.Config{Mode: xcache.ModeMemory},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 }
 
@@ -80,9 +82,9 @@ func newTestRequestServiceForChannels(client *ent.Client, systemService *biz.Sys
 		Cache:           xcache.NewFromConfig[ent.DataStorage](xcache.Config{Mode: xcache.ModeMemory}),
 	}
 	channelService := biz.NewChannelServiceForTest(client)
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
-	return biz.NewRequestService(client, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
+	return biz.NewRequestService(biz.LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
 }
 
 // setupTest creates a test context and ent client for testing.
@@ -218,8 +220,8 @@ func setupTestServices(t *testing.T, client *ent.Client) (*biz.ChannelService, *
 	cacheConfig := xcache.Config{Mode: xcache.ModeMemory}
 
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: cacheConfig,
-		Ent:         client,
+		CacheConfig:     cacheConfig,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 
 	dataStorageService := &biz.DataStorageService{
@@ -229,8 +231,8 @@ func setupTestServices(t *testing.T, client *ent.Client) (*biz.ChannelService, *
 	}
 
 	channelService := biz.NewChannelServiceForTest(client)
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
-	requestService := biz.NewRequestService(client, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
+	requestService := biz.NewRequestService(biz.LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
 
 	channelService = biz.NewChannelServiceForTest(client)
 

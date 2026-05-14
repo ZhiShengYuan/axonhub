@@ -44,10 +44,10 @@ func TestRequestContentHandlers_DownloadRequestContent(t *testing.T) {
 
 	systemService := biz.NewSystemService(biz.SystemServiceParams{CacheConfig: cacheConfig})
 	dataStorageService := biz.NewDataStorageService(biz.DataStorageServiceParams{
-		SystemService: systemService,
-		CacheConfig:   cacheConfig,
-		Executor:      executor,
-		Client:        client,
+		SystemService:   systemService,
+		CacheConfig:    cacheConfig,
+		Executor:       executor,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 
 	h := NewRequestContentHandlers(RequestContentHandlersParams{

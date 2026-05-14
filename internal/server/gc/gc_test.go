@@ -144,10 +144,10 @@ func setupWorkerWithFSStorage(t *testing.T) (*Worker, context.Context, *ent.Data
 
 	systemService := biz.NewSystemService(biz.SystemServiceParams{CacheConfig: cacheConfig})
 	dataStorageService := biz.NewDataStorageService(biz.DataStorageServiceParams{
-		SystemService: systemService,
-		CacheConfig:   cacheConfig,
-		Executor:      executor,
-		Client:        client,
+		SystemService:   systemService,
+		CacheConfig:    cacheConfig,
+		Executor:       executor,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 
 	ctx := context.Background()

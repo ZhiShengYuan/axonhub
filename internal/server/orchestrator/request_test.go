@@ -101,9 +101,9 @@ func TestPersistRequestMiddleware_UsageExtraction_EmbeddingResponse(t *testing.T
 
 	channelService := biz.NewChannelServiceForTest(client)
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		Ent: client,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
 	state.UsageLogService = usageLogService
 
@@ -172,9 +172,9 @@ func TestPersistRequestMiddleware_UsageExtraction_ChatResponse(t *testing.T) {
 
 	channelService := biz.NewChannelServiceForTest(client)
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		Ent: client,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
 	state.UsageLogService = usageLogService
 
@@ -245,9 +245,9 @@ func TestPersistRequestMiddleware_UsageExtraction_NilUsage(t *testing.T) {
 
 	channelService := biz.NewChannelServiceForTest(client)
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		Ent: client,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
 	state.UsageLogService = usageLogService
 
@@ -310,9 +310,9 @@ func TestPersistRequestMiddleware_UsageExtraction_EmbeddingWithNilUsage(t *testi
 
 	channelService := biz.NewChannelServiceForTest(client)
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		Ent: client,
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
 	state.UsageLogService = usageLogService
 

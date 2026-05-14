@@ -46,8 +46,10 @@ func setupTestAPIKeyService(t *testing.T, cacheConfig xcache.Config) (*APIKeySer
 	}
 
 	apiKeyService := NewAPIKeyService(APIKeyServiceParams{
-		CacheConfig:    cacheConfig,
-		Ent:            client,
+		CacheConfig: cacheConfig,
+		ConfigEntClient: ConfigEntClient{
+			Client: client,
+		},
 		ProjectService: projectService,
 		KeyPrefix:      "ah",
 	})

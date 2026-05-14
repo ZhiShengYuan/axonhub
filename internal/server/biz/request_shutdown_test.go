@@ -27,18 +27,18 @@ func setupTestRequestService(t *testing.T) (*RequestService, *ent.Client, contex
 	ctx = authz.WithTestBypass(ctx)
 
 	systemService := NewSystemService(SystemServiceParams{
-		Ent: client,
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 	channelService := NewChannelServiceForTest(client)
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 	dataStorageService := NewDataStorageService(DataStorageServiceParams{
-		SystemService: systemService,
-		CacheConfig:   xcache.Config{},
-		Executor:      executors.NewPoolScheduleExecutor(),
-		Client:        client,
+		SystemService:   systemService,
+		CacheConfig:    xcache.Config{},
+		Executor:       executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 
-	requestService := NewRequestService(client, systemService, usageLogService, dataStorageService, NewLiveStreamRegistry())
+	requestService := NewRequestService(LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, NewLiveStreamRegistry())
 
 	return requestService, client, ctx
 }

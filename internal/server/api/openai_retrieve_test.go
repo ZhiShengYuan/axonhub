@@ -33,17 +33,12 @@ func setupOpenAIRetrieveTest(t *testing.T) (*ent.Client, *biz.ChannelService, *b
 
 	channelSvc := biz.NewChannelServiceForTest(client)
 	systemSvc := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{Mode: xcache.ModeMemory},
-		Ent:         client,
-	})
-	modelSvc := biz.NewModelService(biz.ModelServiceParams{
-		ChannelService: channelSvc,
-		SystemService:  systemSvc,
-		Ent:            client,
+		CacheConfig:     xcache.Config{Mode: xcache.ModeMemory},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 
 	handlers := &OpenAIHandlers{
-		ModelService:  modelSvc,
+		ModelService:  biz.NewModelService(biz.ModelServiceParams{ChannelService: channelSvc, SystemService: systemSvc, ConfigEntClient: biz.ConfigEntClient{Client: client}}),
 		SystemService: systemSvc,
 		EntClient:     client,
 	}
@@ -481,9 +476,9 @@ func TestOpenAIHandlers_ListModels_ExtendedModeRespectsAPIKeyProfile(t *testing.
 
 	handlers := &OpenAIHandlers{
 		ModelService:  biz.NewModelService(biz.ModelServiceParams{
-			ChannelService: channelSvc,
-			SystemService:  systemSvc,
-			Ent:            client,
+			ChannelService:  channelSvc,
+			SystemService:   systemSvc,
+			ConfigEntClient: biz.ConfigEntClient{Client: client},
 		}),
 		SystemService: systemSvc,
 		EntClient:     client,
@@ -578,7 +573,7 @@ func TestOpenAIHandlers_ListModels_ExtendedModeFallsBackToBasicForMissingDBModel
 	})
 
 	handlers := &OpenAIHandlers{
-		ModelService:  biz.NewModelService(biz.ModelServiceParams{ChannelService: channelSvc, SystemService: systemSvc, Ent: client}),
+		ModelService:  biz.NewModelService(biz.ModelServiceParams{ChannelService: channelSvc, SystemService: systemSvc, ConfigEntClient: biz.ConfigEntClient{Client: client}}),
 		SystemService: systemSvc,
 		EntClient:     client,
 	}
@@ -659,7 +654,7 @@ func TestOpenAIHandlers_ListModels_ExtendedModeWithZeroAllowedModelsReturnsEmpty
 	})
 
 	handlers := &OpenAIHandlers{
-		ModelService:  biz.NewModelService(biz.ModelServiceParams{ChannelService: channelSvc, SystemService: systemSvc, Ent: client}),
+		ModelService:  biz.NewModelService(biz.ModelServiceParams{ChannelService: channelSvc, SystemService: systemSvc, ConfigEntClient: biz.ConfigEntClient{Client: client}}),
 		SystemService: systemSvc,
 		EntClient:     client,
 	}

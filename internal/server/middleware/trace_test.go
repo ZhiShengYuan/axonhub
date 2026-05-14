@@ -32,20 +32,20 @@ func setupTestTraceMiddleware(t *testing.T) (*gin.Engine, *ent.Client, *biz.Trac
 	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=1")
 
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 	dataStorageService := biz.NewDataStorageService(biz.DataStorageServiceParams{
-		Client:        client,
-		SystemService: systemService,
-		CacheConfig:   xcache.Config{},
-		Executor:      executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
+		SystemService:   systemService,
+		CacheConfig:     xcache.Config{},
+		Executor:        executors.NewPoolScheduleExecutor(),
 	})
 	channelService := biz.NewChannelServiceForTest(client)
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 	traceService := biz.NewTraceService(biz.TraceServiceParams{
-		RequestService: biz.NewRequestService(client, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry()),
-		Ent:            client,
+		RequestService: biz.NewRequestService(biz.LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry()),
+		LogEntClient:   biz.LogEntClient{Client: client},
 	})
 
 	router := gin.New()

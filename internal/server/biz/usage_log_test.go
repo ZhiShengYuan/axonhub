@@ -41,11 +41,11 @@ func TestUsageLogService_CreateUsageLog_PromptWriteCachedTokens(t *testing.T) {
 	require.NoError(t, err)
 
 	systemService := NewSystemService(SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 	channelService := NewChannelServiceForTest(client)
-	svc := NewUsageLogService(client, systemService, channelService)
+	svc := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     10,
@@ -137,8 +137,8 @@ func TestUsageLogService_CreateUsageLog_WithPriceReferenceID(t *testing.T) {
 	require.NoError(t, err)
 
 	systemService := NewSystemService(SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 	channelService := NewChannelServiceForTest(client)
 
@@ -154,7 +154,7 @@ func TestUsageLogService_CreateUsageLog_WithPriceReferenceID(t *testing.T) {
 	require.NotNil(t, enabledCh.cachedModelPrices["gpt-4"])
 	require.Equal(t, "test-ref-123", enabledCh.cachedModelPrices["gpt-4"].ReferenceID)
 
-	svc := NewUsageLogService(client, systemService, channelService)
+	svc := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	// Create usage log with price calculation
 	usage := &llm.Usage{
@@ -260,8 +260,8 @@ func TestUsageLogService_CreateUsageLog_WithCachedTokens(t *testing.T) {
 	require.NoError(t, err)
 
 	systemService := NewSystemService(SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 	channelService := NewChannelServiceForTest(client)
 
@@ -277,7 +277,7 @@ func TestUsageLogService_CreateUsageLog_WithCachedTokens(t *testing.T) {
 	require.NotNil(t, enabledCh.cachedModelPrices["gpt-4"])
 	require.Equal(t, "test-ref-cached", enabledCh.cachedModelPrices["gpt-4"].ReferenceID)
 
-	svc := NewUsageLogService(client, systemService, channelService)
+	svc := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	// Create usage log with cached tokens
 	// Total prompt tokens: 1000 (includes 300 cached tokens)

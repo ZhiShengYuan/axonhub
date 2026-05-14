@@ -92,13 +92,15 @@ func (m *mockTraceProvider) GetLastSuccessfulChannelID(ctx context.Context, trac
 // It bypasses the normal initialization to avoid requiring a ScheduledExecutor.
 func newTestChannelService(client *ent.Client) *biz.ChannelService {
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{Mode: xcache.ModeMemory},
-		Ent:         client,
+		CacheConfig:     xcache.Config{Mode: xcache.ModeMemory},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 
 	return biz.NewChannelService(biz.ChannelServiceParams{
-		Executor:      executors.NewPoolScheduleExecutor(),
-		Ent:           client,
+		Executor: executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: biz.ConfigEntClient{
+			Client: client,
+		},
 		SystemService: systemService,
 	})
 }
@@ -106,17 +108,17 @@ func newTestChannelService(client *ent.Client) *biz.ChannelService {
 // newTestRequestService creates a minimal request service for testing.
 func newTestRequestService(client *ent.Client) *biz.RequestService {
 	systemService := biz.NewSystemService(biz.SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
 	})
 	dataStorageService := biz.NewDataStorageService(biz.DataStorageServiceParams{
-		Client:        client,
-		SystemService: systemService,
-		CacheConfig:   xcache.Config{},
-		Executor:      executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: biz.ConfigEntClient{Client: client},
+		SystemService:   systemService,
+		CacheConfig:    xcache.Config{},
+		Executor:       executors.NewPoolScheduleExecutor(),
 	})
 	channelService := biz.NewChannelServiceForTest(client)
-	usageLogService := biz.NewUsageLogService(client, systemService, channelService)
+	usageLogService := biz.NewUsageLogService(biz.LogEntClient{Client: client}, systemService, channelService)
 
-	return biz.NewRequestService(client, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
+	return biz.NewRequestService(biz.LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, biz.NewLiveStreamRegistry())
 }

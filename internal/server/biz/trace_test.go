@@ -40,22 +40,22 @@ func setupTestTraceService(t *testing.T, client *ent.Client) (*TraceService, *en
 	}
 
 	systemService := NewSystemService(SystemServiceParams{
-		CacheConfig: xcache.Config{},
-		Ent:         client,
+		CacheConfig:     xcache.Config{},
+		ConfigEntClient: ConfigEntClient{Client: client},
 	})
 	dataStorageService := NewDataStorageService(
 		DataStorageServiceParams{
-			SystemService: systemService,
-			CacheConfig:   xcache.Config{},
-			Executor:      executors.NewPoolScheduleExecutor(),
-			Client:        client,
+			SystemService:   systemService,
+			CacheConfig:    xcache.Config{},
+			Executor:       executors.NewPoolScheduleExecutor(),
+			ConfigEntClient: ConfigEntClient{Client: client},
 		},
 	)
 	channelService := NewChannelServiceForTest(client)
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 	traceService := NewTraceService(TraceServiceParams{
-		RequestService: NewRequestService(client, systemService, usageLogService, dataStorageService, NewLiveStreamRegistry()),
-		Ent:            client,
+		RequestService: NewRequestService(LogEntClient{Client: client}, systemService, usageLogService, dataStorageService, NewLiveStreamRegistry()),
+		LogEntClient: LogEntClient{Client: client},
 	})
 
 	return traceService, client

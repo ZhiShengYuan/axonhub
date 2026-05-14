@@ -83,14 +83,14 @@ func TestUsageCost_PerUnitPromptAndCompletion(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,
@@ -158,14 +158,14 @@ func TestUsageCost_TieredPrompt(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     1500,
@@ -211,14 +211,14 @@ func TestUsageCost_NoPriceConfigured(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	// preloadModelPrices not called -> no prices cached
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,
@@ -290,14 +290,14 @@ func TestUsageCost_CacheVariant5Min(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,
@@ -381,14 +381,14 @@ func TestUsageCost_CacheVariant1Hour(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,
@@ -477,14 +477,14 @@ func TestUsageCost_CacheVariantBoth5MinAnd1Hour(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,
@@ -564,14 +564,14 @@ func TestUsageCost_CacheVariantFallbackToShared(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	channelService := NewChannelServiceForTest(client)
 	built, err := channelService.GetChannel(ctx, ch.ID)
 	require.NoError(t, err)
 	channelService.preloadModelPrices(ctx, built)
 	channelService.SetEnabledChannelsForTest([]*Channel{built})
 
-	usageLogService := NewUsageLogService(client, systemService, channelService)
+	usageLogService := NewUsageLogService(LogEntClient{Client: client}, systemService, channelService)
 
 	usage := &llm.Usage{
 		PromptTokens:     100,

@@ -77,7 +77,7 @@ func TestQuotaService_AllTime_RequestCountExceeded(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	svc := NewQuotaService(client, systemService)
 
 	quota := &objects.APIKeyQuota{
@@ -164,7 +164,7 @@ func TestQuotaService_PastDuration_TotalTokensExceeded(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	svc := NewQuotaService(client, systemService)
 	quota := &objects.APIKeyQuota{
 		TotalTokens: lo.ToPtr(int64(100)),
@@ -221,7 +221,7 @@ func TestQuotaService_PastDurationMinute_RequestCountExceeded(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	svc := NewQuotaService(client, systemService)
 	quota := &objects.APIKeyQuota{
 		Requests: lo.ToPtr(int64(1)),
@@ -349,7 +349,7 @@ func TestQuotaService_CalendarDay_CostExceeded(t *testing.T) {
 		Save(ctx)
 	require.NoError(t, err)
 
-	systemService := NewSystemService(SystemServiceParams{Ent: client})
+	systemService := NewSystemService(SystemServiceParams{ConfigEntClient: ConfigEntClient{Client: client}})
 	svc := NewQuotaService(client, systemService)
 	quota := &objects.APIKeyQuota{
 		Cost: lo.ToPtr(decimal.NewFromFloat(10.0)),

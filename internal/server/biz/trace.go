@@ -37,13 +37,13 @@ type TraceServiceParams struct {
 	fx.In
 
 	RequestService *RequestService
-	Ent            *ent.Client
+	LogEntClient
 }
 
 func NewTraceService(params TraceServiceParams) *TraceService {
 	return &TraceService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		requestService: params.RequestService,
 	}

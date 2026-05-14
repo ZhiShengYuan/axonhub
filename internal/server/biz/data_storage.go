@@ -55,10 +55,10 @@ type DataStorageService struct {
 type DataStorageServiceParams struct {
 	fx.In
 
-	SystemService *SystemService
-	CacheConfig   xcache.Config
-	Executor      executors.ScheduledExecutor
-	Client        *ent.Client
+	SystemService   *SystemService
+	CacheConfig     xcache.Config
+	Executor        executors.ScheduledExecutor
+	ConfigEntClient
 }
 
 // NewDataStorageService creates a new DataStorageService.

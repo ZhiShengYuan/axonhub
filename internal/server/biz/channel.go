@@ -74,7 +74,7 @@ type ChannelServiceParams struct {
 
 	CacheConfig     xcache.Config
 	Executor        executors.ScheduledExecutor
-	Ent             *ent.Client
+	ConfigEntClient
 	SystemService   *SystemService
 	WebhookNotifier *WebhookNotifier
 	HttpClient      *httpclient.HttpClient
@@ -83,7 +83,7 @@ type ChannelServiceParams struct {
 func NewChannelService(params ChannelServiceParams) *ChannelService {
 	svc := &ChannelService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		Executors:          params.Executor,
 		SystemService:      params.SystemService,

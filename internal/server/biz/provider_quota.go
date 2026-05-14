@@ -97,8 +97,8 @@ import (
 type ProviderQuotaServiceParams struct {
 	fx.In
 
-	Ent           *ent.Client
-	SystemService *SystemService
+	ConfigEntClient
+	SystemService  *SystemService
 	HttpClient    *httpclient.HttpClient
 	CheckInterval time.Duration `name:"provider_quota_check_interval" optional:"true"`
 }
@@ -119,7 +119,7 @@ type ProviderQuotaService struct {
 
 func NewProviderQuotaService(params ProviderQuotaServiceParams) *ProviderQuotaService {
 	svc := &ProviderQuotaService{
-		AbstractService: &AbstractService{db: params.Ent},
+		AbstractService: &AbstractService{db: params.Client},
 		SystemService:   params.SystemService,
 		Executor:        executors.NewPoolScheduleExecutor(executors.WithMaxConcurrent(1)),
 		checkers:        make(map[string]provider_quota.QuotaChecker),

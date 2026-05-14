@@ -40,7 +40,7 @@ type APIKeyServiceParams struct {
 	fx.In
 
 	CacheConfig    xcache.Config
-	Ent            *ent.Client
+	ConfigEntClient
 	ProjectService *ProjectService
 	KeyPrefix      string `name:"api_key_prefix"`
 }
@@ -57,7 +57,7 @@ type APIKeyService struct {
 func NewAPIKeyService(params APIKeyServiceParams) *APIKeyService {
 	svc := &APIKeyService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		ProjectService: params.ProjectService,
 		keyPrefix:      params.KeyPrefix,

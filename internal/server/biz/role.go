@@ -17,8 +17,8 @@ import (
 type RoleServiceParams struct {
 	fx.In
 
-	UserService *UserService
-	Ent         *ent.Client
+	UserService     *UserService
+	ConfigEntClient
 }
 
 type RoleService struct {
@@ -31,7 +31,7 @@ type RoleService struct {
 func NewRoleService(params RoleServiceParams) *RoleService {
 	return &RoleService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		userService:         params.UserService,
 		permissionValidator: NewPermissionValidator(),

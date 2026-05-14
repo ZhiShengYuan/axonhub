@@ -26,13 +26,13 @@ type ModelServiceParams struct {
 
 	ChannelService *ChannelService
 	SystemService  *SystemService
-	Ent            *ent.Client
+	ConfigEntClient
 }
 
 func NewModelService(params ModelServiceParams) *ModelService {
 	return &ModelService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		channelService: params.ChannelService,
 		systemService:  params.SystemService,

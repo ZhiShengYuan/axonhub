@@ -27,8 +27,8 @@ const negativeCacheTTL = 5 * time.Second
 type ProjectServiceParams struct {
 	fx.In
 
-	CacheConfig xcache.Config
-	Ent         *ent.Client
+	CacheConfig     xcache.Config
+	ConfigEntClient
 }
 
 type ProjectService struct {
@@ -41,7 +41,7 @@ type ProjectService struct {
 func NewProjectService(params ProjectServiceParams) *ProjectService {
 	return &ProjectService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		ProjectCache:        xcache.NewFromConfig[xcache.Entry[ent.Project]](params.CacheConfig),
 		permissionValidator: NewPermissionValidator(),

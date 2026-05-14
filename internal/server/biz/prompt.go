@@ -22,14 +22,14 @@ import (
 type PromptServiceParams struct {
 	fx.In
 
-	Executor executors.ScheduledExecutor
-	Ent      *ent.Client
+	Executor       executors.ScheduledExecutor
+	ConfigEntClient
 }
 
 func NewPromptService(params PromptServiceParams) *PromptService {
 	svc := &PromptService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		cachedEnabledPrompts:   xmap.New[int, []*ent.Prompt](),
 		latestCachedUpdateTime: xmap.New[int, time.Time](),

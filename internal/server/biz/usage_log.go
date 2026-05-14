@@ -70,10 +70,10 @@ func (s *UsageLogService) computeUsageCost(ctx context.Context, channelID int, m
 }
 
 // NewUsageLogService creates a new UsageLogService.
-func NewUsageLogService(ent *ent.Client, systemService *SystemService, channelService *ChannelService) *UsageLogService {
+func NewUsageLogService(logClient LogEntClient, systemService *SystemService, channelService *ChannelService) *UsageLogService {
 	return &UsageLogService{
 		AbstractService: &AbstractService{
-			db: ent,
+			db: logClient.Client,
 		},
 		SystemService:  systemService,
 		ChannelService: channelService,

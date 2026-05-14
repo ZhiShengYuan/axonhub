@@ -36,10 +36,10 @@ type RequestService struct {
 }
 
 // NewRequestService creates a new RequestService.
-func NewRequestService(ent *ent.Client, systemService *SystemService, usageLogService *UsageLogService, dataStorageService *DataStorageService, liveStreamRegistry *LiveStreamRegistry) *RequestService {
+func NewRequestService(logClient LogEntClient, systemService *SystemService, usageLogService *UsageLogService, dataStorageService *DataStorageService, liveStreamRegistry *LiveStreamRegistry) *RequestService {
 	return &RequestService{
 		AbstractService: &AbstractService{
-			db: ent,
+			db: logClient.Client,
 		},
 		SystemService:      systemService,
 		UsageLogService:    usageLogService,

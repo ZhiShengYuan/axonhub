@@ -26,6 +26,7 @@ type Config struct {
 	fx.Out `yaml:"-" json:"-"`
 
 	DB               db.Config           `conf:"db" yaml:"db" json:"db"`
+	DBLogs           db.Config           `conf:"db_logs" yaml:"db_logs" json:"db_logs"`
 	Log              log.Config          `conf:"log" yaml:"log" json:"log"`
 	APIServer        server.Config       `conf:"server" yaml:"server" json:"server"`
 	Metrics          metrics.Config      `conf:"metrics" yaml:"metrics" json:"metrics"`
@@ -151,6 +152,9 @@ func setDefaults(v *viper.Viper) {
 
 	v.SetDefault("server.debug", false)
 	v.SetDefault("server.disable_ssl_verify", false)
+	v.SetDefault("server.trusted_proxies", []string{})
+	v.SetDefault("server.trusted_platform", "")
+	v.SetDefault("server.session_affinity_secret", "")
 
 	// CORS defaults
 	v.SetDefault("server.cors.enabled", false)
@@ -172,6 +176,15 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("db.max_idle_conns", 10)
 	v.SetDefault("db.conn_max_lifetime", "30m")
 	v.SetDefault("db.conn_max_idle_time", "10m")
+
+	// Database logs defaults (db_logs) - mirrors db structure; absent = use db
+	v.SetDefault("db_logs.dialect", "")
+	v.SetDefault("db_logs.dsn", "")
+	v.SetDefault("db_logs.debug", false)
+	v.SetDefault("db_logs.max_open_conns", 0)
+	v.SetDefault("db_logs.max_idle_conns", 0)
+	v.SetDefault("db_logs.conn_max_lifetime", "")
+	v.SetDefault("db_logs.conn_max_idle_time", "")
 
 	// Log defaults
 	v.SetDefault("log.name", "axonhub")

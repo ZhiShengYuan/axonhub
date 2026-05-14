@@ -17,9 +17,11 @@ func NewChannelServiceForTest(client *ent.Client) *ChannelService {
 	}
 
 	svc := NewChannelService(ChannelServiceParams{
-		CacheConfig:   xcache.Config{Mode: xcache.ModeMemory},
-		Executor:      executors.NewPoolScheduleExecutor(),
-		Ent:           client,
+		CacheConfig: xcache.Config{Mode: xcache.ModeMemory},
+		Executor:    executors.NewPoolScheduleExecutor(),
+		ConfigEntClient: ConfigEntClient{
+			Client: client,
+		},
 		SystemService: mockSysSvc,
 		HttpClient:    httpclient.NewHttpClient(),
 	})

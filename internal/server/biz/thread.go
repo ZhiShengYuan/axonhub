@@ -18,10 +18,10 @@ type ThreadService struct {
 	traceService *TraceService
 }
 
-func NewThreadService(ent *ent.Client, traceService *TraceService) *ThreadService {
+func NewThreadService(logClient LogEntClient, traceService *TraceService) *ThreadService {
 	return &ThreadService{
 		AbstractService: &AbstractService{
-			db: ent,
+			db: logClient.Client,
 		},
 		traceService: traceService,
 	}

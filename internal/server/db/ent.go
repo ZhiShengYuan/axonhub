@@ -22,6 +22,21 @@ import (
 )
 
 func NewEntClient(cfg Config) *ent.Client {
+	return NewEntClientFor("config", cfg, false)
+}
+
+// NewConfigEntClient creates an Ent client for the config database.
+func NewConfigEntClient(cfg ConfigDB) *ent.Client {
+	return NewEntClientFor("config", cfg.Config, false)
+}
+
+// NewLogEntClient creates an Ent client for the log database.
+func NewLogEntClient(cfg LogsDB) *ent.Client {
+	return NewEntClientFor("log", cfg.Config, true)
+}
+
+// NewEntClientFor creates an Ent client for the given database configuration.
+func NewEntClientFor(_ string, cfg Config, _ bool) *ent.Client {
 	var opts []ent.Option
 	if cfg.Debug {
 		opts = append(opts, ent.Debug())
@@ -91,11 +106,8 @@ func NewEntClient(cfg Config) *ent.Client {
 		panic(err)
 	}
 
-	// Run data migrations using the Migrator framework
-	ctx := context.Background()
-
 	migrator := datamigrate.NewMigrator(client)
-	if err := migrator.Run(ctx); err != nil {
+	if err := migrator.Run(context.Background()); err != nil {
 		panic(err)
 	}
 

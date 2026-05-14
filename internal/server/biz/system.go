@@ -429,14 +429,14 @@ func (p *ProbeFrequency) UnmarshalGQL(v any) error {
 type SystemServiceParams struct {
 	fx.In
 
-	CacheConfig xcache.Config
-	Ent         *ent.Client
+	CacheConfig     xcache.Config
+	ConfigEntClient
 }
 
 func NewSystemService(params SystemServiceParams) *SystemService {
 	return &SystemService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		CacheConfig: params.CacheConfig,
 		Cache:       xcache.NewFromConfig[ent.System](params.CacheConfig),

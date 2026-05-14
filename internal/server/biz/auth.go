@@ -26,14 +26,14 @@ type AuthServiceParams struct {
 	SystemService *SystemService
 	APIKeyService *APIKeyService
 	UserService   *UserService
-	Ent           *ent.Client
+	ConfigEntClient
 	AllowNoAuth   bool `name:"allow_no_auth"`
 }
 
 func NewAuthService(params AuthServiceParams) *AuthService {
 	return &AuthService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		SystemService: params.SystemService,
 		APIKeyService: params.APIKeyService,

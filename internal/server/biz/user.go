@@ -21,8 +21,8 @@ import (
 type UserServiceParams struct {
 	fx.In
 
-	CacheConfig xcache.Config
-	Ent         *ent.Client
+	CacheConfig     xcache.Config
+	ConfigEntClient
 }
 
 type UserService struct {
@@ -35,7 +35,7 @@ type UserService struct {
 func NewUserService(params UserServiceParams) *UserService {
 	return &UserService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		UserCache:           xcache.NewFromConfig[ent.User](params.CacheConfig),
 		permissionValidator: NewPermissionValidator(),

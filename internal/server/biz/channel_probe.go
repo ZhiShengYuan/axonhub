@@ -42,7 +42,7 @@ type ChannelProbeData struct {
 type ChannelProbeServiceParams struct {
 	fx.In
 
-	Ent           *ent.Client
+	LogEntClient
 	SystemService *SystemService
 }
 
@@ -60,7 +60,7 @@ type ChannelProbeService struct {
 func NewChannelProbeService(params ChannelProbeServiceParams) *ChannelProbeService {
 	svc := &ChannelProbeService{
 		AbstractService: &AbstractService{
-			db: params.Ent,
+			db: params.Client,
 		},
 		SystemService:     params.SystemService,
 		Executor:          executors.NewPoolScheduleExecutor(executors.WithMaxConcurrent(1)),

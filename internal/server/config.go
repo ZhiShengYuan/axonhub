@@ -24,8 +24,11 @@ type Config struct {
 
 	Debug            bool `conf:"debug" yaml:"debug" json:"debug"`
 	DisableSSLVerify bool `conf:"disable_ssl_verify" yaml:"disable_ssl_verify" json:"disable_ssl_verify"`
-	CORS             CORS `conf:"cors" yaml:"cors" json:"cors"`
-	API              API  `conf:"api" yaml:"api" json:"api"`
+	TrustedProxies     []string `conf:"trusted_proxies" yaml:"trusted_proxies" json:"trusted_proxies"`
+	TrustedPlatform    string   `conf:"trusted_platform" yaml:"trusted_platform" json:"trusted_platform"`
+	SessionAffinitySecret string `conf:"session_affinity_secret" yaml:"session_affinity_secret" json:"session_affinity_secret"`
+	CORS               CORS     `conf:"cors" yaml:"cors" json:"cors"`
+	API              API      `conf:"api" yaml:"api" json:"api"`
 }
 
 // Dashboard holds configuration for the dashboard cache settings.

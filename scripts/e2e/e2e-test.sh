@@ -131,8 +131,13 @@ cd "$FRONTEND_DIR"
 echo "🧪 Running Playwright tests..."
 echo ""
 
+PNPM_BIN="$HOME/.local/bin/pnpm"
+if [ ! -x "$PNPM_BIN" ] && command -v pnpm &> /dev/null; then
+    PNPM_BIN="pnpm"
+fi
+
 # Pass remaining arguments to playwright
-pnpm playwright test "${ARGS[@]}"
+"$PNPM_BIN" playwright test "${ARGS[@]}"
 
 TEST_EXIT_CODE=$?
 

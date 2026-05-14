@@ -24,7 +24,7 @@ import (
 	"github.com/looplj/axonhub/internal/tracing"
 )
 
-func New(config Config) *Server {
+func New(config Config) (*Server, error) {
 	if !config.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -35,7 +35,7 @@ func New(config Config) *Server {
 	return &Server{
 		Config: config,
 		Engine: engine,
-	}
+	}, nil
 }
 
 type Server struct {

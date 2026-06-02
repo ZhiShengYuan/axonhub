@@ -107,6 +107,7 @@ type ChannelSettings {
   bodyOverrideOperations: [OverrideOperation!]! @goField(forceResolver: true)
   passThroughUserAgent: Boolean
   passThroughBody: Boolean
+  passThroughXForwardedFor: Boolean
   rateLimit: ChannelRateLimit
 }
 
@@ -142,6 +143,7 @@ input ChannelSettingsInput {
   bodyOverrideOperations: [OverrideOperationInput!]
   passThroughUserAgent: Boolean
   passThroughBody: Boolean
+  passThroughXForwardedFor: Boolean
   rateLimit: ChannelRateLimitInput
 }
 

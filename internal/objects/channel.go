@@ -166,6 +166,10 @@ type ChannelSettings struct {
 	// When set to nil, it inherits from the global system setting.
 	// When set to true/false, it overrides the global setting.
 	PassThroughBody *bool `json:"passThroughBody,omitempty"`
+	// PassThroughXForwardedFor controls whether to pass through the original X-Forwarded-For header to upstream AI providers.
+	// When set to nil, it inherits from the global system setting.
+	// When set to true/false, it overrides the global setting.
+	PassThroughXForwardedFor *bool `json:"passThroughXForwardedFor,omitempty"`
 
 	// RateLimit configures the upstream rate limit for the channel.
 	// When configured, the load balancer will skip channels that have exceeded their rate limits.

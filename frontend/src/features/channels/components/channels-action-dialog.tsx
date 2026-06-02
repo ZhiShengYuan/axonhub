@@ -304,6 +304,9 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
   const [passThroughBody, setPassThroughBody] = useState<boolean | null>(() => {
     return initialRow?.settings?.passThroughBody ?? null;
   });
+  const [passThroughXForwardedFor, setPassThroughXForwardedFor] = useState<boolean>(() => {
+    return initialRow?.settings?.passThroughXForwardedFor ?? false;
+  });
 
   // Memoized proxy config for OAuth exchange
   const proxyConfig: ProxyConfig | undefined = useMemo(() => {
@@ -984,6 +987,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
         const nextSettings = mergeChannelSettingsForUpdate(values.settings, {
           passThroughUserAgent,
           passThroughBody,
+          passThroughXForwardedFor,
         });
 
         const updateInput = {
@@ -1026,6 +1030,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
           proxy: proxyConfig,
           passThroughUserAgent,
           passThroughBody,
+          passThroughXForwardedFor,
         });
 
         await createChannel.mutateAsync({
@@ -1441,6 +1446,7 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
             setProxyPassword(initialRow?.settings?.proxy?.password || '');
             setPassThroughUserAgent(initialRow?.settings?.passThroughUserAgent ?? null);
             setPassThroughBody(initialRow?.settings?.passThroughBody ?? null);
+            setPassThroughXForwardedFor(initialRow?.settings?.passThroughXForwardedFor ?? false);
             // Reset provider and API format state
             if (initialRow) {
               setSelectedProvider(getProviderFromChannelType(initialRow.type) || 'openai');
@@ -2367,6 +2373,24 @@ export function ChannelsActionDialog({ currentRow, duplicateFromRow, open, onOpe
                               {t('channels.dialogs.bodyPassThrough.warning')}
                             </p>
                           )}
+                        </div>
+                      </FormItem>
+
+                      <FormItem className='grid grid-cols-1 items-start gap-x-6 gap-y-2 md:grid-cols-8'>
+                        <FormLabel className='pt-2 font-medium md:col-span-2 md:text-right'>
+                          {t('channels.dialogs.xForwardedForPassThrough.label')}
+                        </FormLabel>
+                        <div className='space-y-1 md:col-span-6'>
+                          <div className='flex items-start gap-3'>
+                            <Checkbox
+                              id='passThroughXForwardedFor'
+                              checked={passThroughXForwardedFor}
+                              onCheckedChange={(checked) => setPassThroughXForwardedFor(checked === true)}
+                            />
+                            <label htmlFor='passThroughXForwardedFor' className='cursor-pointer text-sm leading-none font-medium'>
+                              {t('channels.dialogs.xForwardedForPassThrough.label')}
+                            </label>
+                          </div>
                         </div>
                       </FormItem>
 

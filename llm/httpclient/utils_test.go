@@ -333,3 +333,49 @@ func TestDecodeRequestBody_ZstdEncoding(t *testing.T) {
 	assert.Equal(t, originalBody, got)
 	assert.Equal(t, "", headers.Get("Content-Encoding"))
 }
+
+func TestMergeHTTPHeaders_BlocksXForwardedFor(t *testing.T) {
+	// Test that X-Forwarded-For is NOT merged from source to destination
+	// even when explicitly present in source headers.
+	// This is because X-Forwarded-For is in the blockedHeaders map.
+
+	dest := http.Header{}
+	src := http.Header{}
+	src.Set("X-Forwarded-For", "203.0.113.9")
+	src.Set("User-Agent", "Test/1.0")
+
+	result := MergeHTTPHeaders(dest, src)
+
+	// X-Forwarded-For should be blocked (not merged)
+	assert.Empty(t, result.Get("X-Forwarded-For"), "X-Forwarded-For should be blocked by MergeHTTPHeaders")
+	// User-Agent should be merged (not blocked)
+	assert.Equal(t, "Test/1.0", result.Get("User-Agent"), "User-Agent should be merged normally")
+}
+
+func TestMergeHTTPHeaders_BlocksOtherHopByHopHeaders(t *testing.T) {
+	// Verify multiple hop-by-hop headers are blocked from merge
+	dest := http.Header{}
+	src := http.Header{}
+
+	// Set various headers that should be blocked
+	src.Set("X-Forwarded-For", "203.0.113.9")
+	src.Set("X-Forwarded-Proto", "https")
+	src.Set("X-Forwarded-Host", "example.com")
+	src.Set("X-Real-Ip", "192.168.1.1")
+	src.Set("Connection", "keep-alive")
+	src.Set("Keep-Alive", "timeout=5")
+	src.Set("User-Agent", "Test/1.0")
+
+	result := MergeHTTPHeaders(dest, src)
+
+	// All hop-by-hop and proxy headers should be blocked
+	assert.Empty(t, result.Get("X-Forwarded-For"))
+	assert.Empty(t, result.Get("X-Forwarded-Proto"))
+	assert.Empty(t, result.Get("X-Forwarded-Host"))
+	assert.Empty(t, result.Get("X-Real-Ip"))
+	assert.Empty(t, result.Get("Connection"))
+	assert.Empty(t, result.Get("Keep-Alive"))
+	// User-Agent should pass through
+	assert.Equal(t, "Test/1.0", result.Get("User-Agent"))
+}
+

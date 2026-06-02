@@ -105,6 +105,7 @@ const CREATE_CHANNEL_MUTATION = `
           }
           passThroughUserAgent
           passThroughBody
+          passThroughXForwardedFor
         }
       orderingWeight
       remark
@@ -164,6 +165,7 @@ const BULK_CREATE_CHANNELS_MUTATION = `
           }
           passThroughUserAgent
           passThroughBody
+          passThroughXForwardedFor
         }
       orderingWeight
       remark
@@ -223,6 +225,7 @@ const UPDATE_CHANNEL_MUTATION = `
           }
           passThroughUserAgent
           passThroughBody
+          passThroughXForwardedFor
         }
       orderingWeight
       errorMessage
@@ -383,6 +386,7 @@ const BULK_IMPORT_CHANNELS_MUTATION = `
           }
           passThroughUserAgent
           passThroughBody
+          passThroughXForwardedFor
         }
       }
     }
@@ -567,6 +571,7 @@ const BULK_UPDATE_CHANNEL_ORDERING_MUTATION = `
           }
           passThroughUserAgent
           passThroughBody
+          passThroughXForwardedFor
         }
       }
     }
@@ -696,6 +701,7 @@ const QUERY_CHANNELS_QUERY = `
             }
             passThroughUserAgent
             passThroughBody
+            passThroughXForwardedFor
             rateLimit {
               rpm
               tpm

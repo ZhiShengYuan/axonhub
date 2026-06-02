@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"strings"
 	"net/http"
 	"sync"
 
@@ -171,6 +172,36 @@ func applyUserAgentPassThrough(outbound *PersistentOutboundTransformer, systemSe
 			request.Headers.Set("User-Agent", "axonhub/1.0")
 		}
 
+		return request, nil
+	})
+}
+
+// applyXForwardedForPassThrough creates a middleware that applies the X-Forwarded-For pass-through setting.
+func applyXForwardedForPassThrough(outbound *PersistentOutboundTransformer, systemService *biz.SystemService) pipeline.Middleware {
+	return pipeline.OnRawRequest("x-forwarded-for-pass-through", func(ctx context.Context, request *httpclient.Request) (*httpclient.Request, error) {
+		channel := outbound.GetCurrentChannel()
+		if channel == nil {
+			return request, nil
+		}
+
+		enabled := channel.Settings != nil && channel.Settings.PassThroughXForwardedFor != nil && *channel.Settings.PassThroughXForwardedFor
+
+		if request.Headers == nil {
+			request.Headers = make(http.Header)
+		}
+
+		if enabled {
+			// Pass-through enabled: use the resolved client IP
+			if outbound.state.LlmRequest != nil && outbound.state.LlmRequest.RawRequest != nil {
+				if clientIP := strings.TrimSpace(outbound.state.LlmRequest.RawRequest.ClientIP); clientIP != "" {
+					request.Headers.Set("X-Forwarded-For", clientIP)
+					return request, nil
+				}
+			}
+		}
+
+		// Disabled or no valid IP: ensure no stale XFF header remains
+		request.Headers.Del("X-Forwarded-For")
 		return request, nil
 	})
 }

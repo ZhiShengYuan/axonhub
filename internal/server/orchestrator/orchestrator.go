@@ -255,6 +255,7 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 		// This allows override headers to modify the User-Agent if configured.
 		applyUserAgentPassThrough(outbound, processor.SystemService),
 		applyOverrideRequestHeaders(outbound),
+		applyXForwardedForPassThrough(outbound, processor.SystemService),
 
 		// Unified performance tracking middleware.
 		withPerformanceRecording(outbound),

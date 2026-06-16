@@ -1,0 +1,7 @@
+# pnpm v11 settings — migrated from package.json#pnpm which is no longer read
+overrides:
+  uuid@>=13.0.0 <14.0.0: "14.0.0"
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true

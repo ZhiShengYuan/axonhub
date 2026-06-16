@@ -441,6 +441,11 @@ func (s *RequestService) UpdateRequestCompleted(
 		return err
 	}
 
+	// Write affinity cache only after the completion update is committed.
+	// This biases future requests with the same affinity key toward the
+	// channel that successfully served this request.
+	s.writeAffinityCacheOnCompletion(ctx, req)
+
 	return nil
 }
 
@@ -1311,4 +1316,56 @@ func (s *RequestService) setLastSuccessfulChannelID(ctx context.Context, traceID
 
 func buildLastChannelCacheKey(traceID int) string {
 	return fmt.Sprintf("last_channel:%d", traceID)
+}
+
+// GetAffinityChannelID retrieves the cached channel ID for an affinity key.
+// Returns 0, nil if no cached channel found (no DB fallback in v1).
+func (s *RequestService) GetAffinityChannelID(ctx context.Context, projectID int, modelScope string, affinityHash string) (int, error) {
+	cacheKey := buildAffinityChannelCacheKey(projectID, modelScope, affinityHash)
+	if channelID, err := s.channelCache.Get(ctx, cacheKey); err == nil {
+		return channelID, nil
+	}
+
+	return 0, nil
+}
+
+// SetAffinityChannelID stores the channel ID for an affinity key with a 30-minute TTL.
+func (s *RequestService) SetAffinityChannelID(ctx context.Context, projectID int, modelScope string, affinityHash string, channelID int) {
+	cacheKey := buildAffinityChannelCacheKey(projectID, modelScope, affinityHash)
+	_ = s.channelCache.Set(ctx, cacheKey, channelID, store.WithExpiration(30*time.Minute))
+}
+
+func buildAffinityChannelCacheKey(projectID int, modelScope string, affinityHash string) string {
+	return fmt.Sprintf("affinity_channel:%d:%s:%s", projectID, modelScope, affinityHash)
+}
+
+// writeAffinityCacheOnCompletion writes the affinity channel cache after a
+// request is successfully completed. It is a no-op when the request has no
+// affinity state in its context (e.g. affinity extraction produced no key),
+// when the completed request has no assigned channel, or when the project ID
+// is missing. This must only be invoked from the success path.
+//
+// It is intentionally never called from UpdateRequestChannelID (selection time)
+// because affinity should reflect the channel that actually completed the
+// request, not merely the one that was tentatively selected.
+func (s *RequestService) writeAffinityCacheOnCompletion(ctx context.Context, req *ent.Request) {
+	if req == nil {
+		return
+	}
+
+	state, ok := contexts.GetAffinityState(ctx)
+	if !ok || state == nil || state.Hash == "" {
+		return
+	}
+
+	if req.ChannelID == 0 || req.ProjectID == 0 {
+		return
+	}
+
+	modelScope := state.ModelScope
+	if modelScope == "" {
+		modelScope = "unknown"
+	}
+
+	s.SetAffinityChannelID(ctx, req.ProjectID, modelScope, state.Hash, req.ChannelID)
 }

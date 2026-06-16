@@ -19,6 +19,7 @@ type contextContainer struct {
 	Source        *request.Source
 	Thread        *ent.Thread
 	Trace         *ent.Trace
+	AffinityState *AffinityState
 	Errors        []error
 	mu            sync.RWMutex
 

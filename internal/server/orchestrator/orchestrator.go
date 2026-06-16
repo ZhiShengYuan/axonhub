@@ -51,6 +51,7 @@ func NewChatCompletionOrchestrator(
 
 	adaptiveLoadBalancer := NewLoadBalancer(systemService, channelService,
 		NewTraceAwareStrategy(requestService),
+		NewAffinityAwareStrategy(requestService),
 		NewErrorAwareStrategy(channelService),
 		NewWeightRoundRobinStrategy(channelService),
 		NewLatencyAwareStrategy(channelService),
@@ -59,10 +60,10 @@ func NewChatCompletionOrchestrator(
 	)
 
 	failoverLoadBalancer := NewLoadBalancer(systemService, channelService,
-		NewWeightStrategy(), NewRandomStrategy(), rateLimitStrategy, quotaStrategy)
+		NewWeightStrategy(), NewAffinityAwareStrategy(requestService), NewRandomStrategy(), rateLimitStrategy, quotaStrategy)
 
 	circuitBreakerLoadBalancer := NewLoadBalancer(systemService, channelService,
-		NewWeightStrategy(), NewModelAwareCircuitBreakerStrategy(modelCircuitBreaker), rateLimitStrategy, quotaStrategy)
+		NewWeightStrategy(), NewAffinityAwareStrategy(requestService), NewModelAwareCircuitBreakerStrategy(modelCircuitBreaker), rateLimitStrategy, quotaStrategy)
 
 	return &ChatCompletionOrchestrator{
 		Inbound:            inbound,
@@ -164,6 +165,13 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 	ctx = authz.WithSystemBypass(ctx, "process-chat-completion")
 
 	apiKey, _ := contexts.GetAPIKey(ctx)
+
+	// Extract affinity state from request headers/body for soft session-aware routing.
+	// Affinity state is stored in context and used by AffinityAwareStrategy during
+	// load-balancer scoring. Extraction is best-effort: no signal = no state = normal routing.
+	if state, err := ExtractAffinity(ctx, request); err == nil && state != nil {
+		ctx = contexts.WithAffinityState(ctx, state)
+	}
 
 	// Get retry policy from system settings
 	retryPolicy := processor.SystemService.RetryPolicyOrDefault(ctx)

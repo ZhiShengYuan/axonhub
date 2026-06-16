@@ -33,7 +33,7 @@ jobs:
         with:
           version: 11
       - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: frontend
 
       - name: Build frontend

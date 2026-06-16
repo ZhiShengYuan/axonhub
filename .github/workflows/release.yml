@@ -7,10 +7,10 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
-  goreleaser:
+  release:
+    name: Build and Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,59 +18,96 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - name: Install frontend dependencies
-        run: pnpm install
-        working-directory: frontend
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: stable
           cache: true
 
-      - name: Update VERSION file
-        if: ${{ !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'rc') }}
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          echo "Updating VERSION file to: $VERSION"
-          echo "$VERSION" > internal/build/VERSION
-          git add internal/build/VERSION
-
-      - name: Commit VERSION file
-        if: ${{ !contains(github.ref_name, 'beta') && !contains(github.ref_name, 'rc') }}
-        continue-on-error: true
-        run: |
-          # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Check if VERSION files have changes
-          if git diff --cached --quiet VERSION internal/build/VERSION; then
-            echo "No changes to VERSION files"
-          else
-            # Commit VERSION files with [skip ci] to avoid triggering other workflows
-            git commit -m "chore: update VERSION to ${GITHUB_REF#refs/tags/} [skip ci]"
-            git push origin HEAD:${{ github.event.repository.default_branch }}
-          fi
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          distribution: goreleaser
-          version: '~> v2'
-          args: release --clean --skip=validate
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
+
+      - name: Build frontend
+        run: pnpm vite build
+        working-directory: frontend
+
+      - name: Copy frontend dist to server static
+        run: |
+          rm -rf internal/server/static/dist/assets
+          mkdir -p internal/server/static/dist
+          cp -r frontend/dist/* internal/server/static/dist/
+
+      - name: Build binary (linux/amd64)
+        run: |
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build \
+            -ldflags "-s -w \
+              -X 'github.com/looplj/axonhub/internal/build.Version=${GITHUB_REF_NAME}' \
+              -X 'github.com/looplj/axonhub/internal/build.Commit=${GITHUB_SHA::8}' \
+              -X 'github.com/looplj/axonhub/internal/build.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" \
+            -tags=nomsgpack \
+            -o axonhub-linux-amd64 \
+            ./cmd/axonhub
+
+      - name: Build binary (linux/arm64)
+        run: |
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build \
+            -ldflags "-s -w \
+              -X 'github.com/looplj/axonhub/internal/build.Version=${GITHUB_REF_NAME}' \
+              -X 'github.com/looplj/axonhub/internal/build.Commit=${GITHUB_SHA::8}' \
+              -X 'github.com/looplj/axonhub/internal/build.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)'" \
+            -tags=nomsgpack \
+            -o axonhub-linux-arm64 \
+            ./cmd/axonhub
+
+      - name: Package release archives
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          mkdir -p release
+
+          for ARCH in amd64 arm64; do
+            PKG="axonhub-${VERSION}-linux-${ARCH}"
+            mkdir -p "/tmp/${PKG}"
+
+            cp "axonhub-linux-${ARCH}" "/tmp/${PKG}/axonhub"
+            cp LICENSE      "/tmp/${PKG}/" 2>/dev/null || true
+            cp CHANGELOG.md "/tmp/${PKG}/" 2>/dev/null || true
+            cp config.schema.json "/tmp/${PKG}/" 2>/dev/null || true
+
+            # Deploy scripts
+            for f in deploy/*.sh deploy/*.ps1 deploy/*.bat; do
+              [ -f "$f" ] && cp "$f" "/tmp/${PKG}/"
+            done
+
+            cd /tmp
+            tar czf "${GITHUB_WORKSPACE}/release/${PKG}.tar.gz" "${PKG}/"
+            cd "${GITHUB_WORKSPACE}"
+            rm -rf "/tmp/${PKG}"
+          done
+
+      - name: Create Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          ASSETS=()
+
+          for f in release/*.tar.gz; do
+            ASSETS+=("$f")
+          done
+
+          gh release create "${TAG}" \
+            --draft \
+            --title "${TAG}" \
+            --notes "Release ${TAG}" \
+            "${ASSETS[@]}"

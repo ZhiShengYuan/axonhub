@@ -731,11 +731,16 @@ func TestApplyPassThroughStream_Disabled(t *testing.T) {
 	outbound := &PersistentOutboundTransformer{state: state}
 
 	mw := applyPassThroughStream(outbound, nil)
-	transformed := testHTTPStream(nil)
+	transformedEvents := []*httpclient.StreamEvent{
+		{Data: json.RawMessage(`{"model":"exec-model","choices":[]}`)},
+	}
+	transformed := testHTTPStream(transformedEvents)
 
 	result, err := mw.OnInboundRawStream(ctx, transformed)
 	require.NoError(t, err)
 	assert.Equal(t, transformed, result)
+	require.True(t, result.Next())
+	assert.JSONEq(t, `{"model":"exec-model","choices":[]}`, string(result.Current().Data))
 }
 
 func TestApplyPassThroughStream_NoRawChannel(t *testing.T) {
@@ -877,6 +882,86 @@ func TestApplyPassThroughStream_DrainsInner(t *testing.T) {
 	case <-drained:
 	case <-time.After(2 * time.Second):
 		t.Fatal("drain goroutine did not complete")
+	}
+}
+
+func TestApplyPassThroughStream_MasksRawEventModels(t *testing.T) {
+	ctx := context.Background()
+	channel := &biz.Channel{
+		Channel: &ent.Channel{
+			ID:   1,
+			Name: "test",
+			Settings: &objects.ChannelSettings{
+				PassThroughBody: lo.ToPtr(true),
+			},
+		},
+	}
+	rawCh := make(chan *httpclient.StreamEvent, 8)
+	state := &PersistenceState{
+		CurrentCandidate:      &ChannelModelsCandidate{Channel: channel},
+		RawStreamCh:           rawCh,
+		OriginalRequestStream: lo.ToPtr(true),
+		LlmRequest: &llm.Request{
+			APIFormat: llm.APIFormatOpenAIChatCompletion,
+			Model:     "request-model",
+			Stream:    lo.ToPtr(true),
+			RawRequest: &httpclient.Request{
+				APIFormat: string(llm.APIFormatOpenAIChatCompletion),
+				Body:      []byte(`{"model":"request-model","stream":true,"messages":[{"role":"user","content":"hi"}]}`),
+			},
+		},
+		RawProviderRequest: &httpclient.Request{
+			APIFormat: string(llm.APIFormatOpenAIChatCompletion),
+		},
+	}
+	outbound := &PersistentOutboundTransformer{state: state}
+
+	chatChunk := &httpclient.StreamEvent{Data: json.RawMessage(`{"model":"exec-model","choices":[{"delta":{"content":"hi"}}]}`)}
+	responsesEvent := &httpclient.StreamEvent{Data: json.RawMessage(`{"type":"response.created","response":{"model":"exec-model","id":"resp_1"}}`)}
+
+	go func() {
+		rawCh <- chatChunk
+		rawCh <- responsesEvent
+		close(rawCh)
+	}()
+
+	mw := applyPassThroughStream(outbound, nil)
+	result, err := mw.OnInboundRawStream(ctx, testHTTPStream(nil))
+	require.NoError(t, err)
+
+	var passthroughEvents []*httpclient.StreamEvent
+	for result.Next() {
+		passthroughEvents = append(passthroughEvents, result.Current())
+	}
+
+	require.Len(t, passthroughEvents, 2)
+	assert.JSONEq(t, `{"model":"request-model","choices":[{"delta":{"content":"hi"}}]}`, string(passthroughEvents[0].Data))
+	assert.JSONEq(t, `{"type":"response.created","response":{"model":"request-model","id":"resp_1"}}`, string(passthroughEvents[1].Data))
+	assert.JSONEq(t, `{"model":"exec-model","choices":[{"delta":{"content":"hi"}}]}`, string(chatChunk.Data))
+	assert.JSONEq(t, `{"type":"response.created","response":{"model":"exec-model","id":"resp_1"}}`, string(responsesEvent.Data))
+}
+
+func TestPatchPassThroughStreamEventModel_PreservesUnpatchedData(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+	}{
+		{name: "done marker", data: []byte(`[DONE]`)},
+		{name: "invalid json", data: []byte(`{"model":"exec-model"`)},
+		{name: "event without model fields", data: []byte(`{"type":"response.output_text.delta","delta":"hi"}`)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Given
+			original := append([]byte(nil), tt.data...)
+
+			// When
+			patched := patchPassThroughStreamEventModel(tt.data, "request-model")
+
+			// Then
+			assert.Equal(t, original, patched)
+		})
 	}
 }
 

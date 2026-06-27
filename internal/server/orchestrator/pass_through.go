@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
 	"github.com/looplj/axonhub/internal/log"
@@ -376,8 +377,41 @@ func applyPassThroughStream(outbound *PersistentOutboundTransformer, systemServi
 			stream.Close()
 		}()
 
-		return &passThroughChannelStream{ctx: ctx, ch: rawCh, errRef: errRef, cancel: cancel}, nil
+		return &passThroughChannelStream{
+			ctx:    ctx,
+			ch:     rawCh,
+			errRef: errRef,
+			cancel: cancel,
+			model:  outbound.state.LlmRequest.Model,
+		}, nil
 	})
+}
+
+func patchPassThroughStreamEventModel(data []byte, model string) []byte {
+	if len(data) == 0 || model == "" || !gjson.ValidBytes(data) {
+		return data
+	}
+
+	patched := data
+	if modelField := gjson.GetBytes(patched, "model"); modelField.Exists() && modelField.String() != model {
+		next, err := sjson.SetBytes(patched, "model", model)
+		if err != nil {
+			return data
+		}
+
+		patched = next
+	}
+
+	if responseModelField := gjson.GetBytes(patched, "response.model"); responseModelField.Exists() && responseModelField.String() != model {
+		next, err := sjson.SetBytes(patched, "response.model", model)
+		if err != nil {
+			return data
+		}
+
+		patched = next
+	}
+
+	return patched
 }
 
 // passThroughChannelStream wraps a channel as a Stream.
@@ -390,6 +424,7 @@ type passThroughChannelStream struct {
 	errRef  *error
 	cancel  context.CancelFunc
 	once    sync.Once
+	model   string
 }
 
 func (s *passThroughChannelStream) Next() bool {
@@ -400,7 +435,7 @@ func (s *passThroughChannelStream) Next() bool {
 				return false
 			}
 
-			s.current = ev
+			s.current = s.patchCurrent(ev)
 
 			return true
 		case <-s.ctx.Done():
@@ -415,9 +450,25 @@ func (s *passThroughChannelStream) Next() bool {
 		return false
 	}
 
-	s.current = ev
+	s.current = s.patchCurrent(ev)
 
 	return true
+}
+
+func (s *passThroughChannelStream) patchCurrent(ev *httpclient.StreamEvent) *httpclient.StreamEvent {
+	if ev == nil || s.model == "" {
+		return ev
+	}
+
+	patchedData := patchPassThroughStreamEventModel(ev.Data, s.model)
+	if string(patchedData) == string(ev.Data) {
+		return ev
+	}
+
+	patchedEvent := *ev
+	patchedEvent.Data = patchedData
+
+	return &patchedEvent
 }
 
 func (s *passThroughChannelStream) Current() *httpclient.StreamEvent { return s.current }

@@ -1,0 +1,364 @@
+=== RUN   TestWithAPIKeyConfig_RejectsNoAuthKeyWhenDisabled
+--- PASS: TestWithAPIKeyConfig_RejectsNoAuthKeyWhenDisabled (0.00s)
+=== RUN   TestWithAPIKeyConfig_AllowsMissingAuthorizationWhenNoAuthAllowed
+--- PASS: TestWithAPIKeyConfig_AllowsMissingAuthorizationWhenNoAuthAllowed (0.00s)
+=== RUN   TestExtractAPIKeyFromHeader
+=== RUN   TestExtractAPIKeyFromHeader/valid_bearer_token
+=== RUN   TestExtractAPIKeyFromHeader/empty_header
+=== RUN   TestExtractAPIKeyFromHeader/missing_Bearer_prefix
+=== RUN   TestExtractAPIKeyFromHeader/Bearer_with_lowercase
+=== RUN   TestExtractAPIKeyFromHeader/Bearer_without_space
+=== RUN   TestExtractAPIKeyFromHeader/Bearer_with_empty_key
+=== RUN   TestExtractAPIKeyFromHeader/Bearer_with_only_spaces
+=== RUN   TestExtractAPIKeyFromHeader/valid_key_with_special_characters
+=== RUN   TestExtractAPIKeyFromHeader/multiple_Bearer_prefixes
+--- PASS: TestExtractAPIKeyFromHeader (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/valid_bearer_token (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/empty_header (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/missing_Bearer_prefix (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/Bearer_with_lowercase (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/Bearer_without_space (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/Bearer_with_empty_key (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/Bearer_with_only_spaces (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/valid_key_with_special_characters (0.00s)
+    --- PASS: TestExtractAPIKeyFromHeader/multiple_Bearer_prefixes (0.00s)
+=== RUN   TestExtractAPIKeyFromRequest
+=== RUN   TestExtractAPIKeyFromRequest/Authorization_header_with_Bearer
+=== RUN   TestExtractAPIKeyFromRequest/X-API-Key_header
+=== RUN   TestExtractAPIKeyFromRequest/X-Api-Key_header
+=== RUN   TestExtractAPIKeyFromRequest/API-Key_header
+=== RUN   TestExtractAPIKeyFromRequest/Authorization_without_Bearer_prefix
+=== RUN   TestExtractAPIKeyFromRequest/Token_prefix
+=== RUN   TestExtractAPIKeyFromRequest/Priority_test_-_Authorization_first
+=== RUN   TestExtractAPIKeyFromRequest/Priority_test_-_X-API-Key_when_Authorization_missing
+=== RUN   TestExtractAPIKeyFromRequest/Custom_config_with_RequireBearer
+=== RUN   TestExtractAPIKeyFromRequest/Custom_config_with_custom_headers
+=== RUN   TestExtractAPIKeyFromRequest/Empty_API_key
+=== RUN   TestExtractAPIKeyFromRequest/Whitespace_only_API_key
+=== RUN   TestExtractAPIKeyFromRequest/API_key_with_leading/trailing_spaces
+=== RUN   TestExtractAPIKeyFromRequest/No_headers_provided
+--- PASS: TestExtractAPIKeyFromRequest (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Authorization_header_with_Bearer (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/X-API-Key_header (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/X-Api-Key_header (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/API-Key_header (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Authorization_without_Bearer_prefix (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Token_prefix (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Priority_test_-_Authorization_first (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Priority_test_-_X-API-Key_when_Authorization_missing (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Custom_config_with_RequireBearer (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Custom_config_with_custom_headers (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Empty_API_key (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/Whitespace_only_API_key (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/API_key_with_leading/trailing_spaces (0.00s)
+    --- PASS: TestExtractAPIKeyFromRequest/No_headers_provided (0.00s)
+=== RUN   TestExtractAPIKeyFromRequestSimple
+--- PASS: TestExtractAPIKeyFromRequestSimple (0.00s)
+=== RUN   TestDefaultAPIKeyConfig
+--- PASS: TestDefaultAPIKeyConfig (0.00s)
+=== RUN   TestIsBlockedIP
+=== RUN   TestIsBlockedIP/exact_match
+=== RUN   TestIsBlockedIP/cidr_match
+=== RUN   TestIsBlockedIP/trimmed_blocked_entry_match
+=== RUN   TestIsBlockedIP/ipv6_exact_match
+=== RUN   TestIsBlockedIP/ipv6_cidr_match
+=== RUN   TestIsBlockedIP/later_candidate_match
+=== RUN   TestIsBlockedIP/invalid_client_candidate_skipped
+{"level":"WARN","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"failed to parse client IP","client_ip":"bad-ip","error":"ParseAddr(\"bad-ip\"): unable to parse IP"}
+=== RUN   TestIsBlockedIP/invalid_blocked_entries_skipped
+{"level":"WARN","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"failed to parse blocked IP","blocked_ip":"bad-ip","error":"ParseAddr(\"bad-ip\"): unable to parse IP"}
+{"level":"WARN","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"failed to parse blocked IP prefix","blocked_ip":"bad-prefix/33","error":"netip.ParsePrefix(\"bad-prefix/33\"): ParseAddr(\"bad-prefix\"): unable to parse IP"}
+=== RUN   TestIsBlockedIP/no_match
+--- PASS: TestIsBlockedIP (0.00s)
+    --- PASS: TestIsBlockedIP/exact_match (0.00s)
+    --- PASS: TestIsBlockedIP/cidr_match (0.00s)
+    --- PASS: TestIsBlockedIP/trimmed_blocked_entry_match (0.00s)
+    --- PASS: TestIsBlockedIP/ipv6_exact_match (0.00s)
+    --- PASS: TestIsBlockedIP/ipv6_cidr_match (0.00s)
+    --- PASS: TestIsBlockedIP/later_candidate_match (0.00s)
+    --- PASS: TestIsBlockedIP/invalid_client_candidate_skipped (0.00s)
+    --- PASS: TestIsBlockedIP/invalid_blocked_entries_skipped (0.00s)
+    --- PASS: TestIsBlockedIP/no_match (0.00s)
+=== RUN   TestClientIPCandidates
+--- PASS: TestClientIPCandidates (0.00s)
+=== RUN   TestClientIPCandidatesDeduplicates
+--- PASS: TestClientIPCandidatesDeduplicates (0.00s)
+=== RUN   TestWithTracing
+--- PASS: TestWithTracing (0.00s)
+=== RUN   TestWithTracingExistingHeader
+--- PASS: TestWithTracingExistingHeader (0.00s)
+=== RUN   TestWithTracingCustomHeader
+--- PASS: TestWithTracingCustomHeader (0.00s)
+=== RUN   TestWithTracingEmptyConfig
+--- PASS: TestWithTracingEmptyConfig (0.00s)
+=== RUN   TestRecovery
+=== RUN   TestRecovery/panic_recovery_with_custom_middleware
+{"level":"ERROR","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"[PANIC] test panic","path":"/panic","method":"GET","client_ip":"192.0.2.1","user_agent":"","stack":"\n/home/kexi/axonhub/internal/server/middleware/recover_test.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func1.1:20\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/context.go:\n\tgithub.com/gin-gonic/gin.(*Context).Next:192\n/home/kexi/axonhub/internal/server/middleware/recover.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func1.Recovery.RecoveryWithWriter.2:46\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/context.go:\n\tgithub.com/gin-gonic/gin.(*Context).Next:192\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/gin.go:\n\tgithub.com/gin-gonic/gin.(*Engine).handleHTTPRequest:689\n\tgithub.com/gin-gonic/gin.(*Engine).ServeHTTP:643\n/home/kexi/axonhub/internal/server/middleware/recover_test.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func1:25\n/usr/local/go/src/testing/testing.go:\n\ttesting.tRunner:2036\n/usr/local/go/src/runtime/asm_amd64.s:\n\truntime.goexit:1771"}
+=== RUN   TestRecovery/normal_request_without_panic
+=== RUN   TestRecovery/panic_with_nil_value
+{"level":"ERROR","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"[PANIC] panic called with nil argument","path":"/panic-nil","method":"GET","client_ip":"192.0.2.1","user_agent":"","stack":"\n/home/kexi/axonhub/internal/server/middleware/recover_test.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func3.1:58\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/context.go:\n\tgithub.com/gin-gonic/gin.(*Context).Next:192\n/home/kexi/axonhub/internal/server/middleware/recover.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func3.Recovery.RecoveryWithWriter.2:46\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/context.go:\n\tgithub.com/gin-gonic/gin.(*Context).Next:192\n/home/kexi/go/pkg/mod/github.com/gin-gonic/gin@v1.11.0/gin.go:\n\tgithub.com/gin-gonic/gin.(*Engine).handleHTTPRequest:689\n\tgithub.com/gin-gonic/gin.(*Engine).ServeHTTP:643\n/home/kexi/axonhub/internal/server/middleware/recover_test.go:\n\tgithub.com/looplj/axonhub/internal/server/middleware.TestRecovery.func3:63\n/usr/local/go/src/testing/testing.go:\n\ttesting.tRunner:2036\n/usr/local/go/src/runtime/asm_amd64.s:\n\truntime.goexit:1771"}
+--- PASS: TestRecovery (0.00s)
+    --- PASS: TestRecovery/panic_recovery_with_custom_middleware (0.00s)
+    --- PASS: TestRecovery/normal_request_without_panic (0.00s)
+    --- PASS: TestRecovery/panic_with_nil_value (0.00s)
+=== RUN   TestWithSessionAffinityID
+=== PAUSE TestWithSessionAffinityID
+=== RUN   TestWithThreadID_Success
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithThreadID_Success (0.01s)
+=== RUN   TestWithThreadID_NoHeader
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithThreadID_NoHeader (0.01s)
+=== RUN   TestWithThreadID_NoProjectID
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithThreadID_NoProjectID (0.01s)
+=== RUN   TestWithThreadID_Idempotent
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithThreadID_Idempotent (0.01s)
+=== RUN   TestExtractClaudeTraceID
+=== PAUSE TestExtractClaudeTraceID
+=== RUN   TestWithTrace_ClaudeCodeDisabled
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ClaudeCodeDisabled (0.01s)
+=== RUN   TestWithTrace_ClaudeCodeSetsTraceHeader
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ClaudeCodeSetsTraceHeader (0.01s)
+=== RUN   TestWithTrace_ClaudeCodePreservesExistingTraceHeader
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ClaudeCodePreservesExistingTraceHeader (0.01s)
+=== RUN   TestWithTrace_OpenCodeDisabled
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_OpenCodeDisabled (0.01s)
+=== RUN   TestWithTrace_OpenCodeHeaderSetsTrace
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_OpenCodeHeaderSetsTrace (0.01s)
+=== RUN   TestWithTrace_OpenCodeHeaderHasLowerPriorityThanPrimaryTraceHeader
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_OpenCodeHeaderHasLowerPriorityThanPrimaryTraceHeader (0.01s)
+=== RUN   TestWithTrace_CodexDisabled
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexDisabled (0.01s)
+=== RUN   TestWithTrace_CodexHeaderSetsTrace
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexHeaderSetsTrace (0.01s)
+=== RUN   TestWithTrace_CodexTurnMetadataSetsTrace
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexTurnMetadataSetsTrace (0.04s)
+=== RUN   TestWithTrace_CodexHeaderHasPriorityOverTurnMetadata
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexHeaderHasPriorityOverTurnMetadata (0.03s)
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace (0.07s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json (0.03s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id (0.02s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id (0.02s)
+=== RUN   TestWithTrace_CodexSessionMissingDoesNotSetTrace
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexSessionMissingDoesNotSetTrace (0.01s)
+=== RUN   TestWithTraceID_Success
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTraceID_Success (0.01s)
+=== RUN   TestWithTraceID_WithThread
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTraceID_WithThread (0.01s)
+=== RUN   TestWithTraceID_NoHeader
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTraceID_NoHeader (0.01s)
+=== RUN   TestWithTraceID_NoProjectID
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTraceID_NoProjectID (0.01s)
+=== RUN   TestWithTraceID_Idempotent
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTraceID_Idempotent (0.01s)
+=== RUN   TestWithTrace_ExtraTraceBodyFields
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ExtraTraceBodyFields (0.01s)
+=== RUN   TestWithTrace_ExtraTraceBodyFields_Nested
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ExtraTraceBodyFields_Nested (0.01s)
+=== RUN   TestWithTrace_ExtraTraceBodyFields_Priority
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ExtraTraceBodyFields_Priority (0.01s)
+=== RUN   TestWithTrace_ExtraTraceBodyFields_InvalidJSON
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T11:34:04-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_ExtraTraceBodyFields_InvalidJSON (0.01s)
+=== CONT  TestWithSessionAffinityID
+=== CONT  TestExtractClaudeTraceID
+=== RUN   TestWithSessionAffinityID/X-Session-ID_header
+=== PAUSE TestWithSessionAffinityID/X-Session-ID_header
+=== RUN   TestWithSessionAffinityID/X-Session-Affinity_header
+=== PAUSE TestWithSessionAffinityID/X-Session-Affinity_header
+=== RUN   TestWithSessionAffinityID/x-claude-code-session-id_header
+=== PAUSE TestWithSessionAffinityID/x-claude-code-session-id_header
+=== RUN   TestWithSessionAffinityID/session-id_header
+=== PAUSE TestWithSessionAffinityID/session-id_header
+=== RUN   TestWithSessionAffinityID/x-conversation-id_header
+=== PAUSE TestWithSessionAffinityID/x-conversation-id_header
+=== RUN   TestWithSessionAffinityID/x-thread-id_header
+=== PAUSE TestWithSessionAffinityID/x-thread-id_header
+=== RUN   TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== PAUSE TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== RUN   TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== PAUSE TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== RUN   TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+--- PASS: TestExtractClaudeTraceID (0.00s)
+=== PAUSE TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== RUN   TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== PAUSE TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== RUN   TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== PAUSE TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== RUN   TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== PAUSE TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== RUN   TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== PAUSE TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== RUN   TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== PAUSE TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== RUN   TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== PAUSE TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/X-Session-ID_header
+=== CONT  TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== CONT  TestWithSessionAffinityID/x-conversation-id_header
+=== CONT  TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== CONT  TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== CONT  TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== CONT  TestWithSessionAffinityID/session-id_header
+=== CONT  TestWithSessionAffinityID/x-claude-code-session-id_header
+=== CONT  TestWithSessionAffinityID/x-thread-id_header
+=== CONT  TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== CONT  TestWithSessionAffinityID/X-Session-Affinity_header
+=== CONT  TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== CONT  TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== CONT  TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+--- PASS: TestWithSessionAffinityID (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-ID_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http (0.00s)
+    --- PASS: TestWithSessionAffinityID/blank/whitespace_headers_are_skipped (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-conversation-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted (0.00s)
+    --- PASS: TestWithSessionAffinityID/no_matching_header_leaves_context_unset (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-thread-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority (0.00s)
+    --- PASS: TestWithSessionAffinityID/all_headers_present:_highest_priority_wins (0.00s)
+    --- PASS: TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-claude-code-session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-Affinity_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/middleware	0.502s

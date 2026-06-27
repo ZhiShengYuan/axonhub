@@ -240,6 +240,78 @@ func TestApplyPassThroughResponse_UsesRawProviderRequestAPIFormat(t *testing.T) 
 	assert.Equal(t, rawResp, result)
 }
 
+func TestApplyPassThroughResponse_RewritesTopLevelModel(t *testing.T) {
+	ctx := context.Background()
+	state := newEnabledPassThroughResponseState("user-requested-model")
+	outbound := &PersistentOutboundTransformer{state: state}
+
+	mw := applyPassThroughResponse(outbound, nil)
+	transformed := &httpclient.Response{StatusCode: 200, Body: []byte(`{"model":"transformed-model"}`)}
+	rawResp := &httpclient.Response{StatusCode: 200, Body: []byte(`{"model":"actual-execution-model","id":"resp_123","nested":{"model":"must-stay"}}`)}
+	state.RawProviderResponse = rawResp
+
+	result, err := mw.OnInboundRawResponse(ctx, transformed)
+	require.NoError(t, err)
+	require.NotSame(t, rawResp, result)
+	assert.JSONEq(t, `{"model":"user-requested-model","id":"resp_123","nested":{"model":"must-stay"}}`, string(result.Body))
+	assert.JSONEq(t, `{"model":"actual-execution-model","id":"resp_123","nested":{"model":"must-stay"}}`, string(rawResp.Body))
+}
+
+func TestPatchPassThroughResponseModel_LeavesJSONWithoutModelUnchanged(t *testing.T) {
+	body := []byte(`{"id":"resp_123","nested":{"model":"actual-execution-model"}}`)
+
+	result := patchPassThroughResponseModel(body, "user-requested-model")
+
+	assert.Equal(t, body, result)
+}
+
+func TestPatchPassThroughResponseModel_LeavesInvalidJSONUnchanged(t *testing.T) {
+	body := []byte(`{"model":"actual-execution-model"`)
+
+	result := patchPassThroughResponseModel(body, "user-requested-model")
+
+	assert.Equal(t, body, result)
+}
+
+func TestPatchPassThroughResponseModel_LeavesNonJSONUnchanged(t *testing.T) {
+	body := []byte("provider unavailable")
+
+	result := patchPassThroughResponseModel(body, "user-requested-model")
+
+	assert.Equal(t, body, result)
+}
+
+func TestPatchPassThroughResponseModel_LeavesEmptyBodyUnchanged(t *testing.T) {
+	var body []byte
+
+	result := patchPassThroughResponseModel(body, "user-requested-model")
+
+	assert.Empty(t, result)
+}
+
+func newEnabledPassThroughResponseState(model string) *PersistenceState {
+	return &PersistenceState{
+		CurrentCandidate: &ChannelModelsCandidate{
+			Channel: &biz.Channel{
+				Channel: &ent.Channel{
+					ID:   1,
+					Name: "test",
+					Settings: &objects.ChannelSettings{
+						PassThroughBody: lo.ToPtr(true),
+					},
+				},
+			},
+		},
+		LlmRequest: &llm.Request{
+			Model:     model,
+			APIFormat: llm.APIFormatOpenAIChatCompletion,
+		},
+		RawProviderRequest: &httpclient.Request{
+			APIFormat: string(llm.APIFormatOpenAIChatCompletion),
+		},
+	}
+}
+
 func TestIsPassThroughEnabled_DisablesWhenSupportedStreamParameterChanges(t *testing.T) {
 	ctx := context.Background()
 	channel := &biz.Channel{
@@ -828,63 +900,6 @@ func TestApplyPassThroughStream_ReturnsRawEvents(t *testing.T) {
 	assert.Equal(t, rawEvents, passthroughEvents)
 }
 
-func TestApplyPassThroughStream_DrainsInner(t *testing.T) {
-	ctx := context.Background()
-	channel := &biz.Channel{
-		Channel: &ent.Channel{
-			ID:   1,
-			Name: "test",
-			Settings: &objects.ChannelSettings{
-				PassThroughBody: lo.ToPtr(true),
-			},
-		},
-	}
-	rawCh := make(chan *httpclient.StreamEvent, 8)
-	state := &PersistenceState{
-		CurrentCandidate:      &ChannelModelsCandidate{Channel: channel},
-		RawStreamCh:           rawCh,
-		OriginalRequestStream: lo.ToPtr(true),
-		LlmRequest: &llm.Request{
-			APIFormat: llm.APIFormatOpenAIChatCompletion,
-			Stream:    lo.ToPtr(true),
-			RawRequest: &httpclient.Request{
-				APIFormat: string(llm.APIFormatOpenAIChatCompletion),
-				Body:      []byte(`{"model":"gpt-4o","stream":true,"messages":[{"role":"user","content":"hi"}]}`),
-			},
-		},
-		RawProviderRequest: &httpclient.Request{
-			APIFormat: string(llm.APIFormatOpenAIChatCompletion),
-		},
-	}
-	outbound := &PersistentOutboundTransformer{state: state}
-
-	drained := make(chan struct{})
-	transformed := &doneStream{
-		stream: testHTTPStream([]*httpclient.StreamEvent{
-			{Data: json.RawMessage(`{"id":"t1"}`)},
-		}),
-		done: drained,
-	}
-
-	go func() {
-		rawCh <- &httpclient.StreamEvent{Data: json.RawMessage(`{"id":"r1"}`)}
-		close(rawCh)
-	}()
-
-	mw := applyPassThroughStream(outbound, nil)
-	result, err := mw.OnInboundRawStream(ctx, transformed)
-	require.NoError(t, err)
-
-	for result.Next() {
-	}
-
-	select {
-	case <-drained:
-	case <-time.After(2 * time.Second):
-		t.Fatal("drain goroutine did not complete")
-	}
-}
-
 func TestApplyPassThroughStream_MasksRawEventModels(t *testing.T) {
 	ctx := context.Background()
 	channel := &biz.Channel{
@@ -962,6 +977,63 @@ func TestPatchPassThroughStreamEventModel_PreservesUnpatchedData(t *testing.T) {
 			// Then
 			assert.Equal(t, original, patched)
 		})
+	}
+}
+
+func TestApplyPassThroughStream_DrainsInner(t *testing.T) {
+	ctx := context.Background()
+	channel := &biz.Channel{
+		Channel: &ent.Channel{
+			ID:   1,
+			Name: "test",
+			Settings: &objects.ChannelSettings{
+				PassThroughBody: lo.ToPtr(true),
+			},
+		},
+	}
+	rawCh := make(chan *httpclient.StreamEvent, 8)
+	state := &PersistenceState{
+		CurrentCandidate:      &ChannelModelsCandidate{Channel: channel},
+		RawStreamCh:           rawCh,
+		OriginalRequestStream: lo.ToPtr(true),
+		LlmRequest: &llm.Request{
+			APIFormat: llm.APIFormatOpenAIChatCompletion,
+			Stream:    lo.ToPtr(true),
+			RawRequest: &httpclient.Request{
+				APIFormat: string(llm.APIFormatOpenAIChatCompletion),
+				Body:      []byte(`{"model":"gpt-4o","stream":true,"messages":[{"role":"user","content":"hi"}]}`),
+			},
+		},
+		RawProviderRequest: &httpclient.Request{
+			APIFormat: string(llm.APIFormatOpenAIChatCompletion),
+		},
+	}
+	outbound := &PersistentOutboundTransformer{state: state}
+
+	drained := make(chan struct{})
+	transformed := &doneStream{
+		stream: testHTTPStream([]*httpclient.StreamEvent{
+			{Data: json.RawMessage(`{"id":"t1"}`)},
+		}),
+		done: drained,
+	}
+
+	go func() {
+		rawCh <- &httpclient.StreamEvent{Data: json.RawMessage(`{"id":"r1"}`)}
+		close(rawCh)
+	}()
+
+	mw := applyPassThroughStream(outbound, nil)
+	result, err := mw.OnInboundRawStream(ctx, transformed)
+	require.NoError(t, err)
+
+	for result.Next() {
+	}
+
+	select {
+	case <-drained:
+	case <-time.After(2 * time.Second):
+		t.Fatal("drain goroutine did not complete")
 	}
 }
 

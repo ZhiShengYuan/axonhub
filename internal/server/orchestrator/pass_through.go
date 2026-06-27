@@ -242,8 +242,37 @@ func applyPassThroughResponse(outbound *PersistentOutboundTransformer, systemSer
 			log.String("api_format", outbound.state.RawProviderRequest.APIFormat),
 		)
 
+		patchedBody := patchPassThroughResponseModel(rawResp.Body, outbound.state.LlmRequest.Model)
+		if string(patchedBody) != string(rawResp.Body) {
+			patchedResp := *rawResp
+			patchedResp.Body = patchedBody
+
+			return &patchedResp, nil
+		}
+
 		return rawResp, nil
 	})
+}
+
+func patchPassThroughResponseModel(rawBody []byte, model string) []byte {
+	if len(rawBody) == 0 || model == "" {
+		return rawBody
+	}
+	if !gjson.ValidBytes(rawBody) {
+		return rawBody
+	}
+
+	modelField := gjson.GetBytes(rawBody, "model")
+	if !modelField.Exists() || modelField.Type != gjson.String {
+		return rawBody
+	}
+
+	patchedBody, err := sjson.SetBytes(rawBody, "model", model)
+	if err != nil {
+		return rawBody
+	}
+
+	return patchedBody
 }
 
 // captureRawProviderStream fans out raw provider stream events to both the pipeline

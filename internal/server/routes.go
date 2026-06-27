@@ -162,6 +162,7 @@ func SetupRoutes(server *Server, handlers Handlers, client *ent.Client, services
 		middleware.WithAPIKeyConfig(services.AuthService, nil),
 		middleware.WithSource(request.SourceAPI),
 		middleware.WithThread(server.Config.Trace, services.ThreadService),
+		middleware.WithSessionAffinityID(),
 		middleware.WithTrace(server.Config.Trace, services.TraceService),
 	)
 

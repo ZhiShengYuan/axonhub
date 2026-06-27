@@ -118,6 +118,7 @@ func (ts *OutboundPersistentStream) Close() error {
 		// Stream completed successfully - perform final persistence
 		log.Debug(ctx, "Stream completed successfully (received [DONE]), performing final persistence")
 		ts.persistResponseChunks(ctx)
+		recordAffinityOnStreamSuccess(ctx, ts.state)
 
 		return ts.stream.Close()
 	}
@@ -207,8 +208,22 @@ func (ts *OutboundPersistentStream) Close() error {
 	} else {
 		ts.persistResponseChunks(ctx)
 	}
+	recordAffinityOnStreamSuccess(ctx, ts.state)
 
 	return ts.stream.Close()
+}
+
+func recordAffinityOnStreamSuccess(ctx context.Context, state *PersistenceState) {
+	if state == nil || state.ProviderAffinity == nil || state.CurrentCandidate == nil {
+		return
+	}
+
+	scope, sessionID, ok := state.ProviderAffinity.WithScopedSessionID(ctx)
+	if !ok {
+		return
+	}
+
+	state.ProviderAffinity.Set(scope, sessionID, ProviderKey(state.CurrentCandidate))
 }
 
 func (ts *OutboundPersistentStream) logFinalizationDecision(ctx context.Context, decision string, streamErr error, ctxErr error, aggregatedCompleted bool, aggregatedErr error) {

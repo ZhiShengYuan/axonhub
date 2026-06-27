@@ -88,6 +88,7 @@ func NewChatCompletionOrchestrator(
 		failoverLoadBalancer:       failoverLoadBalancer,
 		circuitBreakerLoadBalancer: circuitBreakerLoadBalancer,
 		modelCircuitBreaker:        modelCircuitBreaker,
+		providerAffinity:           NewProviderAffinityStore(0),
 		quotaProvider:              quotaProvider,
 		proxy:                      nil,
 	}
@@ -125,6 +126,7 @@ type ChatCompletionOrchestrator struct {
 	rateLimitTracker *ChannelRequestTracker
 	// The model circuit breaker for circuit-breaker load balancing.
 	modelCircuitBreaker *biz.ModelCircuitBreaker
+	providerAffinity    *ProviderAffinityStore
 	// The provider quota status provider for quota-aware load balancing and selection.
 	quotaProvider ProviderQuotaStatusProvider
 
@@ -202,6 +204,7 @@ func (processor *ChatCompletionOrchestrator) Process(ctx context.Context, reques
 		RetryPolicyProvider:   processor.SystemService,
 		CandidateSelector:     processor.channelSelector,
 		LoadBalancer:          loadBalancer,
+		ProviderAffinity:      processor.providerAffinity,
 		ModelMapper:           processor.ModelMapper,
 		Proxy:                 processor.proxy,
 		CurrentCandidateIndex: 0,

@@ -1,0 +1,24 @@
+Task: Wave 2 Todo 4 - Introduce process-local provider affinity store
+
+Changed files:
+- internal/server/orchestrator/provider_affinity.go
+- internal/server/orchestrator/provider_affinity_test.go
+
+Implementation notes:
+- ProviderAffinityStore uses sync.RWMutex for synchronized access.
+- Store key is scope + "\x00" + sessionID.
+- Provider identity is string(candidate.Channel.Type) via ProviderKey.
+- Store is bounded with default max entries 1024 and evicts oldest inserted entry when exceeded.
+- Empty scope/sessionID are ignored and return !ok.
+- WithScopedSessionID reads shared.GetSessionScope(ctx) and shared.GetSessionID(ctx).
+
+Verification:
+$ go test ./internal/server/orchestrator -run 'Test.*ProviderAffinity.*Store|Test.*ScopedSession.*'
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.071s
+
+$ go test -race ./internal/server/orchestrator -run 'Test.*ProviderAffinity.*Store'
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	1.331s
+
+Diagnostics:
+$ aft_inspect --scope internal/server/orchestrator/provider_affinity.go,internal/server/orchestrator/provider_affinity_test.go
+0 errors, 0 warnings (Go LSP server unavailable in this environment)

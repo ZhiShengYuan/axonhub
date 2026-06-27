@@ -1,0 +1,2 @@
+$ go test ./internal/server/orchestrator -run 'Test.*ProviderAffinity.*Rebind|Test.*NextChannel.*|Test.*PrepareForRetry.*'
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.107s

@@ -124,7 +124,7 @@ func (m *persistRequestExecutionMiddleware) OnOutboundRawResponse(ctx context.Co
 
 func (m *persistRequestExecutionMiddleware) OnOutboundLlmResponse(ctx context.Context, llmResp *llm.Response) (*llm.Response, error) {
 	state := m.outbound.state
-	if state == nil || state.RequestExec == nil {
+	if state == nil || state.RequestExec == nil || llmResp == nil {
 		return llmResp, nil
 	}
 
@@ -170,7 +170,13 @@ func (m *persistRequestExecutionMiddleware) OnOutboundLlmResponse(ctx context.Co
 
 	// Audio responses (binary TTS / non-JSON STT) must be converted to JSON-safe payloads
 	// before persisting into the JSON response_body column.
-	respBody := audioSafeResponseBody(llmResp.RequestType, m.rawResponse.Headers.Get("Content-Type"), m.rawResponse.Body)
+	var contentType string
+	var body []byte
+	if m.rawResponse != nil {
+		contentType = m.rawResponse.Headers.Get("Content-Type")
+		body = m.rawResponse.Body
+	}
+	respBody := audioSafeResponseBody(llmResp.RequestType, contentType, body)
 
 	err := state.RequestService.UpdateRequestExecutionCompleted(
 		persistCtx,
@@ -181,7 +187,10 @@ func (m *persistRequestExecutionMiddleware) OnOutboundLlmResponse(ctx context.Co
 	)
 	if err != nil {
 		log.Warn(persistCtx, "Failed to update request execution status to completed", log.Cause(err))
+		return llmResp, nil
 	}
+
+	recordAffinityOnStreamSuccess(ctx, state)
 
 	return llmResp, nil
 }

@@ -621,19 +621,34 @@ func (s *SelectedChannelsSelector) Select(ctx context.Context, req *llm.Request)
 
 // LoadBalancedSelector is a decorator that sorts candidates using load balancing strategies.
 type LoadBalancedSelector struct {
-	wrapped      CandidateSelector
-	loadBalancer *LoadBalancer
-	policy       RetryPolicyProvider
+	wrapped       CandidateSelector
+	loadBalancer  *LoadBalancer
+	policy        RetryPolicyProvider
+	affinityStore *ProviderAffinityStore
+}
+
+type LoadBalancedSelectorOption func(*LoadBalancedSelector)
+
+func WithProviderAffinity(store *ProviderAffinityStore) LoadBalancedSelectorOption {
+	return func(s *LoadBalancedSelector) {
+		s.affinityStore = store
+	}
 }
 
 // WithLoadBalancedSelector creates a selector that applies load balancing to sort candidates.
 // The policy is used to determine the retry policy for early stopping.
-func WithLoadBalancedSelector(wrapped CandidateSelector, loadBalancer *LoadBalancer, policy RetryPolicyProvider) *LoadBalancedSelector {
-	return &LoadBalancedSelector{
+func WithLoadBalancedSelector(wrapped CandidateSelector, loadBalancer *LoadBalancer, policy RetryPolicyProvider, opts ...LoadBalancedSelectorOption) *LoadBalancedSelector {
+	selector := &LoadBalancedSelector{
 		wrapped:      wrapped,
 		loadBalancer: loadBalancer,
 		policy:       policy,
 	}
+
+	for _, opt := range opts {
+		opt(selector)
+	}
+
+	return selector
 }
 
 func (s *LoadBalancedSelector) Select(ctx context.Context, req *llm.Request) ([]*ChannelModelsCandidate, error) {
@@ -669,6 +684,7 @@ func (s *LoadBalancedSelector) Select(ctx context.Context, req *llm.Request) ([]
 	// For each priority group, apply load balancing to sort candidates within the group
 	// Stop early if we have collected enough candidates
 	var result []*ChannelModelsCandidate
+	preferredProvider, hasProviderAffinity := s.preferredProvider(ctx)
 
 	for _, p := range priorities {
 		group := priorityGroups[p]
@@ -677,6 +693,14 @@ func (s *LoadBalancedSelector) Select(ctx context.Context, req *llm.Request) ([]
 		useStream := req.Stream != nil && *req.Stream
 		ctx = contextWithQuotaLimitType(ctx, string(provider_quota.RequestModality(req.Image != nil)))
 		sortedCandidates := s.loadBalancer.Sort(ctx, group, req.Model, useStream)
+		var preferredCandidates, nonPreferredCandidates []*ChannelModelsCandidate
+		if hasProviderAffinity {
+			fullSortedGroup := appendUnsortedRemainder(sortedCandidates, group)
+			preferredCandidates, nonPreferredCandidates = partitionByProviderAffinity(fullSortedGroup, preferredProvider)
+			if len(preferredCandidates) > 0 {
+				sortedCandidates = append(preferredCandidates, nonPreferredCandidates...)
+			}
+		}
 
 		// Add candidates, but stop if we have enough
 		remaining := requiredCount - len(result)
@@ -687,7 +711,7 @@ func (s *LoadBalancedSelector) Select(ctx context.Context, req *llm.Request) ([]
 		if len(sortedCandidates) <= remaining {
 			result = append(result, sortedCandidates...)
 		} else {
-			result = append(result, sortedCandidates[:remaining]...)
+			result = append(result, retainAffinityRetryFallback(sortedCandidates, preferredCandidates, nonPreferredCandidates, remaining, retryPolicy.Enabled)...)
 			break
 		}
 	}
@@ -701,6 +725,81 @@ func (s *LoadBalancedSelector) Select(ctx context.Context, req *llm.Request) ([]
 	}
 
 	return result, nil
+}
+
+func (s *LoadBalancedSelector) preferredProvider(ctx context.Context) (string, bool) {
+	if s.affinityStore == nil {
+		return "", false
+	}
+
+	scope, sessionID, ok := s.affinityStore.WithScopedSessionID(ctx)
+	if !ok {
+		return "", false
+	}
+
+	provider, ok := s.affinityStore.Get(scope, sessionID)
+	return provider, ok && provider != ""
+}
+
+func partitionByProviderAffinity(candidates []*ChannelModelsCandidate, preferredProvider string) ([]*ChannelModelsCandidate, []*ChannelModelsCandidate) {
+	if preferredProvider == "" {
+		return nil, nil
+	}
+
+	preferred := make([]*ChannelModelsCandidate, 0, len(candidates))
+	nonPreferred := make([]*ChannelModelsCandidate, 0, len(candidates))
+	for _, candidate := range candidates {
+		if ProviderKey(candidate) == preferredProvider {
+			preferred = append(preferred, candidate)
+		} else {
+			nonPreferred = append(nonPreferred, candidate)
+		}
+	}
+
+	return preferred, nonPreferred
+}
+
+func appendUnsortedRemainder(sortedCandidates []*ChannelModelsCandidate, group []*ChannelModelsCandidate) []*ChannelModelsCandidate {
+	if len(sortedCandidates) >= len(group) {
+		return sortedCandidates
+	}
+
+	seen := make(map[*ChannelModelsCandidate]struct{}, len(sortedCandidates))
+	for _, candidate := range sortedCandidates {
+		seen[candidate] = struct{}{}
+	}
+
+	fullGroup := append([]*ChannelModelsCandidate{}, sortedCandidates...)
+	for _, candidate := range group {
+		if _, ok := seen[candidate]; ok {
+			continue
+		}
+		fullGroup = append(fullGroup, candidate)
+	}
+
+	return fullGroup
+}
+
+func retainAffinityRetryFallback(
+	reorderedGroup []*ChannelModelsCandidate,
+	preferredCandidates []*ChannelModelsCandidate,
+	nonPreferredCandidates []*ChannelModelsCandidate,
+	remaining int,
+	retryEnabled bool,
+) []*ChannelModelsCandidate {
+	if remaining <= 0 {
+		return nil
+	}
+
+	if !retryEnabled || remaining < 2 || len(preferredCandidates) < remaining || len(nonPreferredCandidates) == 0 {
+		return reorderedGroup[:remaining]
+	}
+
+	retained := make([]*ChannelModelsCandidate, 0, remaining)
+	retained = append(retained, preferredCandidates[:remaining-1]...)
+	retained = append(retained, nonPreferredCandidates[0])
+
+	return retained
 }
 
 // TagsFilterSelector is a decorator that filters candidates by allowed channel tags.

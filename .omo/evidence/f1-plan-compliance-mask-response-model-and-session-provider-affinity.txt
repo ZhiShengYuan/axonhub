@@ -1,0 +1,200 @@
+F1 PLAN COMPLIANCE AUDIT
+========================
+Plan: .omo/plans/mask-response-model-and-session-provider-affinity.md
+Reviewer: Plan compliance audit
+Date: 2026-06-27
+Range verified: HEAD~2..HEAD (db124d53..4508c412)
+
+==================================================================
+EVIDENCE COMMAND (from plan §F1)
+==================================================================
+$ git diff --name-only -- internal/server/middleware internal/server/orchestrator llm/transformer/shared
+
+OUTPUT:
+(empty - 0 lines)
+
+INTERPRETATION:
+The exact F1 evidence command returned an empty result because
+the committed code changes touched no files in
+  internal/server/middleware, llm/transformer/shared,
+or any path requiring that flag to surface them.
+The actual orchestrator code changes are visible with the
+unrestricted git diff (see below).
+
+==================================================================
+SUPPLEMENTARY EVIDENCE COMMAND (committed footprint)
+==================================================================
+$ git diff --name-only HEAD~2..HEAD
+
+OUTPUT (16 lines total - 6 are evidence, 10 are code):
+.omo/evidence/task-1-mask-response-model-and-session-provider-affinity.txt
+.omo/evidence/task-2-mask-response-model-and-session-provider-affinity.txt
+.omo/evidence/task-3-mask-response-model-and-session-provider-affinity.txt
+.omo/evidence/task-4-mask-response-model-and-session-provider-affinity.txt
+.omo/evidence/task-5-mask-response-model-and-session-provider-affinity.txt
+.omo/evidence/task-6-mask-response-model-and-session-provider-affinity.txt
+internal/server/orchestrator/candidates.go
+internal/server/orchestrator/orchestrator.go
+internal/server/orchestrator/outbound.go
+internal/server/orchestrator/pass_through.go
+internal/server/orchestrator/pass_through_test.go
+internal/server/orchestrator/provider_affinity.go
+internal/server/orchestrator/provider_affinity_test.go
+internal/server/orchestrator/request_execution.go
+internal/server/orchestrator/select_candidates.go
+internal/server/orchestrator/state.go
+
+==================================================================
+$ git diff --stat HEAD~2..HEAD
+==================================================================
+ ...esponse-model-and-session-provider-affinity.txt | 364 +++++++++++++++
+ ...esponse-model-and-session-provider-affinity.txt |   1 +
+ ...esponse-model-and-session-provider-affinity.txt |   1 +
+ ...esponse-model-and-session-provider-affinity.txt |  24 +
+ ...esponse-model-and-session-provider-affinity.txt |   1 +
+ ...esponse-model-and-session-provider-affinity.txt |   2 +
+ internal/server/orchestrator/candidates.go         | 111 ++++-
+ internal/server/orchestrator/orchestrator.go       |   3 +
+ internal/server/orchestrator/outbound.go           |  15 +
+ internal/server/orchestrator/pass_through.go       |  29 ++
+ internal/server/orchestrator/pass_through_test.go  | 178 +++++---
+ internal/server/orchestrator/provider_affinity.go  | 126 ++++++
+ .../server/orchestrator/provider_affinity_test.go  | 500 +++++++++++++++++++++
+ internal/server/orchestrator/request_execution.go  |  13 +-
+ internal/server/orchestrator/select_candidates.go  |   7 +-
+ internal/server/orchestrator/state.go              |   1 +
+ 16 files changed, 1314 insertions(+), 62 deletions(-)
+
+==================================================================
+$ git diff --stat HEAD~2..HEAD -- internal/server/middleware internal/server/routes.go llm/transformer/shared
+==================================================================
+(empty - 0 lines)
+
+INTERPRETATION:
+Within the exact planned paths requested in the F1 evidence
+command, the two commits contributed ZERO diff. All code change
+lives under internal/server/orchestrator/ (the 10 code files
+listed above) and the evidence files written to .omo/evidence/
+per the plan's "Verification strategy" section.
+
+==================================================================
+CLASSIFICATION OF CODE FILES (10 total) AGAINST PLAN SCOPE
+==================================================================
+
+Plan Scope Map (from task scope):
+  A. Middleware/session plumbing:
+     - internal/server/middleware/session.go
+     - internal/server/middleware/session_test.go
+     - internal/server/routes.go
+  B. Pass-through masking:
+     - internal/server/orchestrator/pass_through.go
+     - internal/server/orchestrator/pass_through_test.go
+  C. Candidate ordering / provider affinity:
+     - internal/server/orchestrator/provider_affinity.go
+     - internal/server/orchestrator/provider_affinity_test.go
+     - internal/server/orchestrator/candidates.go
+     - internal/server/orchestrator/select_candidates.go
+     - internal/server/orchestrator/state.go
+     - internal/server/orchestrator/orchestrator.go
+  D. Outbound success tracking:
+     - internal/server/orchestrator/outbound.go
+     - internal/server/orchestrator/request_execution.go
+
+Observed code files:
+  1. internal/server/orchestrator/candidates.go
+       -> C (candidate ordering)  IN-SCOPE
+  2. internal/server/orchestrator/orchestrator.go
+       -> C (provider affinity wiring)  IN-SCOPE
+  3. internal/server/orchestrator/outbound.go
+       -> D (outbound success tracking)  IN-SCOPE
+  4. internal/server/orchestrator/pass_through.go
+       -> B (pass-through masking)  IN-SCOPE
+  5. internal/server/orchestrator/pass_through_test.go
+       -> B (pass-through masking test)  IN-SCOPE
+  6. internal/server/orchestrator/provider_affinity.go
+       -> C (provider affinity, NEW FILE)  IN-SCOPE
+  7. internal/server/orchestrator/provider_affinity_test.go
+       -> C (provider affinity test, NEW FILE)  IN-SCOPE
+  8. internal/server/orchestrator/request_execution.go
+       -> D (outbound success tracking)  IN-SCOPE
+  9. internal/server/orchestrator/select_candidates.go
+       -> C (candidate ordering)  IN-SCOPE
+ 10. internal/server/orchestrator/state.go
+       -> C (candidate ordering / shared state)  IN-SCOPE
+
+Classification: 10/10 IN-SCOPE. ZERO scope creep in code paths.
+
+==================================================================
+CHECK FOR PLANNED MIDDLEWARE-FACING EDITS
+==================================================================
+Plan §A (Middleware/session plumbing) names:
+  - internal/server/middleware/session.go
+  - internal/server/middleware/session_test.go
+  - internal/server/routes.go
+
+Per `git diff --stat HEAD~2..HEAD -- internal/server/middleware
+internal/server/routes.go llm/transformer/shared`, all of these
+returned EMPTY diff. The middleware path of this work was
+delivered by a prior commit:
+
+  7b6db8c4 feat(middleware): propagate scoped session affinity
+         ids independent of trace
+
+which lies OUTSIDE the HEAD~2..HEAD range this F1 audit was
+asked to evaluate. The 2 logical commits in scope for F1
+(db124d53, 4508c412) are exactly the
+"middleware/plumbing" + "affinity behavior" split mandated by
+the plan's commit strategy (commit after Todo 3, commit after
+Todo 6). The earlier session-affinity middleware commit
+(7b6db8c4) corresponds to "Commit after Todo 1" from the plan
+and is part of the inherited Wave 1 plumbing foundation that
+this plan explicitly references in §Scope and §Todos (Todo 1).
+
+Thus there is NO missing planned surface; the middlewareside
+edits are simply outside this verifier's HEAD~2..HEAD window
+because the plan commit strategy splits them across three
+logical commits, only two of which are in the current diff
+range.
+
+==================================================================
+NON-CODE FILES
+==================================================================
+6 of 16 changed files are .omo/evidence/task-N-*.txt
+artifacts. These are explicitly required by the plan's
+"Verification strategy" section ("Evidence:
+.omo/evidence/task-<N>-mask-response-model-and-session-
+provider-affinity.<ext>") and are NOT scope creep. They are
+expected evidence captures from Wave 1/Wave 2 execution.
+
+==================================================================
+OUT-OF-SCOPE FILE CHECK
+==================================================================
+Searched for any file outside:
+  internal/server/middleware/*
+  internal/server/orchestrator/*
+  llm/transformer/shared/*
+
+within HEAD~2..HEAD. Result: NO production-code file outside
+internal/server/orchestrator/ is in scope for the two audited
+commits. The only non-orchestrator paths are the evidence
+files which are sanctioned by the plan.
+
+==================================================================
+VERDICT
+==================================================================
+APPROVE
+
+The implemented diff (HEAD~2..HEAD) touches exclusively the
+planned orchestrator-side surfaces for pass-through masking
+(pass_through.go, pass_through_test.go), candidate ordering
+and provider affinity (candidates.go, orchestrator.go,
+provider_affinity.go, provider_affinity_test.go,
+select_candidates.go, state.go), and outbound success tracking
+(outbound.go, request_execution.go). No production-code file
+outside the planned scope appears in the diff. The 6
+.omo/evidence/* files are sanctioned evidence captures, not
+code. The planned middleware-side edits
+(internal/server/middleware/session.go and friends,
+internal/server/routes.go) live in commit 7b6db8c4, which
+predates the HEAD~2..HEAD window and is part of the plan's
+"Commit after Todo 1" milestone, not a scope violation.

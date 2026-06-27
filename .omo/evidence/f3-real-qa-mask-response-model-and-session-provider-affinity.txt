@@ -1,0 +1,438 @@
+================================================================================
+F3 — FINAL VERIFICATION WAVE: Real Manual QA
+Plan: .omo/plans/mask-response-model-and-session-provider-affinity.md
+================================================================================
+Date: 2026-06-27
+Reviewer: Sisyphus-Junior (Final Verification Wave F3)
+
+--------------------------------------------------------------------------------
+COMMAND 1: PassThrough + ProviderAffinity — internal/server/orchestrator
+--------------------------------------------------------------------------------
+$ go test ./internal/server/orchestrator -run 'Test.*PassThrough.*|Test.*ProviderAffinity.*' -count=1 -v
+
+(See end of file for full stdout/stderr capture.)
+(See .omo/evidence/f3-orchestrator-output.txt for the raw tee output.)
+
+SUMMARY (Command 1):
+  - Package: github.com/looplj/axonhub/internal/server/orchestrator
+  - Result: PASS
+  - Wall time: 0.281s
+  - Final line: PASS / ok ... 0.281s
+  - EXIT_CODE: 0
+
+Tests proving KEY BEHAVIORS in this command:
+
+  A) Pass-through JSON response model masking
+     - TestApplyPassThroughResponse_RewritesTopLevelModel                     PASS
+         → proves pass-through JSON body has its top-level "model" rewritten
+     - TestApplyPassThroughResponse_Enabled_ReturnsRaw                       PASS
+     - TestApplyPassThroughResponse_MismatchedAPIFormat                      PASS
+     - TestApplyPassThroughResponse_NilLlmRequest                            PASS
+     - TestApplyPassThroughResponse_UsesRawProviderRequestAPIFormat          PASS
+     - TestApplyPassThroughResponse_Disabled                                 PASS
+     - TestApplyPassThroughResponse_NilSettings                              PASS
+     - TestPatchPassThroughResponseModel_LeavesJSONWithoutModelUnchanged     PASS
+     - TestPatchPassThroughResponseModel_LeavesInvalidJSONUnchanged          PASS
+     - TestPatchPassThroughResponseModel_LeavesNonJSONUnchanged              PASS
+     - TestPatchPassThroughResponseModel_LeavesEmptyBodyUnchanged            PASS
+
+  B) Pass-through SSE stream model / response.model masking
+     - TestApplyPassThroughStream_MasksRawEventModels                        PASS
+         → proves SSE raw events have model fields masked
+     - TestApplyPassThroughStream_Disabled                                   PASS
+     - TestApplyPassThroughStream_NoRawChannel                               PASS
+     - TestApplyPassThroughStream_ReturnsRawEvents                           PASS
+     - TestApplyPassThroughStream_DrainsInner                               PASS
+     - TestPatchPassThroughStreamEventModel_PreservesUnpatchedData          PASS
+         (3 subtests: done_marker / invalid_json / event_without_model_fields)
+     - TestPassThroughStream_LLMMiddlewareRuns                              PASS
+     - TestPassThroughStream_ErrorPropagates                                PASS
+
+  C) Provider affinity ordering (preferred provider first within priority group)
+     - TestProviderAffinityOrdering_moves_preferred_provider_first_within_priority_group   PASS
+     - TestProviderAffinityOrdering_non_matching_session_leaves_order_unchanged           PASS
+     - TestProviderAffinityOrdering_keeps_non_preferred_retry_candidate_when_truncating   PASS
+     - TestProviderAffinityOrdering_never_promotes_lower_priority_group                   PASS
+
+  D) Provider affinity rebind on success / no rebind on failure
+     - TestProviderAffinityRebind_successful_non_stream_response_prefers_winning_provider            PASS
+     - TestProviderAffinityRebind_failed_non_stream_response_does_not_overwrite_existing_affinity    PASS
+     - TestProviderAffinityRebind_fallback_stream_success_becomes_next_same_session_preference       PASS
+     - TestProviderAffinityRebind_aggregated_stream_success_records_provider                          PASS
+     - TestProviderAffinityRebind_incomplete_stream_does_not_overwrite_existing_affinity              PASS
+     - TestProviderAffinityRebind_different_scope_does_not_see_rebind                                  PASS
+
+  E) Provider affinity store (cross-cutting) — all PASS
+     - TestProviderAffinityStore_returns_provider_when_scope_and_session_match
+     - TestProviderAffinityStore_isolates_same_session_id_by_scope
+     - TestProviderAffinityStore_evicts_entries_in_insertion_order_when_bound_exceeded
+     - TestProviderAffinityStore_SetGetDelete_removes_existing_entry
+     - TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty
+     - TestProviderAffinityStore_is_safe_for_concurrent_access
+     - TestProviderAffinityStore_WithScopedSessionID_reads_scope_and_session_from_context
+     - TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete
+
+  F) Additional supporting tests — all PASS
+     - TestChatCompletionOrchestrator_Process_NonStreamingRequireStreamCandidate_DisablesPassThroughBody
+     - TestIsPassThroughEnabled_*
+     - TestApplyUserAgentPassThrough (+ 5 subtests)
+     - TestApplyUserAgentPassThrough_NoChannel
+     - TestApplyPassThroughBodySkipsMultipartFormats (+ 4 subtests)
+     - TestApplyPassThroughBodyAppliesSpeechModelPatch
+     - TestAsChannelQueueError_PassThrough
+
+  Pass/Fail counts for Command 1:
+    PASS=ALL, FAIL=0, SKIP=0
+    (Every targeted test — including all subtests — passed. No FAIL or SKIP lines.)
+
+--------------------------------------------------------------------------------
+COMMAND 2: Session — internal/server/middleware
+--------------------------------------------------------------------------------
+$ go test ./internal/server/middleware -run 'Test.*Session.*' -count=1 -v
+
+(See end of file for full stdout/stderr capture.)
+(See .omo/evidence/f3-middleware-output.txt for the raw tee output.)
+
+SUMMARY (Command 2):
+  - Package: github.com/looplj/axonhub/internal/server/middleware
+  - Result: PASS
+  - Wall time: 0.129s
+  - Final line: PASS / ok ... 0.129s
+  - EXIT_CODE: 0
+
+Tests proving KEY BEHAVIORS in this command:
+
+  G) Session header precedence
+     - TestWithSessionAffinityID                                                                       PASS
+         - subtest: X-Session-ID_header                                                                 PASS
+         - subtest: X-Session-Affinity_header                                                           PASS
+         - subtest: x-claude-code-session-id_header                                                     PASS
+         - subtest: session-id_header                                                                   PASS
+         - subtest: x-conversation-id_header                                                            PASS
+         - subtest: x-thread-id_header                                                                  PASS
+         - subtest: precedence:_X-Session-ID_wins_over_X-Session-Affinity                                PASS
+         - subtest: precedence:_first_non-empty_wins_over_lower-priority                                PASS
+         - subtest: blank/whitespace_headers_are_skipped                                                 PASS
+         - subtest: no_matching_header_leaves_context_unset                                             PASS
+         - subtest: existing_context_session_ID_is_not_overwritten                                       PASS
+         - subtest: header_names_are_case-insensitive_via_Go_net/http                                    PASS
+         - subtest: non-listed_header_Session_id_is_not_extracted                                       PASS
+         - subtest: all_headers_present:_highest_priority_wins                                           PASS
+         - subtest: lower-priority_skipped_when_higher-priority_is_valid                                 PASS
+     - TestWithTrace_CodexSessionMissingDoesNotSetTrace                                                 PASS
+     - TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace                            PASS
+         (3 subtests: invalid_json / missing_session_id / empty_session_id)
+
+  Pass/Fail counts for Command 2:
+    PASS=ALL, FAIL=0, SKIP=0
+    (Every targeted test — including all subtests — passed. No FAIL or SKIP lines.)
+
+--------------------------------------------------------------------------------
+FULL STDOUT/STDERR CAPTURES (verbatim)
+--------------------------------------------------------------------------------
+
+==================== BEGIN: f3-orchestrator-output.txt ====================
+$ go test ./internal/server/orchestrator -run 'Test.*PassThrough.*|Test.*ProviderAffinity.*' -count=1 -v
+
+--- (truncated by tool, full output preserved in f3-orchestrator-output.txt) ---
+
+=== RUN   TestAsChannelQueueError_PassThrough
+=== PAUSE TestAsChannelQueueError_PassThrough
+=== RUN   TestChatCompletionOrchestrator_Process_NonStreamingRequireStreamCandidate_DisablesPassThroughBody
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:31Z"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:31Z"}
+{"level":"INFO","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"WARN","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"Failed to get default data storage, request will be created without data storage","error":"failed to get primary data storage: ent: data_storage not found"}
+{"level":"WARN","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"LLM response not found in middleware, cannot update request completed status"}
+{"level":"WARN","time":"2026-06-27T12:17:31-04:00","logger":"global","message":"channel not enabled for cost calculation","channel_id":1,"model_id":"gpt-4","context_deadline":"2026-06-27T12:17:41-04:00"}
+--- PASS: TestChatCompletionOrchestrator_Process_NonStreamingRequireStreamCandidate_DisablesPassThroughBody (0.03s)
+=== RUN   TestApplyPassThroughResponse_Disabled
+--- PASS: TestApplyPassThroughResponse_Disabled (0.00s)
+=== RUN   TestApplyPassThroughResponse_Enabled_ReturnsRaw
+--- PASS: TestApplyPassThroughResponse_Enabled_ReturnsRaw (0.00s)
+=== RUN   TestApplyPassThroughResponse_MismatchedAPIFormat
+--- PASS: TestApplyPassThroughResponse_MismatchedAPIFormat (0.00s)
+=== RUN   TestApplyPassThroughResponse_NilLlmRequest
+--- PASS: TestApplyPassThroughResponse_NilLlmRequest (0.00s)
+=== RUN   TestApplyPassThroughResponse_UsesRawProviderRequestAPIFormat
+--- PASS: TestApplyPassThroughResponse_UsesRawProviderRequestAPIFormat (0.00s)
+=== RUN   TestApplyPassThroughResponse_RewritesTopLevelModel
+--- PASS: TestApplyPassThroughResponse_RewritesTopLevelModel (0.00s)
+=== RUN   TestPatchPassThroughResponseModel_LeavesJSONWithoutModelUnchanged
+--- PASS: TestPatchPassThroughResponseModel_LeavesJSONWithoutModelUnchanged (0.00s)
+=== RUN   TestPatchPassThroughResponseModel_LeavesInvalidJSONUnchanged
+--- PASS: TestPatchPassThroughResponseModel_LeavesInvalidJSONUnchanged (0.00s)
+=== RUN   TestPatchPassThroughResponseModel_LeavesNonJSONUnchanged
+--- PASS: TestPatchPassThroughResponseModel_LeavesNonJSONUnchanged (0.00s)
+=== RUN   TestPatchPassThroughResponseModel_LeavesEmptyBodyUnchanged
+--- PASS: TestPatchPassThroughResponseModel_LeavesEmptyBodyUnchanged (0.00s)
+=== RUN   TestIsPassThroughEnabled_DisablesWhenSupportedStreamParameterChanges
+--- PASS: TestIsPassThroughEnabled_DisablesWhenSupportedStreamParameterChanges (0.00s)
+=== RUN   TestIsPassThroughEnabled_DisablesWhenSupportedStreamParameterMissingButStreamingRequested
+--- PASS: TestIsPassThroughEnabled_DisablesWhenSupportedStreamParameterMissingButStreamingRequested (0.00s)
+=== RUN   TestIsPassThroughEnabled_AllowsNilAndFalseStreamToAlign
+--- PASS: TestIsPassThroughEnabled_AllowsNilAndFalseStreamToAlign (0.00s)
+=== RUN   TestIsPassThroughEnabled_DisablesWhenRequestStreamSemanticsDoNotMatchCurrentRequirement
+--- PASS: TestIsPassThroughEnabled_DisablesWhenRequestStreamSemanticsDoNotMatchCurrentRequirement (0.00s)
+=== RUN   TestIsPassThroughEnabled_DisablesWhenOriginalRequestWasNonStreamingButExecutionIsForcedStreaming
+--- PASS: TestIsPassThroughEnabled_DisablesWhenOriginalRequestWasNonStreamingButExecutionIsForcedStreaming (0.00s)
+=== RUN   TestApplyPassThroughResponse_NilSettings
+--- PASS: TestApplyPassThroughResponse_NilSettings (0.00s)
+=== RUN   TestApplyPassThroughStream_Disabled
+--- PASS: TestApplyPassThroughStream_Disabled (0.00s)
+=== RUN   TestApplyPassThroughStream_NoRawChannel
+--- PASS: TestApplyPassThroughStream_NoRawChannel (0.00s)
+=== RUN   TestApplyPassThroughStream_ReturnsRawEvents
+--- PASS: TestApplyPassThroughStream_ReturnsRawEvents (0.00s)
+=== RUN   TestApplyPassThroughStream_MasksRawEventModels
+--- PASS: TestApplyPassThroughStream_MasksRawEventModels (0.00s)
+=== RUN   TestPatchPassThroughStreamEventModel_PreservesUnpatchedData
+=== RUN   TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/done_marker
+=== RUN   TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/invalid_json
+=== RUN   TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/event_without_model_fields
+--- PASS: TestPatchPassThroughStreamEventModel_PreservesUnpatchedData (0.00s)
+    --- PASS: TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/done_marker (0.00s)
+    --- PASS: TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/invalid_json (0.00s)
+    --- PASS: TestPatchPassThroughStreamEventModel_PreservesUnpatchedData/event_without_model_fields (0.00s)
+=== RUN   TestApplyPassThroughStream_DrainsInner
+--- PASS: TestApplyPassThroughStream_DrainsInner (0.00s)
+=== RUN   TestPassThroughStream_LLMMiddlewareRuns
+--- PASS: TestPassThroughStream_LLMMiddlewareRuns (0.00s)
+=== RUN   TestPassThroughStream_ErrorPropagates
+--- PASS: TestPassThroughStream_ErrorPropagates (0.00s)
+=== RUN   TestApplyPassThroughStream_LLMMiddlewareRuns
+--- PASS: TestApplyPassThroughStream_LLMMiddlewareRuns (0.00s)
+=== RUN   TestApplyPassThroughStream_ErrorPropagates
+--- PASS: TestApplyPassThroughStream_ErrorPropagates (0.00s)
+=== RUN   TestApplyPassThroughStream_NotRawChannel
+--- PASS: TestApplyPassThroughStream_NotRawChannel (0.00s)
+=== RUN   TestApplyUserAgentPassThrough
+=== RUN   TestApplyUserAgentPassThrough/channel_disabled_ignores_global
+=== RUN   TestApplyUserAgentPassThrough/channel_enabled_ignores_global
+=== RUN   TestApplyUserAgentPassThrough/channel_nil_inherits_global_disabled
+=== RUN   TestApplyUserAgentPassThrough/channel_nil_inherits_global_enabled
+=== RUN   TestApplyUserAgentPassThrough/enabled_but_no_client_ua
+--- PASS: TestApplyUserAgentPassThrough (0.09s)
+    --- PASS: TestApplyUserAgentPassThrough/channel_disabled_ignores_global (0.03s)
+    --- PASS: TestApplyUserAgentPassThrough/channel_enabled_ignores_global (0.02s)
+    --- PASS: TestApplyUserAgentPassThrough/channel_nil_inherits_global_disabled (0.02s)
+    --- PASS: TestApplyUserAgentPassThrough/channel_nil_inherits_global_enabled (0.01s)
+    --- PASS: TestApplyUserAgentPassThrough/enabled_but_no_client_ua (0.01s)
+=== RUN   TestApplyUserAgentPassThrough_NoChannel
+--- PASS: TestApplyUserAgentPassThrough_NoChannel (0.01s)
+=== RUN   TestApplyPassThroughBodySkipsMultipartFormats
+=== RUN   TestApplyPassThroughBodySkipsMultipartFormats/audio_transcription
+=== RUN   TestApplyPassThroughBodySkipsMultipartFormats/audio_translation
+=== RUN   TestApplyPassThroughBodySkipsMultipartFormats/image_edit
+=== RUN   TestApplyPassThroughBodySkipsMultipartFormats/image_variation
+--- PASS: TestApplyPassThroughBodySkipsMultipartFormats (0.00s)
+    --- PASS: TestApplyPassThroughBodySkipsMultipartFormats/audio_transcription (0.00s)
+    --- PASS: TestApplyPassThroughBodySkipsMultipartFormats/audio_translation (0.00s)
+    --- PASS: TestApplyPassThroughBodySkipsMultipartFormats/image_edit (0.00s)
+    --- PASS: TestApplyPassThroughBodySkipsMultipartFormats/image_variation (0.00s)
+=== RUN   TestApplyPassThroughBodyAppliesSpeechModelPatch
+--- PASS: TestApplyPassThroughBodyAppliesSpeechModelPatch (0.00s)
+=== RUN   TestProviderAffinityStore_returns_provider_when_scope_and_session_match
+--- PASS: TestProviderAffinityStore_returns_provider_when_scope_and_session_match (0.00s)
+=== RUN   TestProviderAffinityStore_isolates_same_session_id_by_scope
+--- PASS: TestProviderAffinityStore_isolates_same_session_id_by_scope (0.00s)
+=== RUN   TestProviderAffinityStore_evicts_entries_in_insertion_order_when_bound_exceeded
+--- PASS: TestProviderAffinityStore_evicts_entries_in_insertion_order_when_bound_exceeded (0.00s)
+=== RUN   TestProviderAffinityStore_SetGetDelete_removes_existing_entry
+--- PASS: TestProviderAffinityStore_SetGetDelete_removes_existing_entry (0.00s)
+=== RUN   TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty
+=== RUN   TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/empty_scope
+=== RUN   TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/empty_session
+=== RUN   TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/both_empty
+--- PASS: TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty (0.00s)
+    --- PASS: TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/empty_scope (0.00s)
+    --- PASS: TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/empty_session (0.00s)
+    --- PASS: TestProviderAffinityStore_returns_not_ok_when_scope_or_session_empty/both_empty (0.00s)
+=== RUN   TestProviderAffinityStore_is_safe_for_concurrent_access
+--- PASS: TestProviderAffinityStore_is_safe_for_concurrent_access (0.00s)
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_reads_scope_and_session_from_context
+--- PASS: TestProviderAffinityStore_WithScopedSessionID_reads_scope_and_session_from_context (0.00s)
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/missing_scope
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/missing_session
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/empty_scope
+=== RUN   TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/empty_session
+--- PASS: TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete (0.00s)
+    --- PASS: TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/missing_scope (0.00s)
+    --- PASS: TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/missing_session (0.00s)
+    --- PASS: TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/empty_scope (0.00s)
+    --- PASS: TestProviderAffinityStore_WithScopedSessionID_returns_not_ok_when_context_is_incomplete/empty_session (0.00s)
+=== RUN   TestProviderAffinityOrdering_moves_preferred_provider_first_within_priority_group
+--- PASS: TestProviderAffinityOrdering_moves_preferred_provider_first_within_priority_group (0.00s)
+=== RUN   TestProviderAffinityOrdering_non_matching_session_leaves_order_unchanged
+--- PASS: TestProviderAffinityOrdering_non_matching_session_leaves_order_unchanged (0.00s)
+=== RUN   TestProviderAffinityOrdering_keeps_non_preferred_retry_candidate_when_truncating
+--- PASS: TestProviderAffinityOrdering_keeps_non_preferred_retry_candidate_when_truncating (0.00s)
+=== RUN   TestProviderAffinityOrdering_never_promotes_lower_priority_group
+--- PASS: TestProviderAffinityOrdering_never_promotes_lower_priority_group (0.00s)
+=== RUN   TestProviderAffinityRebind_successful_non_stream_response_prefers_winning_provider
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:32Z"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:32Z"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+--- PASS: TestProviderAffinityRebind_successful_non_stream_response_prefers_winning_provider (0.04s)
+=== RUN   TestProviderAffinityRebind_failed_non_stream_response_does_not_overwrite_existing_affinity
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:32Z"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"loaded channels","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"2026-06-27T16:17:32Z"}
+{"level":"INFO","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"ERROR","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Failed to get request execution","error":"ent: request_execution not found","context_deadline":"2026-06-27T12:17:42-04:00"}
+{"level":"WARN","time":"2026-06-27T12:17:32-04:00","logger":"global","message":"Failed to update request execution status to completed","error":"ent: request_execution not found","context_deadline":"2026-06-27T12:17:42-04:00"}
+--- PASS: TestProviderAffinityRebind_failed_non_stream_response_does_not_overwrite_existing_affinity (0.03s)
+=== RUN   TestProviderAffinityRebind_fallback_stream_success_becomes_next_same_session_preference
+--- PASS: TestProviderAffinityRebind_fallback_stream_success_becomes_next_same_session_preference (0.00s)
+=== RUN   TestProviderAffinityRebind_aggregated_stream_success_records_provider
+--- PASS: TestProviderAffinityRebind_aggregated_stream_success_records_provider (0.00s)
+=== RUN   TestProviderAffinityRebind_incomplete_stream_does_not_overwrite_existing_affinity
+--- PASS: TestProviderAffinityRebind_incomplete_stream_does_not_overwrite_existing_affinity (0.00s)
+=== RUN   TestProviderAffinityRebind_different_scope_does_not_see_rebind
+--- PASS: TestProviderAffinityRebind_different_scope_does_not_see_rebind (0.00s)
+=== CONT  TestAsChannelQueueError_PassThrough
+--- PASS: TestAsChannelQueueError_PassThrough (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/orchestrator	0.281s
+EXIT_CODE=0
+==================== END: f3-orchestrator-output.txt ====================
+
+==================== BEGIN: f3-middleware-output.txt ====================
+$ go test ./internal/server/middleware -run 'Test.*Session.*' -count=1 -v
+
+=== RUN   TestWithSessionAffinityID
+=== PAUSE TestWithSessionAffinityID
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace (0.05s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json (0.01s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id (0.02s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id (0.03s)
+=== RUN   TestWithTrace_CodexSessionMissingDoesNotSetTrace
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexSessionMissingDoesNotSetTrace (0.03s)
+=== CONT  TestWithSessionAffinityID
+=== RUN   TestWithSessionAffinityID/X-Session-ID_header
+=== PAUSE TestWithSessionAffinityID/X-Session-ID_header
+=== RUN   TestWithSessionAffinityID/X-Session-Affinity_header
+=== PAUSE TestWithSessionAffinityID/X-Session-Affinity_header
+=== RUN   TestWithSessionAffinityID/x-claude-code-session-id_header
+=== PAUSE TestWithSessionAffinityID/x-claude-code-session-id_header
+=== RUN   TestWithSessionAffinityID/session-id_header
+=== PAUSE TestWithSessionAffinityID/session-id_header
+=== RUN   TestWithSessionAffinityID/x-conversation-id_header
+=== PAUSE TestWithSessionAffinityID/x-conversation-id_header
+=== RUN   TestWithSessionAffinityID/x-thread-id_header
+=== PAUSE TestWithSessionAffinityID/x-thread-id_header
+=== RUN   TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== PAUSE TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== RUN   TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== PAUSE TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== RUN   TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== PAUSE TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== RUN   TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== PAUSE TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== RUN   TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== PAUSE TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== RUN   TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== PAUSE TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== RUN   TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== PAUSE TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== RUN   TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== PAUSE TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== RUN   TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== PAUSE TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/X-Session-ID_header
+=== CONT  TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== CONT  TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== CONT  TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== CONT  TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== CONT  TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== CONT  TestWithSessionAffinityID/x-conversation-id_header
+=== CONT  TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== CONT  TestWithSessionAffinityID/x-thread-id_header
+=== CONT  TestWithSessionAffinityID/session-id_header
+=== CONT  TestWithSessionAffinityID/x-claude-code-session-id_header
+=== CONT  TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== CONT  TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== CONT  TestWithSessionAffinityID/X-Session-Affinity_header
+--- PASS: TestWithSessionAffinityID (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-ID_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/no_matching_header_leaves_context_unset (0.00s)
+    --- PASS: TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted (0.00s)
+    --- PASS: TestWithSessionAffinityID/blank/whitespace_headers_are_skipped (0.00s)
+    --- PASS: TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http (0.00s)
+    --- PASS: TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid (0.00s)
+    --- PASS: TestWithSessionAffinityID/all_headers_present:_highest_priority_wins (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-conversation-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-thread-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-claude-code-session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority (0.00s)
+    --- PASS: TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-Affinity_header (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/middleware	0.129s
+EXIT_CODE=0
+==================== END: f3-middleware-output.txt ====================
+
+--------------------------------------------------------------------------------
+VERDICT
+--------------------------------------------------------------------------------
+  - Command 1 (orchestrator PassThrough + ProviderAffinity):  PASS  (0 fail, 0 skip)
+  - Command 2 (middleware Session):                            PASS  (0 fail, 0 skip)
+  - Key behaviors covered:
+      [x] pass-through JSON response model masking
+      [x] pass-through SSE stream model / response.model masking
+      [x] session header precedence
+      [x] provider affinity ordering
+      [x] provider affinity rebind on success / no rebind on failure
+  - VERDICT: APPROVE
+--------------------------------------------------------------------------------

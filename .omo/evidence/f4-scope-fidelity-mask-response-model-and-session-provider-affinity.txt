@@ -1,0 +1,75 @@
+=== F4 SCOPE FIDELITY VERIFICATION ===
+Plan: .omo/plans/mask-response-model-and-session-provider-affinity.md
+Date: 2026-06-27T16:17:51Z
+Branch: 
+
+=== Working tree state ===
+--- git status --short ---
+?? .codegraph
+?? .cortexkit/
+
+=== Evidence Command 1 ===
+--- git diff -- internal/server/biz/channel_apikey_provider.go ---
+[exit=0]
+byte_count=0
+
+=== Evidence Command 2 ===
+--- git diff -- internal/server/orchestrator internal/server/middleware ---
+[exit=0]
+byte_count=0
+
+=== Affinity ordering inspection ===
+File: internal/server/orchestrator/candidates.go
+Relevant code: LoadBalancedSelector.Select groups by priority then reorders within group only.
+--- Excerpt: LoadBalancedSelector.Select priority loop ---
+	}
+
+	// Group candidates by priority first (lower priority value = higher priority)
+	priorityGroups := make(map[int][]*ChannelModelsCandidate)
+	for _, c := range candidates {
+		priorityGroups[c.Priority] = append(priorityGroups[c.Priority], c)
+	}
+
+	// Get sorted priority keys (lower priority value = higher priority)
+	priorities := lo.Keys(priorityGroups)
+
+	// Sort priorities: lower value = higher priority
+	slices.Sort(priorities)
+
+	// For each priority group, apply load balancing to sort candidates within the group
+	// Stop early if we have collected enough candidates
+	var result []*ChannelModelsCandidate
+	preferredProvider, hasProviderAffinity := s.preferredProvider(ctx)
+
+	for _, p := range priorities {
+		group := priorityGroups[p]
+
+		// Apply load balancing to sort candidates within this priority group.
+		useStream := req.Stream != nil && *req.Stream
+		ctx = contextWithQuotaLimitType(ctx, string(provider_quota.RequestModality(req.Image != nil)))
+		sortedCandidates := s.loadBalancer.Sort(ctx, group, req.Model, useStream)
+		var preferredCandidates, nonPreferredCandidates []*ChannelModelsCandidate
+		if hasProviderAffinity {
+			fullSortedGroup := appendUnsortedRemainder(sortedCandidates, group)
+			preferredCandidates, nonPreferredCandidates = partitionByProviderAffinity(fullSortedGroup, preferredProvider)
+			if len(preferredCandidates) > 0 {
+				sortedCandidates = append(preferredCandidates, nonPreferredCandidates...)
+			}
+		}
+
+		// Add candidates, but stop if we have enough
+		remaining := requiredCount - len(result)
+		if remaining <= 0 {
+			break
+		}
+
+		if len(sortedCandidates) <= remaining {
+			result = append(result, sortedCandidates...)
+		} else {
+			result = append(result, retainAffinityRetryFallback(sortedCandidates, preferredCandidates, nonPreferredCandidates, remaining, retryPolicy.Enabled)...)
+			break
+		}
+	}
+
+	if log.DebugEnabled(ctx) {
+		log.Debug(ctx, "Load balanced candidates for model",

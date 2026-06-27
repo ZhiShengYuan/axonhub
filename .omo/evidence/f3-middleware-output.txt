@@ -1,0 +1,96 @@
+=== RUN   TestWithSessionAffinityID
+=== PAUSE TestWithSessionAffinityID
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+=== RUN   TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace (0.05s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/invalid_json (0.01s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/missing_session_id (0.02s)
+    --- PASS: TestWithTrace_CodexTurnMetadataInvalidOrMissingSessionDoesNotSetTrace/empty_session_id (0.03s)
+=== RUN   TestWithTrace_CodexSessionMissingDoesNotSetTrace
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"refreshed data storage filesystems","count":0}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"cache refreshed","name":"axonhub:enabled_channels","update_time":"0001-01-01T00:00:00Z"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"live cache stopping","name":"axonhub:enabled_channels"}
+{"level":"INFO","time":"2026-06-27T12:17:42-04:00","logger":"global","message":"Using memory cache"}
+--- PASS: TestWithTrace_CodexSessionMissingDoesNotSetTrace (0.03s)
+=== CONT  TestWithSessionAffinityID
+=== RUN   TestWithSessionAffinityID/X-Session-ID_header
+=== PAUSE TestWithSessionAffinityID/X-Session-ID_header
+=== RUN   TestWithSessionAffinityID/X-Session-Affinity_header
+=== PAUSE TestWithSessionAffinityID/X-Session-Affinity_header
+=== RUN   TestWithSessionAffinityID/x-claude-code-session-id_header
+=== PAUSE TestWithSessionAffinityID/x-claude-code-session-id_header
+=== RUN   TestWithSessionAffinityID/session-id_header
+=== PAUSE TestWithSessionAffinityID/session-id_header
+=== RUN   TestWithSessionAffinityID/x-conversation-id_header
+=== PAUSE TestWithSessionAffinityID/x-conversation-id_header
+=== RUN   TestWithSessionAffinityID/x-thread-id_header
+=== PAUSE TestWithSessionAffinityID/x-thread-id_header
+=== RUN   TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== PAUSE TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== RUN   TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== PAUSE TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== RUN   TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== PAUSE TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== RUN   TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== PAUSE TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== RUN   TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== PAUSE TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== RUN   TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== PAUSE TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== RUN   TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== PAUSE TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== RUN   TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== PAUSE TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== RUN   TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== PAUSE TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/X-Session-ID_header
+=== CONT  TestWithSessionAffinityID/blank/whitespace_headers_are_skipped
+=== CONT  TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted
+=== CONT  TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid
+=== CONT  TestWithSessionAffinityID/no_matching_header_leaves_context_unset
+=== CONT  TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http
+=== CONT  TestWithSessionAffinityID/all_headers_present:_highest_priority_wins
+=== CONT  TestWithSessionAffinityID/x-conversation-id_header
+=== CONT  TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity
+=== CONT  TestWithSessionAffinityID/x-thread-id_header
+=== CONT  TestWithSessionAffinityID/session-id_header
+=== CONT  TestWithSessionAffinityID/x-claude-code-session-id_header
+=== CONT  TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority
+=== CONT  TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten
+=== CONT  TestWithSessionAffinityID/X-Session-Affinity_header
+--- PASS: TestWithSessionAffinityID (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-ID_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/no_matching_header_leaves_context_unset (0.00s)
+    --- PASS: TestWithSessionAffinityID/non-listed_header_Session_id_is_not_extracted (0.00s)
+    --- PASS: TestWithSessionAffinityID/blank/whitespace_headers_are_skipped (0.00s)
+    --- PASS: TestWithSessionAffinityID/header_names_are_case-insensitive_via_Go_net/http (0.00s)
+    --- PASS: TestWithSessionAffinityID/lower-priority_skipped_when_higher-priority_is_valid (0.00s)
+    --- PASS: TestWithSessionAffinityID/all_headers_present:_highest_priority_wins (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-conversation-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_X-Session-ID_wins_over_X-Session-Affinity (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-thread-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/x-claude-code-session-id_header (0.00s)
+    --- PASS: TestWithSessionAffinityID/precedence:_first_non-empty_wins_over_lower-priority (0.00s)
+    --- PASS: TestWithSessionAffinityID/existing_context_session_ID_is_not_overwritten (0.00s)
+    --- PASS: TestWithSessionAffinityID/X-Session-Affinity_header (0.00s)
+PASS
+ok  	github.com/looplj/axonhub/internal/server/middleware	0.129s

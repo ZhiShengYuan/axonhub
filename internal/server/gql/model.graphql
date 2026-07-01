@@ -51,6 +51,7 @@ type ModelAssociation {
   modelId: ModelIDAssociation
   channelTagsModel: ChannelTagsModelAssociation
   channelTagsRegex: ChannelTagsRegexAssociation
+  responseModel: String
 }
 
 type ModelAssociationWhen {
@@ -146,6 +147,7 @@ input ModelAssociationInput {
   modelId: ModelIDAssociationInput
   channelTagsModel: ChannelTagsModelAssociationInput
   channelTagsRegex: ChannelTagsRegexAssociationInput
+  responseModel: String
 }
 
 input ModelAssociationWhenInput {

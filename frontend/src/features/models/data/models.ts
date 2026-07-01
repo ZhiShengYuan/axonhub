@@ -114,6 +114,7 @@ const MODELS_QUERY = `
                 channelTags
                 pattern
               }
+              responseModel
             }
           }
           status
@@ -225,6 +226,7 @@ const CREATE_MODEL_MUTATION = `
               channelTags
             }
           }
+          responseModel
         }
       }
       status
@@ -326,6 +328,7 @@ const BULK_CREATE_MODELS_MUTATION = `
               channelTags
             }
           }
+          responseModel
         }
       }
       status
@@ -427,6 +430,7 @@ const UPDATE_MODEL_MUTATION = `
               channelTags
             }
           }
+          responseModel
         }
       }
       status
@@ -701,6 +705,7 @@ export interface ModelAssociationInput {
     channelTags: string[];
     pattern: string;
   };
+  responseModel?: string;
 }
 
 export interface ExcludeAssociationInput {

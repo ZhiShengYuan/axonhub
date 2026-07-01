@@ -751,6 +751,7 @@ type ComplexityRoot struct {
 		ModelID          func(childComplexity int) int
 		Priority         func(childComplexity int) int
 		Regex            func(childComplexity int) int
+		ResponseModel    func(childComplexity int) int
 		Type             func(childComplexity int) int
 		When             func(childComplexity int) int
 	}
@@ -4810,6 +4811,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ModelAssociation.Regex(childComplexity), true
+	case "ModelAssociation.responseModel":
+		if e.complexity.ModelAssociation.ResponseModel == nil {
+			break
+		}
+
+		return e.complexity.ModelAssociation.ResponseModel(childComplexity), true
 	case "ModelAssociation.type":
 		if e.complexity.ModelAssociation.Type == nil {
 			break
@@ -25008,6 +25015,8 @@ func (ec *executionContext) fieldContext_DeveloperModelSettings_associations(_ c
 				return ec.fieldContext_ModelAssociation_channelTagsModel(ctx, field)
 			case "channelTagsRegex":
 				return ec.fieldContext_ModelAssociation_channelTagsRegex(ctx, field)
+			case "responseModel":
+				return ec.fieldContext_ModelAssociation_responseModel(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModelAssociation", field.Name)
 		},
@@ -27258,6 +27267,35 @@ func (ec *executionContext) fieldContext_ModelAssociation_channelTagsRegex(_ con
 	return fc, nil
 }
 
+func (ec *executionContext) _ModelAssociation_responseModel(ctx context.Context, field graphql.CollectedField, obj *objects.ModelAssociation) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ModelAssociation_responseModel,
+		func(ctx context.Context) (any, error) {
+			return obj.ResponseModel, nil
+		},
+		nil,
+		ec.marshalOString2string,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ModelAssociation_responseModel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModelAssociation",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ModelAssociationWhen_enabled(ctx context.Context, field graphql.CollectedField, obj *objects.ModelAssociationWhen) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -28855,6 +28893,8 @@ func (ec *executionContext) fieldContext_ModelSettings_associations(_ context.Co
 				return ec.fieldContext_ModelAssociation_channelTagsModel(ctx, field)
 			case "channelTagsRegex":
 				return ec.fieldContext_ModelAssociation_channelTagsRegex(ctx, field)
+			case "responseModel":
+				return ec.fieldContext_ModelAssociation_responseModel(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModelAssociation", field.Name)
 		},
@@ -67193,7 +67233,7 @@ func (ec *executionContext) unmarshalInputModelAssociationInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "priority", "disabled", "when", "channelModel", "channelRegex", "regex", "modelId", "channelTagsModel", "channelTagsRegex"}
+	fieldsInOrder := [...]string{"type", "priority", "disabled", "when", "channelModel", "channelRegex", "regex", "modelId", "channelTagsModel", "channelTagsRegex", "responseModel"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -67270,6 +67310,13 @@ func (ec *executionContext) unmarshalInputModelAssociationInput(ctx context.Cont
 				return it, err
 			}
 			it.ChannelTagsRegex = data
+		case "responseModel":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("responseModel"))
+			data, err := ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ResponseModel = data
 		}
 	}
 
@@ -90280,6 +90327,8 @@ func (ec *executionContext) _ModelAssociation(ctx context.Context, sel ast.Selec
 			out.Values[i] = ec._ModelAssociation_channelTagsModel(ctx, field, obj)
 		case "channelTagsRegex":
 			out.Values[i] = ec._ModelAssociation_channelTagsRegex(ctx, field, obj)
+		case "responseModel":
+			out.Values[i] = ec._ModelAssociation_responseModel(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

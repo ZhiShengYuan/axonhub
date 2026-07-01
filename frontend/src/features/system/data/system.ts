@@ -867,6 +867,7 @@ const MODEL_SETTINGS_QUERY = `
             channelTags
             pattern
           }
+          responseModel
         }
       }
     }

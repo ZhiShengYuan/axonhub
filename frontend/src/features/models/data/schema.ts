@@ -125,6 +125,7 @@ export const modelAssociationSchema = z.object({
   modelId: modelIDAssociationSchema.optional().nullable(),
   channelTagsModel: channelTagsModelAssociationSchema.optional().nullable(),
   channelTagsRegex: channelTagsRegexAssociationSchema.optional().nullable(),
+  responseModel: z.string().optional().nullable(),
 });
 export type ModelAssociation = z.infer<typeof modelAssociationSchema>;
 

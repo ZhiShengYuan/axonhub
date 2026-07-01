@@ -14,6 +14,54 @@ const defaultCredentials: AdminCredentials = {
   email: process.env.AXONHUB_ADMIN_EMAIL || 'my@example.com',
   password: process.env.AXONHUB_ADMIN_PASSWORD || 'pwd123456',
 }
+const API_BASE_URL = process.env.AXONHUB_API_URL || 'http://localhost:8099'
+const ACCESS_TOKEN_KEY = 'axonhub_access_token'
+const USER_INFO_KEY = 'axonhub_user_info'
+
+async function seedAuthToken(
+  page: Page,
+  credentials: AdminCredentials = defaultCredentials
+): Promise<void> {
+  const result = await page.evaluate(
+    async ({ email, password, tokenKey, userKey, onboardMutation }) => {
+      const res = await fetch(`/admin/auth/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`signin failed: ${res.status()} ${text}`)
+      }
+      const data = (await res.json()) as { user: unknown; token: string }
+      localStorage.setItem(tokenKey, data.token)
+      localStorage.setItem(userKey, JSON.stringify(data.user))
+
+      // Also complete the system-model-setting onboarding so the driver.js
+      // tour never mounts. Without this, the tour starts 500ms after the
+      // page loads and its full-screen SVG backdrop intercepts pointer
+      // events for the rest of the test.
+      const token = data.token
+      await fetch(`/admin/graphql`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ query: onboardMutation, variables: { input: {} } }),
+      }).catch(() => {})
+
+      return { tokenLength: data.token.length }
+    },
+    {
+      email: credentials.email,
+      password: credentials.password,
+      tokenKey: ACCESS_TOKEN_KEY,
+      userKey: USER_INFO_KEY,
+      onboardMutation:
+        'mutation CompleteOnboarding($input: CompleteSystemModelSettingOnboardingInput!) { completeSystemModelSettingOnboarding(input: $input) }',
+    }
+  )
+  console.log(`Seeded auth token (length=${result.tokenLength}) via direct API call`)
+}
+
 
 export async function signInAsAdmin(page: Page, credentials: AdminCredentials = defaultCredentials) {
   // Listen for console errors
@@ -118,61 +166,66 @@ export async function ensureSignedIn(page: Page) {
 }
 
 export async function gotoAndEnsureAuth(page: Page, path: string) {
-  // Navigate to the target path - let the app handle auth redirects naturally
-  await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 30000 })
-
-  // Wait for potential redirects and React to mount
-  await page.waitForTimeout(2000)
-
-  // Wait for React app to mount
-  // try {
-  //   await page.waitForFunction(
-  //     () => {
-  //       const root = document.getElementById('root')
-  //       return root && root.innerHTML.length > 50
-  //     },
-  //     { timeout: 10000 }
-  //   )
-  // } catch (error) {
-  //   console.log('Warning: React app may not have mounted properly')
-  //   const rootState = await page.evaluate(() => {
-  //     const root = document.getElementById('root')
-  //     return { exists: !!root, innerHTML: root?.innerHTML.substring(0, 200) }
-  //   })
-  //   console.log('Root state:', rootState)
-  // }
-
-  // If we got redirected to sign-in OR the login form is rendered within the current route, perform login and navigate back
-  let needsLogin = page.url().includes('/sign-in')
-  try {
-    // Use test IDs with fallback for more reliable detection
-    const emailField = page
-      .getByTestId('sign-in-email')
-      .or(page.locator('input[type="email"], input[name="email"]'))
-      .first()
-    const passwordField = page
-      .getByTestId('sign-in-password')
-      .or(page.locator('input[type="password"], input[name="password"]'))
-      .first()
-
-    const emailVisible = await emailField.isVisible({ timeout: 2000 })
-    const passwordVisible = await passwordField.isVisible({ timeout: 2000 })
-    if (emailVisible && passwordVisible) needsLogin = true
-  } catch {}
-
-  if (needsLogin) {
-    await signInAsAdmin(page)
-    // After successful login, navigate to the target path
-    await page.goto(path, { waitUntil: 'domcontentloaded' })
-    // Wait for page to load after navigation
-    await page.waitForTimeout(1000)
+  // Ensure we are on the app's origin before touching localStorage; about:blank
+  // or data: URLs throw SecurityError when page.evaluate reads localStorage.
+  if (page.url() === 'about:blank' || !page.url().startsWith('http')) {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
   }
 
-  // Verify we have a valid token after login
-  const hasToken = await page.evaluate(() => {
-    const token = localStorage.getItem('axonhub_access_token')
+  // Fast path: if a valid token is already in localStorage, skip the sign-in flow.
+  // Browser contexts are isolated per test, so a token here means this test
+  // (or setup) already authenticated.
+  const hasExistingToken = await page.evaluate((key) => {
+    const token = localStorage.getItem(key)
     return !!token && token.length > 0
-  })
+  }, ACCESS_TOKEN_KEY)
+
+  if (!hasExistingToken) {
+    // Seed the auth token directly via the sign-in API, bypassing the React form.
+    //
+    // The previous implementation drove the form via signInAsAdmin, but the
+    // AuthGuard client-side redirect to /sign-in races with the 2s wait in
+    // this function: on a cold Vite dev server the lazy-loaded /sign-in route
+    // takes longer than 2s to compile and render, so the fallback
+    // isVisible({ timeout: 2000 }) check returns false, needsLogin stays
+    // false, the sign-in is skipped, and the page ends up on /sign-in with
+    // no token in localStorage.
+    //
+    // Calling the API directly inside the page (via page.evaluate) writes
+    // the token to localStorage synchronously, so the next page reload finds
+    // it and the AuthGuard lets the request through.
+    await seedAuthToken(page)
+  }
+
+  // Navigate to the target path. The store reads the token from localStorage
+  // on module init, so the AuthGuard sees the token and does not redirect.
+  await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 30000 })
+
+  // Wait for the app shell to render before returning. Use a short fixed
+  // delay to let React mount and any lazy-loaded chunks arrive. The
+  // models-onboarding-flow component starts a driver.js tour after a 500ms
+  // timeout, so we need to wait long enough for it to mount before removing
+  // the overlay below.
+  await page.waitForTimeout(2500)
+
+  // Strip any driver.js onboarding overlays and popovers that may be
+  // intercepting pointer events. The overlays are full-screen SVGs rendered
+  // above the app; they are normally dismissed by clicking
+  // [data-settings-button], but on a cold Vite dev server the click handler
+  // can race the overlay's mount and leave the backdrop behind. Removing the
+  // elements directly is safe because the test environment does not depend
+  // on the onboarding tour completing.
+  await page.evaluate(() => {
+    document
+      .querySelectorAll('.driver-overlay, .driver-popover, #driver-popover-content')
+      .forEach((el) => el.remove())
+  }).catch(() => {})
+
+  // Verify we have a valid token after login
+  const hasToken = await page.evaluate((key) => {
+    const token = localStorage.getItem(key)
+    return !!token && token.length > 0
+  }, ACCESS_TOKEN_KEY)
 
   if (!hasToken) {
     console.warn('Warning: No valid auth token found after login')

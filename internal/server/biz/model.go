@@ -49,6 +49,7 @@ type ModelService struct {
 
 // validateModelSettings validates regex patterns in model settings.
 func (svc *ModelService) validateModelSettings(settings *objects.ModelSettings) error {
+	normalizeModelSettings(settings)
 	return validateModelSettings(settings)
 }
 
@@ -345,6 +346,11 @@ func (svc *ModelService) CreateModel(ctx context.Context, input ent.CreateModelI
 
 // BulkCreateModels creates multiple models with the provided inputs.
 func (svc *ModelService) BulkCreateModels(ctx context.Context, inputs []*ent.CreateModelInput) ([]*ent.Model, error) {
+	// Normalize response-model aliases on every input before any DB work.
+	for _, input := range inputs {
+		normalizeModelSettings(input.Settings)
+	}
+
 	// Check for duplicates in the input
 	inputMap := make(map[string]bool)
 

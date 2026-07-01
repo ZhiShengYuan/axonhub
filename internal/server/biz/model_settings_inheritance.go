@@ -76,7 +76,43 @@ func normalizeDeveloperAssociations(associations []*objects.ModelAssociation) {
 				assoc.ChannelTagsModel.ModelID = ""
 			}
 		}
+
+		normalizeModelAssociationResponseModel(assoc)
 	}
+}
+
+// normalizeModelAssociations trims whitespace from each association's
+// ResponseModel alias and collapses empty/whitespace-only values to unset.
+// Safe to call on a nil slice.
+func normalizeModelAssociations(associations []*objects.ModelAssociation) {
+	for _, assoc := range associations {
+		if assoc == nil {
+			continue
+		}
+
+		normalizeModelAssociationResponseModel(assoc)
+	}
+}
+
+// normalizeModelSettings normalizes the response-model alias on every model-level
+// association in the given settings. The settings pointer may be nil.
+func normalizeModelSettings(settings *objects.ModelSettings) {
+	if settings == nil {
+		return
+	}
+
+	normalizeModelAssociations(settings.Associations)
+}
+
+// normalizeModelAssociationResponseModel trims whitespace from the ResponseModel
+// field; an empty result means the alias is unset. This is the single canonical
+// normalization site for both model-level and developer-level save paths.
+func normalizeModelAssociationResponseModel(assoc *objects.ModelAssociation) {
+	if assoc == nil {
+		return
+	}
+
+	assoc.ResponseModel = strings.TrimSpace(assoc.ResponseModel)
 }
 
 func validateDeveloperAssociations(associations []*objects.ModelAssociation) error {

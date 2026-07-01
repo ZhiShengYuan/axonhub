@@ -69,6 +69,12 @@ type ModelAssociation struct {
 	ModelID          *ModelIDAssociation          `json:"modelId"`
 	ChannelTagsModel *ChannelTagsModelAssociation `json:"channelTagsModel"`
 	ChannelTagsRegex *ChannelTagsRegexAssociation `json:"channelTagsRegex"`
+	// ResponseModel is an optional literal client-visible alias. When non-empty
+	// (after whitespace trimming), transformed outbound responses return this
+	// string as `response.model` instead of the originally requested model. An
+	// empty/whitespace-only value is treated as unset and falls back to the
+	// legacy request-model masking behavior.
+	ResponseModel string `json:"responseModel,omitempty"`
 }
 
 type ModelAssociationWhen struct {

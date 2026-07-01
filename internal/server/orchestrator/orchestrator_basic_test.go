@@ -16,6 +16,7 @@ import (
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/ent/channel"
 	"github.com/looplj/axonhub/internal/ent/enttest"
+	"github.com/looplj/axonhub/internal/ent/model"
 	"github.com/looplj/axonhub/internal/ent/request"
 	"github.com/looplj/axonhub/internal/objects"
 	"github.com/looplj/axonhub/internal/server/biz"
@@ -768,6 +769,115 @@ func TestChatCompletionOrchestrator_Process_WithResponseModelAlias_BlankFallsBac
 	var clientResp openai.Response
 	require.NoError(t, json.Unmarshal(result.ChatCompletion.Body, &clientResp))
 	assert.Equal(t, "my-public-alias", clientResp.Model)
+}
+
+// TestChatCompletionOrchestrator_Process_WithDeveloperRuleResponseModelAlias
+// locks the developer-rule alias end-to-end behavior: a developer rule
+// declared in SystemModelSettings that carries a ResponseModel alias must
+// flow through EffectiveModelAssociations inheritance, get stamped onto the
+// ChannelModelEntry by matchSingleAssociation, and be used by the model
+// mapper to rewrite the final transformed response.
+//
+// Unlike TestChatCompletionOrchestrator_Process_WithResponseModelAlias (which
+// injects a static candidate with the alias already on the entry), this test
+// drives the real DefaultSelector with a DB-backed ChannelService, ModelService
+// and SystemService so the inheritance path is exercised. There is NO
+// model-level association — the alias only comes from the developer rule.
+func TestChatCompletionOrchestrator_Process_WithDeveloperRuleResponseModelAlias(t *testing.T) {
+	ctx := context.Background()
+	ctx = authz.WithTestBypass(ctx)
+
+	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=0")
+	defer client.Close()
+
+	ctx = ent.NewContext(ctx, client)
+
+	project := createTestProject(t, ctx, client)
+	channelService, requestService, systemService, usageLogService := setupTestServices(t, client)
+	modelService := newTestModelService(client)
+
+	ch := createTestChannel(t, ctx, client)
+
+	require.NoError(t, systemService.SetModelSettings(ctx, biz.SystemModelSettings{
+		FallbackToChannelsOnModelNotFound: true,
+		QueryAllChannelModels:             true,
+		DeveloperSettings: []*biz.DeveloperModelSettings{
+			{
+				Developer: "openai",
+				Associations: []*objects.ModelAssociation{
+					{
+						Type:     "channel_model",
+						Priority: 1,
+						ChannelModel: &objects.ChannelModelAssociation{
+							ChannelID: ch.ID,
+							// ModelID is filled in at inheritance time by
+							// inheritDeveloperAssociationForModel.
+						},
+						ResponseModel: "developer-inherited-alias",
+					},
+				},
+			},
+		},
+	}))
+
+	_, err := client.Model.Create().
+		SetDeveloper("openai").
+		SetModelID("gpt-4").
+		SetType(model.TypeChat).
+		SetName("GPT-4").
+		SetIcon("openai").
+		SetGroup("gpt-4").
+		SetModelCard(&objects.ModelCard{}).
+		SetSettings(&objects.ModelSettings{}).
+		SetStatus(model.StatusEnabled).
+		Save(ctx)
+	require.NoError(t, err)
+
+	mockResp := buildMockOpenAIResponse("chatcmpl-developer-alias", "gpt-4-0613", "Hi", 5, 5)
+	executor := &mockExecutor{
+		response: &httpclient.Response{
+			StatusCode: 200,
+			Body:       mockResp,
+			Headers:    http.Header{"Content-Type": []string{"application/json"}},
+		},
+	}
+
+	outbound, err := openai.NewOutboundTransformer(ch.BaseURL, ch.Credentials.APIKey)
+	require.NoError(t, err)
+
+	bizChannel := &biz.Channel{Channel: ch, Outbound: outbound}
+	channelService.SetEnabledChannelsForTest([]*biz.Channel{bizChannel})
+
+	selector := NewDefaultSelector(channelService, modelService, systemService)
+
+	orchestrator := &ChatCompletionOrchestrator{
+		channelSelector:       selector,
+		Inbound:               openai.NewInboundTransformer(),
+		RequestService:        requestService,
+		ChannelService:        channelService,
+		PromptProvider:        &stubPromptProvider{},
+		SystemService:         systemService,
+		UsageLogService:       usageLogService,
+		PipelineFactory:       pipeline.NewFactory(executor),
+		ModelMapper:           NewModelMapper(),
+		modelCircuitBreaker:   biz.NewModelCircuitBreaker(),
+		channelLimiterManager: NewChannelLimiterManager(),
+		Middlewares: []pipeline.Middleware{
+			stream.EnsureUsage(),
+		},
+	}
+
+	httpRequest := buildTestRequest("gpt-4", "hello", false)
+	ctx = contexts.WithProjectID(ctx, project.ID)
+
+	result, err := orchestrator.Process(ctx, httpRequest)
+	require.NoError(t, err)
+	require.NotNil(t, result.ChatCompletion)
+
+	var clientResp openai.Response
+	require.NoError(t, json.Unmarshal(result.ChatCompletion.Body, &clientResp))
+	assert.Equal(t, "developer-inherited-alias", clientResp.Model,
+		"developer-rule ResponseModel alias must flow through inheritance and mask the transformed response model")
 }
 
 // TestChatCompletionOrchestrator_Process_WithOverrideParameters tests channel override parameters.

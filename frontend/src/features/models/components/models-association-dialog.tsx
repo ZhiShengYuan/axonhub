@@ -307,6 +307,7 @@ const associationFormSchema = z.object({
         excludeChannelNamePattern: z.string().optional(),
         excludeChannelIds: z.array(z.number()).optional(),
         excludeChannelTags: z.array(z.string()).optional(),
+        responseModel: z.string().optional(),
       })
     )
     .max(10, 'Cannot have more than 10 associations')
@@ -433,6 +434,7 @@ function formAssociationToInput(assoc: AssociationFormRow, inheritedModelID?: st
     priority: assoc.priority ?? 0,
     disabled: assoc.disabled ?? false,
     when: buildAssociationWhen(assoc.whenEnabled, assoc.whenCondition) || undefined,
+    responseModel: assoc.responseModel?.trim() || undefined,
   };
 
   if (assoc.type === 'channel_model') {
@@ -513,6 +515,7 @@ function formAssociationToModelAssociation(assoc: AssociationFormRow): ModelAsso
     modelId: input?.modelId || null,
     channelTagsModel: input?.channelTagsModel || null,
     channelTagsRegex: input?.channelTagsRegex || null,
+    responseModel: assoc.responseModel?.trim() || null,
   };
 }
 
@@ -552,6 +555,7 @@ function modelAssociationToInput(assoc: ModelAssociation, inheritedModelID?: str
     modelId,
     channelTagsModel,
     channelTagsRegex: assoc.channelTagsRegex || undefined,
+    responseModel: assoc.responseModel || undefined,
   };
 }
 
@@ -575,6 +579,7 @@ function modelAssociationToFormRow(assoc: ModelAssociation, inheritModel = false
     excludeChannelNamePattern: exclude?.channelNamePattern || '',
     excludeChannelIds: exclude?.channelIds || [],
     excludeChannelTags: exclude?.channelTags || [],
+    responseModel: assoc.responseModel || '',
   };
 }
 
@@ -843,6 +848,7 @@ export function ModelsAssociationDialog() {
       excludeChannelNamePattern: '',
       excludeChannelIds: [],
       excludeChannelTags: [],
+      responseModel: '',
       inheritModel: isDeveloperMode,
     });
   }, [append, fields.length, form, isDeveloperMode]);
@@ -1447,6 +1453,29 @@ function AssociationRow({ index, form, isDeveloperMode, channelOptions, allModel
           />
         </div>
       )}
+
+      {/* Response Model Alias */}
+      <div className='ml-0 sm:ml-[6.25rem] grid gap-2'>
+        <FormField
+          control={form.control}
+          name={`associations.${index}.responseModel`}
+          render={({ field }) => (
+            <FormItem className='space-y-1'>
+              <FormLabel className='text-xs'>{t('models.dialogs.association.responseModel')}</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value?.toString() || ''}
+                  placeholder={t('models.dialogs.association.responseModelPlaceholder')}
+                  className='h-10 sm:h-9'
+                  data-testid="response-model-input"
+                />
+              </FormControl>
+              <p className='text-muted-foreground text-xs'>{t('models.dialogs.association.responseModelHelp')}</p>
+            </FormItem>
+          )}
+        />
+      </div>
 
       <div className='ml-0 sm:ml-[6.25rem] border-t pt-2'>
         <Button

@@ -146,3 +146,168 @@ test.describe('Admin Models Management', () => {
     await expect(modelsTable.locator('tbody tr').filter({ hasText: updatedName })).toHaveCount(0)
   })
 })
+
+test.describe('response model alias', () => {
+  test.beforeEach(async ({ page }) => {
+    test.setTimeout(60000)
+    await gotoAndEnsureAuth(page, '/models')
+
+    const modelsTable = page.getByTestId('models-table')
+    await modelsTable.waitFor({ state: 'visible', timeout: 20000 })
+
+    const driverOverlay = page.locator('#driver-popover-content')
+    if (await driverOverlay.isVisible().catch(() => false)) {
+      const settingsButton = page.locator('[data-settings-button]')
+      if (await settingsButton.isVisible().catch(() => false)) {
+        await settingsButton.click()
+        await page.waitForTimeout(500)
+      }
+      await expect(driverOverlay).not.toBeVisible({ timeout: 5000 }).catch(() => {})
+    }
+
+    const settingsDialog = page.getByRole('dialog').filter({ hasText: /Model Settings|模型设置/i })
+    if (await settingsDialog.isVisible().catch(() => false)) {
+      await page.keyboard.press('Escape')
+      await expect(settingsDialog).not.toBeVisible({ timeout: 5000 })
+    }
+  })
+
+  test('sets and persists a per-rule response model alias, and normalises whitespace to empty', async ({ page }) => {
+    const uniqueSuffix = Date.now().toString().slice(-6)
+    const baseName = `pw-alias-${uniqueSuffix}`
+    const aliasValue = 'gpt-4-turbo'
+
+    const createButton = page
+      .getByRole('button', { name: /Add Model|创建模型|新增模型|创建|Add/i })
+      .first()
+    await expect(createButton).toBeVisible()
+    await createButton.click()
+
+    const dialog = page.locator('[data-slot="dialog-content"]')
+    await expect(dialog).toBeVisible()
+
+    const developerCombo = dialog.locator('[role="combobox"]').first()
+    await developerCombo.click()
+    const developerOption = page
+      .getByRole('option', { name: /OpenAI/i })
+      .or(page.getByRole('option', { name: /Moonshot AI|Moonshot/i }))
+      .first()
+    await developerOption.click()
+
+    const modelIdInput = dialog.getByPlaceholder(/model id/i).first()
+    await modelIdInput.click()
+    await modelIdInput.fill('kimi')
+    const modelOption = page.getByRole('option', { name: /kimi-k2-thinking/i }).first()
+    await expect(modelOption).toBeVisible()
+    await modelOption.click()
+
+    const nameInput = dialog.getByLabel(/Name|名称/i)
+    await nameInput.fill(baseName)
+    const groupInput = dialog.getByLabel(/Group|分组/i)
+    await groupInput.fill(`group-${uniqueSuffix}`)
+
+    await Promise.all([
+      waitForGraphQLOperation(page, 'CreateModel'),
+      dialog.getByRole('button', { name: /Create|创建|保存|Save/i }).last().click(),
+    ])
+    await expect(dialog).not.toBeVisible({ timeout: 20000 })
+    await waitForGraphQLOperation(page, 'GetModels')
+
+    const modelsTable = page.getByTestId('models-table')
+    const createdRow = modelsTable.locator('tbody tr').filter({ hasText: baseName })
+    await expect(createdRow).toBeVisible({ timeout: 20000 })
+
+    const rowActions = createdRow.getByTestId('row-actions').first()
+    await rowActions.click()
+    const associationMenuItem = page.getByRole('menuitem', { name: /Manage Association|管理关联|Association/i }).first()
+    await associationMenuItem.click()
+
+    const assocDialog = page.getByRole('dialog').filter({ hasText: /Association|关联/i }).first()
+    await expect(assocDialog).toBeVisible({ timeout: 10000 })
+
+    await assocDialog.getByRole('button', { name: /Add Rule|添加规则/i }).click()
+    await page.waitForTimeout(300)
+
+    const aliasInput = assocDialog.getByTestId('response-model-input').first()
+    await expect(aliasInput).toBeVisible()
+    await aliasInput.fill(aliasValue)
+
+    await Promise.all([
+      waitForGraphQLOperation(page, 'UpdateModel'),
+      assocDialog.getByRole('button', { name: /Save|保存/i }).last().click(),
+    ])
+    await expect(assocDialog).not.toBeVisible({ timeout: 20000 })
+    await waitForGraphQLOperation(page, 'GetModels')
+
+    const rowActionsAfter = createdRow.getByTestId('row-actions').first()
+    await rowActionsAfter.click()
+    const associationMenuItemAfter = page.getByRole('menuitem', { name: /Manage Association|管理关联|Association/i }).first()
+    await associationMenuItemAfter.click()
+
+    const assocDialogAfter = page.getByRole('dialog').filter({ hasText: /Association|关联/i }).first()
+    await expect(assocDialogAfter).toBeVisible({ timeout: 10000 })
+
+    const aliasInputAfter = assocDialogAfter.getByTestId('response-model-input').first()
+    await expect(aliasInputAfter).toHaveValue(aliasValue)
+
+    await aliasInputAfter.fill('   ')
+    await Promise.all([
+      waitForGraphQLOperation(page, 'UpdateModel'),
+      assocDialogAfter.getByRole('button', { name: /Save|保存/i }).last().click(),
+    ])
+    await expect(assocDialogAfter).not.toBeVisible({ timeout: 20000 })
+    await waitForGraphQLOperation(page, 'GetModels')
+
+    const rowActionsFinal = createdRow.getByTestId('row-actions').first()
+    await rowActionsFinal.click()
+    const associationMenuItemFinal = page.getByRole('menuitem', { name: /Manage Association|管理关联|Association/i }).first()
+    await associationMenuItemFinal.click()
+
+    const assocDialogFinal = page.getByRole('dialog').filter({ hasText: /Association|关联/i }).first()
+    await expect(assocDialogFinal).toBeVisible({ timeout: 10000 })
+
+    const aliasInputFinal = assocDialogFinal.getByTestId('response-model-input').first()
+    await expect(aliasInputFinal).toHaveValue('')
+
+    await page.keyboard.press('Escape')
+    await expect(assocDialogFinal).not.toBeVisible({ timeout: 5000 })
+
+    const cleanupRow = modelsTable.locator('tbody tr').filter({ hasText: baseName })
+    const cleanupActions = cleanupRow.getByTestId('row-actions').first()
+    await cleanupActions.click()
+    const deleteMenuItem = page.getByRole('menuitem', { name: /Delete|删除/i }).first()
+    await deleteMenuItem.click()
+
+    const deleteDialog = page.getByRole('alertdialog').or(page.getByRole('dialog'))
+    await expect(deleteDialog).toBeVisible()
+    const deleteButton = deleteDialog.getByRole('button', { name: /Delete|删除|Confirm|确认/i }).last()
+    await Promise.all([
+      waitForGraphQLOperation(page, 'DeleteModel'),
+      deleteButton.click(),
+    ])
+    await expect(deleteDialog).not.toBeVisible({ timeout: 20000 })
+  })
+
+  test('sets response model alias on a developer rule', async ({ page }) => {
+    const modelsTable = page.getByTestId('models-table')
+    const firstRow = modelsTable.locator('tbody tr').first()
+    await expect(firstRow).toBeVisible({ timeout: 20000 })
+
+    const rowActions = firstRow.getByTestId('row-actions').first()
+    await rowActions.click()
+    const developerMenuItem = page.getByRole('menuitem', { name: /Developer Rules|开发者规则/i }).first()
+    await developerMenuItem.click()
+
+    const devAssocDialog = page.getByRole('dialog').filter({ hasText: /Developer Rules|开发者规则/i }).first()
+    await expect(devAssocDialog).toBeVisible({ timeout: 10000 })
+
+    await devAssocDialog.getByRole('button', { name: /Add Rule|添加规则/i }).click()
+    await page.waitForTimeout(300)
+
+    const aliasInput = devAssocDialog.getByTestId('response-model-input').first()
+    await expect(aliasInput).toBeVisible()
+    await aliasInput.fill('claude-3-opus')
+
+    await page.keyboard.press('Escape')
+  })
+})

@@ -635,6 +635,141 @@ func TestChatCompletionOrchestrator_Process_WithModelMapping(t *testing.T) {
 	assert.Equal(t, "gpt-4", dbRequest.ModelID)
 }
 
+func TestChatCompletionOrchestrator_Process_WithResponseModelAlias(t *testing.T) {
+	ctx := context.Background()
+	ctx = authz.WithTestBypass(ctx)
+
+	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=0")
+	defer client.Close()
+
+	ctx = ent.NewContext(ctx, client)
+
+	project := createTestProject(t, ctx, client)
+	ch := createTestChannel(t, ctx, client)
+	channelService, requestService, systemService, usageLogService := setupTestServices(t, client)
+
+	mockResp := buildMockOpenAIResponse("chatcmpl-alias-1", "gpt-4", "Hi", 5, 5)
+	executor := &mockExecutor{
+		response: &httpclient.Response{
+			StatusCode: 200,
+			Body:       mockResp,
+			Headers:    http.Header{"Content-Type": []string{"application/json"}},
+		},
+	}
+
+	outbound, err := openai.NewOutboundTransformer(ch.BaseURL, ch.Credentials.APIKey)
+	require.NoError(t, err)
+
+	bizChannel := &biz.Channel{Channel: ch, Outbound: outbound}
+
+	candidate := &ChannelModelsCandidate{
+		Channel:  bizChannel,
+		Priority: 0,
+		Models: []biz.ChannelModelEntry{{
+			RequestModel:  "my-public-alias",
+			ActualModel:   "gpt-4",
+			Source:        "direct",
+			ResponseModel: "client-visible-alias",
+		}},
+	}
+	channelSelector := &staticChannelSelector{candidates: []*ChannelModelsCandidate{candidate}}
+
+	orchestrator := &ChatCompletionOrchestrator{
+		channelSelector:       channelSelector,
+		Inbound:               openai.NewInboundTransformer(),
+		RequestService:        requestService,
+		ChannelService:        channelService,
+		PromptProvider:        &stubPromptProvider{},
+		SystemService:         systemService,
+		UsageLogService:       usageLogService,
+		PipelineFactory:       pipeline.NewFactory(executor),
+		ModelMapper:           NewModelMapper(),
+		modelCircuitBreaker:   biz.NewModelCircuitBreaker(),
+		channelLimiterManager: NewChannelLimiterManager(),
+		Middlewares: []pipeline.Middleware{
+			stream.EnsureUsage(),
+		},
+	}
+
+	httpRequest := buildTestRequest("my-public-alias", "hello", false)
+	ctx = contexts.WithProjectID(ctx, project.ID)
+
+	result, err := orchestrator.Process(ctx, httpRequest)
+	require.NoError(t, err)
+	require.NotNil(t, result.ChatCompletion)
+
+	var clientResp openai.Response
+	require.NoError(t, json.Unmarshal(result.ChatCompletion.Body, &clientResp))
+	assert.Equal(t, "client-visible-alias", clientResp.Model)
+}
+
+func TestChatCompletionOrchestrator_Process_WithResponseModelAlias_BlankFallsBack(t *testing.T) {
+	ctx := context.Background()
+	ctx = authz.WithTestBypass(ctx)
+
+	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=0")
+	defer client.Close()
+
+	ctx = ent.NewContext(ctx, client)
+
+	project := createTestProject(t, ctx, client)
+	ch := createTestChannel(t, ctx, client)
+	channelService, requestService, systemService, usageLogService := setupTestServices(t, client)
+
+	mockResp := buildMockOpenAIResponse("chatcmpl-alias-blank", "gpt-4-0613", "Hi", 5, 5)
+	executor := &mockExecutor{
+		response: &httpclient.Response{
+			StatusCode: 200,
+			Body:       mockResp,
+			Headers:    http.Header{"Content-Type": []string{"application/json"}},
+		},
+	}
+
+	outbound, err := openai.NewOutboundTransformer(ch.BaseURL, ch.Credentials.APIKey)
+	require.NoError(t, err)
+
+	bizChannel := &biz.Channel{Channel: ch, Outbound: outbound}
+
+	candidate := &ChannelModelsCandidate{
+		Channel:  bizChannel,
+		Priority: 0,
+		Models: []biz.ChannelModelEntry{{
+			RequestModel: "my-public-alias",
+			ActualModel:  "gpt-4-0613",
+			Source:       "direct",
+		}},
+	}
+	channelSelector := &staticChannelSelector{candidates: []*ChannelModelsCandidate{candidate}}
+
+	orchestrator := &ChatCompletionOrchestrator{
+		channelSelector:       channelSelector,
+		Inbound:               openai.NewInboundTransformer(),
+		RequestService:        requestService,
+		ChannelService:        channelService,
+		PromptProvider:        &stubPromptProvider{},
+		SystemService:         systemService,
+		UsageLogService:       usageLogService,
+		PipelineFactory:       pipeline.NewFactory(executor),
+		ModelMapper:           NewModelMapper(),
+		modelCircuitBreaker:   biz.NewModelCircuitBreaker(),
+		channelLimiterManager: NewChannelLimiterManager(),
+		Middlewares: []pipeline.Middleware{
+			stream.EnsureUsage(),
+		},
+	}
+
+	httpRequest := buildTestRequest("my-public-alias", "hello", false)
+	ctx = contexts.WithProjectID(ctx, project.ID)
+
+	result, err := orchestrator.Process(ctx, httpRequest)
+	require.NoError(t, err)
+	require.NotNil(t, result.ChatCompletion)
+
+	var clientResp openai.Response
+	require.NoError(t, json.Unmarshal(result.ChatCompletion.Body, &clientResp))
+	assert.Equal(t, "my-public-alias", clientResp.Model)
+}
+
 // TestChatCompletionOrchestrator_Process_WithOverrideParameters tests channel override parameters.
 func TestChatCompletionOrchestrator_Process_WithOverrideParameters(t *testing.T) {
 	ctx := context.Background()

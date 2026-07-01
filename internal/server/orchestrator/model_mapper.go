@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/looplj/axonhub/internal/ent"
 	"github.com/looplj/axonhub/internal/log"
@@ -76,7 +77,7 @@ func (m *apiKeyModelMappingMiddleware) OnInboundLlmRequest(ctx context.Context, 
 }
 
 func (m *apiKeyModelMappingMiddleware) OnOutboundLlmResponse(ctx context.Context, response *llm.Response) (*llm.Response, error) {
-	m.inbound.state.ModelMapper.ReplaceResponseModel(response, m.RequestModel)
+	m.inbound.state.ModelMapper.ReplaceResponseModel(response, m.RequestModel, m.currentResponseAlias())
 	return response, nil
 }
 
@@ -89,11 +90,25 @@ func (m *apiKeyModelMappingMiddleware) OnOutboundLlmStream(ctx context.Context, 
 		return stream, nil
 	}
 
-	// Wrap the stream to replace model in each response
+	alias := m.currentResponseAlias()
+
 	return streams.Map(stream, func(response *llm.Response) *llm.Response {
-		m.inbound.state.ModelMapper.ReplaceResponseModel(response, m.RequestModel)
+		m.inbound.state.ModelMapper.ReplaceResponseModel(response, m.RequestModel, alias)
 		return response
 	}), nil
+}
+
+func (m *apiKeyModelMappingMiddleware) currentResponseAlias() string {
+	state := m.inbound.state
+	if state == nil || state.CurrentCandidate == nil {
+		return ""
+	}
+
+	if state.CurrentModelIndex < 0 || state.CurrentModelIndex >= len(state.CurrentCandidate.Models) {
+		return ""
+	}
+
+	return state.CurrentCandidate.Models[state.CurrentModelIndex].ResponseModel
 }
 
 // ModelMapper handles model mapping based on API key profiles.
@@ -163,11 +178,19 @@ func (m *ModelMapper) matchesMapping(pattern, model string) bool {
 	return xregexp.MatchString(pattern, model)
 }
 
-// ReplaceResponseModel replaces the model field in llm.Response with the original client request model.
-func (m *ModelMapper) ReplaceResponseModel(response *llm.Response, requestModel string) {
-	// If the response model is empty, it means the model field was not sent from the LLM service.
-	// In this case, we should not replace the model.
-	if response != nil && response.Model != "" && response.Model != requestModel {
-		response.Model = requestModel
+// ReplaceResponseModel rewrites response.Model to alias when non-empty,
+// otherwise to requestModel. An empty response.Model is left untouched.
+func (m *ModelMapper) ReplaceResponseModel(response *llm.Response, requestModel, alias string) {
+	if response == nil || response.Model == "" {
+		return
+	}
+
+	target := strings.TrimSpace(alias)
+	if target == "" {
+		target = requestModel
+	}
+
+	if response.Model != target {
+		response.Model = target
 	}
 }

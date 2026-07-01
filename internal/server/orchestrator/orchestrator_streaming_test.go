@@ -1,6 +1,7 @@
 package orchestrator
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -19,6 +20,7 @@ import (
 	"github.com/looplj/axonhub/internal/ent/requestexecution"
 	"github.com/looplj/axonhub/internal/objects"
 	"github.com/looplj/axonhub/internal/server/biz"
+	"github.com/looplj/axonhub/llm"
 	"github.com/looplj/axonhub/llm/httpclient"
 	"github.com/looplj/axonhub/llm/pipeline"
 	"github.com/looplj/axonhub/llm/pipeline/stream"
@@ -994,4 +996,85 @@ func TestChatCompletionOrchestrator_Process_ChannelLimiter(t *testing.T) {
 	require.True(t, ok, "limiter should have been created for the configured channel")
 	assert.Equal(t, 0, inFlight, "slot must be released after request completion")
 	assert.Equal(t, 0, waiting)
+}
+
+func TestChatCompletionOrchestrator_Process_Streaming_WithResponseModelAlias(t *testing.T) {
+	ctx := context.Background()
+	ctx = authz.WithTestBypass(ctx)
+
+	client := enttest.NewEntClient(t, "sqlite3", "file:ent?mode=memory&_fk=0")
+	defer client.Close()
+
+	ctx = ent.NewContext(ctx, client)
+
+	project := createTestProject(t, ctx, client)
+	ch := createTestChannel(t, ctx, client)
+	channelService, requestService, systemService, usageLogService := setupTestServices(t, client)
+
+	streamEvents := []*httpclient.StreamEvent{
+		{Data: []byte(`{"id":"chatcmpl-alias-stream","object":"chat.completion.chunk","model":"gpt-4","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}]}`)},
+		{Data: []byte(`{"id":"chatcmpl-alias-stream","object":"chat.completion.chunk","model":"gpt-4","choices":[{"index":0,"delta":{"content":"hi"},"finish_reason":null}]}`)},
+		{Data: []byte(`{"id":"chatcmpl-alias-stream","object":"chat.completion.chunk","model":"gpt-4","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":2,"completion_tokens":1,"total_tokens":3}}`)},
+		{Data: llm.DoneStreamEvent.Data},
+	}
+
+	executor := &mockExecutor{streamEvents: streamEvents}
+
+	outbound, err := openai.NewOutboundTransformer(ch.BaseURL, ch.Credentials.APIKey)
+	require.NoError(t, err)
+
+	bizChannel := &biz.Channel{Channel: ch, Outbound: outbound}
+
+	candidate := &ChannelModelsCandidate{
+		Channel:  bizChannel,
+		Priority: 0,
+		Models: []biz.ChannelModelEntry{{
+			RequestModel:  "my-public-alias",
+			ActualModel:   "gpt-4",
+			Source:        "direct",
+			ResponseModel: "stream-alias",
+		}},
+	}
+	channelSelector := &staticChannelSelector{candidates: []*ChannelModelsCandidate{candidate}}
+
+	orchestrator := &ChatCompletionOrchestrator{
+		channelSelector:       channelSelector,
+		Inbound:               openai.NewInboundTransformer(),
+		RequestService:        requestService,
+		ChannelService:        channelService,
+		PromptProvider:        &stubPromptProvider{},
+		SystemService:         systemService,
+		UsageLogService:       usageLogService,
+		PipelineFactory:       pipeline.NewFactory(executor),
+		ModelMapper:           NewModelMapper(),
+		modelCircuitBreaker:   biz.NewModelCircuitBreaker(),
+		channelLimiterManager: NewChannelLimiterManager(),
+		Middlewares: []pipeline.Middleware{
+			stream.EnsureUsage(),
+		},
+	}
+
+	httpRequest := buildTestRequest("my-public-alias", "hi", true)
+	ctx = contexts.WithProjectID(ctx, project.ID)
+
+	result, err := orchestrator.Process(ctx, httpRequest)
+	require.NoError(t, err)
+	require.Nil(t, result.ChatCompletion)
+	require.NotNil(t, result.ChatCompletionStream)
+
+	var dataChunks int
+	for result.ChatCompletionStream.Next() {
+		ev := result.ChatCompletionStream.Current()
+		if bytes.Equal(ev.Data, llm.DoneStreamEvent.Data) {
+			continue
+		}
+		dataChunks++
+
+		var streamResp openai.Response
+		require.NoError(t, json.Unmarshal(ev.Data, &streamResp))
+		assert.Equal(t, "stream-alias", streamResp.Model)
+	}
+	require.NoError(t, result.ChatCompletionStream.Err())
+	require.NoError(t, result.ChatCompletionStream.Close())
+	assert.GreaterOrEqual(t, dataChunks, 3, "expected at least 3 data chunks to be aliased")
 }

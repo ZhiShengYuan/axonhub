@@ -92,9 +92,10 @@ func selectCandidates(inbound *PersistentInboundTransformer, quotaProvider Provi
 						"priority":     candidate.Priority,
 						"models": lo.Map(candidate.Models, func(entry biz.ChannelModelEntry, _ int) map[string]any {
 							return map[string]any{
-								"request_model": entry.RequestModel,
-								"actual_model":  entry.ActualModel,
-								"source":        entry.Source,
+								"request_model":  entry.RequestModel,
+								"actual_model":   entry.ActualModel,
+								"source":         entry.Source,
+								"response_model": entry.ResponseModel,
 							}
 						}),
 					}

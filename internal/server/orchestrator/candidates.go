@@ -282,8 +282,9 @@ func (s *DefaultSelector) resolveAssociations(
 						"has_when":     match.Association != nil && match.Association.When != nil,
 						"models": lo.Map(conn.Models, func(entry biz.ChannelModelEntry, _ int) map[string]any {
 							return map[string]any{
-								"request_model": entry.RequestModel,
-								"actual_model":  entry.ActualModel,
+								"request_model":  entry.RequestModel,
+								"actual_model":   entry.ActualModel,
+								"response_model": entry.ResponseModel,
 							}
 						}),
 					}

@@ -139,6 +139,18 @@ func matchSingleAssociation(
 		connections = matchChannelTagsRegex(assoc, channels, tracker)
 	}
 
+	// Stamp the winning association's ResponseModel alias onto every entry
+	// produced for this rule. Doing it here (rather than inside each
+	// match* helper) keeps the alias assignment in one place and ensures
+	// regex-style rules that fan out to multiple models all carry the same
+	// alias from the originating association. Empty alias is allowed and
+	// means "unset" — outbound masking treats it as the legacy fallback.
+	for _, conn := range connections {
+		for i := range conn.Models {
+			conn.Models[i].ResponseModel = assoc.ResponseModel
+		}
+	}
+
 	return connections
 }
 

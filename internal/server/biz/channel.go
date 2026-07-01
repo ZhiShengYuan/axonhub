@@ -36,6 +36,15 @@ type ChannelModelEntry struct {
 
 	// Source indicates how this model is supported
 	Source string // "direct", "prefix", "auto_trim", "mapping"
+
+	// ResponseModel is the optional literal client-visible alias carried over
+	// from the matching ModelAssociation. When non-empty, transformed outbound
+	// responses return this string as `response.model` instead of the
+	// originally requested model. An empty value means the alias is unset and
+	// outbound masking falls back to the request-model behavior. The alias
+	// travels alongside the entry from the matching association so the
+	// masking layer does not need a separate lookup.
+	ResponseModel string
 }
 
 type Channel struct {
